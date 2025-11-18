@@ -1,0 +1,56 @@
+flowchart TB
+    subgraph Users["👥 User Facing Interactions"]
+        Guardian
+        Caregiver
+        Company
+        Admin
+    end
+
+    subgraph AILayer["🤖 AI Agent Layer"]
+        Orchestrator["Orchestrator Agent<br/>(Routes Requests)"]
+        
+        subgraph SpecializedAgents["Specialized Agents"]
+            Matching["Matching Agent"]
+            Fraud["Fraud & Safety Agent"]
+            Support["Support Agent"]
+            Analytics["Analytics Agent"]
+            Scribe["Scribe Agent<br/>(Phase 2)"]
+        end
+    end
+
+    subgraph Backend["⚙️ Your Backend Services"]
+        Search["Search Service"]
+        Payment["Payment Service"]
+        Notif["Notification Service"]
+        Job["Job Service"]
+    end
+
+    subgraph Data["💾 Data Layer"]
+        ES["Elasticsearch"]
+        PG["PostgreSQL"]
+        Redis["Redis"]
+    end
+
+    Users --> API["API Gateway"]
+    API --> Backend
+
+    Backend -- "Call AI Agent" --> AILayer
+
+    Orchestrator --> Matching
+    Orchestrator --> Fraud
+    Orchestrator --> Support
+    Orchestrator --> Analytics
+    Orchestrator --> Scribe
+
+    Matching -- "Enhances Query" --> Search
+    Fraud -- "Flags Transaction" --> Payment
+    Support -- "Generates Reply" --> Notif
+    Analytics -- "Provides Insights" --> Job
+    
+    Search --> ES
+    Payment --> PG
+    Job --> PG
+    
+    Matching -.-> PG
+    Fraud -.-> Redis
+    Analytics -.-> PG
