@@ -13,7 +13,7 @@ export class NotificationsController {
 
     @Patch(':id/read')
     markAsRead(@Param('id') id: string, @CurrentUser('id') userId: string) {
-        return this.notificationsService.markAsRead(id);
+        return this.notificationsService.markAsRead(id, userId);
     }
 
     @Patch('read-all')
