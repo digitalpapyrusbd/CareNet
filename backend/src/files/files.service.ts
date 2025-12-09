@@ -5,7 +5,7 @@ import { PrismaService } from '../common/prisma/prisma.service';
 export class FilesService {
     constructor(private prisma: PrismaService) { }
 
-    async uploadFile(userId: string, file: Express.Multer.File) {
+    async uploadFile(userId: string, file: any) {
         // TODO: Implement Cloudflare R2 upload
         // For now, assume file is saved and we have a URL
         const fileUrl = `https://r2.example.com/${file.filename}`;

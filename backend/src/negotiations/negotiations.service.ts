@@ -35,7 +35,7 @@ export class NegotiationsService {
                 guardian_id: guardianId,
                 original_price: pkg.price,
                 proposed_price: createDto.proposed_price,
-                guardian_message: createDto.initial_message,
+                guardian_message: createDto.notes,
                 status: NegotiationStatus.PENDING_AGENCY_RESPONSE,
                 expires_at: new Date(Date.now() + 48 * 60 * 60 * 1000), // 48h expiry
             },
@@ -87,11 +87,29 @@ export class NegotiationsService {
             where: { id },
             data: {
                 status: newStatus,
-                agency_response: respondDto.message,
+                agency_response: respondDto.notes,
                 counter_price: respondDto.counter_price,
             },
         });
 
         return updated;
+    }
+
+    async findAll(userId: string, page: number = 1, limit: number = 20) {
+        const skip = (page - 1) * limit;
+        const [negotiations, total] = await Promise.all([
+            this.prisma.package_negotiations.findMany({
+                where: { guardian_id: userId },
+                skip,
+                take: limit,
+                orderBy: { created_at: 'desc' },
+            }),
+            this.prisma.package_negotiations.count({ where: { guardian_id: userId } }),
+        ]);
+
+        return {
+            data: negotiations,
+            meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+        };
     }
 }

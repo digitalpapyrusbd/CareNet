@@ -24,8 +24,8 @@ export class LockoutController {
 
     @Post(':userId/unlock')
     @Roles(UserRole.SUPER_ADMIN, UserRole.PLATFORM_ADMIN)
-    unlockAccount(@Param('userId') userId: string) {
-        return this.lockoutService.unlockAccount(userId);
+    unlockAccount(@Param('userId') userId: string, @CurrentUser('id') unlockedBy: string) {
+        return this.lockoutService.unlockAccount(userId, unlockedBy);
     }
 
     @Post(':userId/grace')

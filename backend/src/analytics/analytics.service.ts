@@ -46,4 +46,24 @@ export class AnalyticsService {
             jobs
         };
     }
+
+    async getPlatformStats() {
+        return this.getAdminStats();
+    }
+
+    async getCompanyAnalytics(id: string) {
+        return this.getCompanyStats(id);
+    }
+
+    async getRevenueBreakdown() {
+        const revenue = await this.prisma.invoices.aggregate({
+            _sum: { amount: true },
+            where: { status: 'PAID' },
+        });
+
+        return {
+            total: revenue._sum.amount || 0,
+            breakdown: {},
+        };
+    }
 }

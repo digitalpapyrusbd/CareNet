@@ -71,7 +71,7 @@ export class JobsService {
                     patients: { select: { name: true } },
                     assignments: {
                         include: {
-                            caregivers: {
+                            caregivers_assignments_caregiver_idTocaregivers: {
                                 include: {
                                     users: { select: { name: true } },
                                 },
@@ -99,7 +99,7 @@ export class JobsService {
                 companies: true,
                 assignments: {
                     include: {
-                        caregivers: {
+                        caregivers_assignments_caregiver_idTocaregivers: {
                             include: {
                                 users: { select: { name: true, phone: true } },
                             },
@@ -121,8 +121,8 @@ export class JobsService {
             const company = await this.prisma.companies.findUnique({ where: { userId } });
             if (!company || company.id !== job.company_id) {
                 // Also allow caregiver assigned to this job
-                const isAssigned = job.assignments.some(a =>
-                    a.caregivers.userId === userId
+                const isAssigned = job.assignments.some((a: any) =>
+                    a.caregivers_assignments_caregiver_idTocaregivers?.userId === userId
                 );
                 if (!isAssigned) {
                     throw new ForbiddenException('Access denied');

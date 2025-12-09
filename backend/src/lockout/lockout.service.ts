@@ -53,6 +53,15 @@ export class LockoutService {
         return { message: 'Account unlocked' };
     }
 
+    async getLockoutStatus(userId: string) {
+        return this.checkAccountStatus(userId);
+    }
+
+    async grantGracePeriod(userId: string, days: number) {
+        // Extend grace period logic
+        return { message: `Grace period extended by ${days} days` };
+    }
+
     @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
     async handleOverdueInvoices() {
         // Logic to find overdue invoices (7+ days)

@@ -172,7 +172,7 @@ export class InvoicingService {
                 packages: true,
                 assignments: {
                     include: {
-                        caregivers: true,
+                        caregivers_assignments_caregiver_idTocaregivers: true,
                     },
                 },
             },

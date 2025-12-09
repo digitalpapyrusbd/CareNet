@@ -42,7 +42,7 @@ export class NotificationsService {
         };
     }
 
-    async markAsRead(id: string) {
+    async markAsRead(id: string, userId?: string) {
         await this.prisma.notifications.update({
             where: { id },
             data: {
@@ -52,5 +52,17 @@ export class NotificationsService {
         });
 
         return { message: 'Notification marked as read' };
+    }
+
+    async markAllAsRead(userId: string) {
+        await this.prisma.notifications.updateMany({
+            where: { userId, read_at: null },
+            data: {
+                status: NotificationStatus.READ,
+                read_at: new Date()
+            },
+        });
+
+        return { message: 'All notifications marked as read' };
     }
 }

@@ -3,6 +3,19 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { FilesService } from './files.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
+// Fix for Express.Multer.File type
+interface MulterFile {
+    fieldname: string;
+    originalname: string;
+    encoding: string;
+    mimetype: string;
+    size: number;
+    destination: string;
+    filename: string;
+    path: string;
+    buffer: Buffer;
+}
+
 @Controller('files')
 export class FilesController {
     constructor(private readonly filesService: FilesService) { }
@@ -11,7 +24,7 @@ export class FilesController {
     @UseInterceptors(FileInterceptor('file'))
     uploadFile(
         @CurrentUser('id') userId: string,
-        @UploadedFile() file: Express.Multer.File,
+        @UploadedFile() file: MulterFile,
     ) {
         return this.filesService.uploadFile(userId, file);
     }
