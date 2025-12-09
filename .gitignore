@@ -1,0 +1,163 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+.nyc_output/
+*.lcov
+
+# Production builds
+dist/
+build/
+.next/
+out/
+.nuxt/
+.cache/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+backend/.env
+*.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*~
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+prisma/dev.db
+backend/prisma/dev.db
+
+# Prisma generated
+prisma/generated/
+backend/prisma/generated/
+/generated/
+
+# TypeScript
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# DO_NOT_COMMIT folder (explicitly excluded)
+DO_NOT_COMMIT/
+
+# PowerShell scripts (temporary deployment/fix scripts)
+*.ps1
+
+# IDE workspace files
+*.code-workspace
+
+# Markdown files (exclude all .md except README.md files)
+*.md
+!README.md
+!**/README.md
+
+# Caregiver folder (excluded)
+Caregiver/
+
+# Resources folder
+Resources/
+
+# Test results and test files
+test-results/
+tests/
+__tests__/
+__mocks__/
+
+# Cache
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+.next/cache/
+.swc/
+
+# Source maps (production builds)
+*.map
+*.js.map
+*.css.map
+
+# Playwright
+playwright-report/
+playwright/.cache/
+test-results/
+playwright-results/
+
+# Lighthouse reports
+.lighthouse/
+lighthouse-report.html
+lighthouse-report.json
+
+# Storybook
+storybook-static/
+.out/
+
+# Sentry
+.sentryclirc
+.sentry/
+
+# Husky (if you want to exclude git hooks)
+.husky/_/
+
+# Vercel
+.vercel
+.vercel/output/
+
+# Netlify
+.netlify/
+.netlify.toml
+
+# Docker (optional - uncomment if you don't want Docker files)
+# docker-compose*.yml
+# Dockerfile*
+# .dockerignore
+
+# Misc
+*.pem
+*.key
+*.cert
+.turbo
+.swc/
