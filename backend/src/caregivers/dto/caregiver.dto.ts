@@ -1,74 +1,74 @@
 import {
-    IsString,
-    IsDateString,
-    IsEnum,
-    IsOptional,
-    IsArray,
-    IsNumber,
-    IsDecimal,
+  IsString,
+  IsDateString,
+  IsEnum,
+  IsOptional,
+  IsArray,
+  IsNumber,
+  IsDecimal,
 } from 'class-validator';
 import { Gender } from '@prisma/client';
 
 export class CreateCaregiverDto {
-    @IsString()
-    nid: string;
+  @IsString()
+  nid: string;
 
-    @IsString()
-    nid_url: string;
+  @IsString()
+  nid_url: string;
 
-    @IsString()
-    photo_url: string;
+  @IsString()
+  photo_url: string;
 
-    @IsDateString()
-    date_of_birth: string;
+  @IsDateString()
+  date_of_birth: string;
 
-    @IsEnum(Gender)
-    gender: Gender;
+  @IsEnum(Gender)
+  gender: Gender;
 
-    @IsString()
-    address: string;
+  @IsString()
+  address: string;
 
-    @IsArray()
-    skills: string[];
+  @IsArray()
+  skills: string[];
 
-    @IsArray()
-    @IsOptional()
-    certifications?: any[];
+  @IsArray()
+  @IsOptional()
+  certifications?: any[];
 
-    @IsNumber()
-    @IsOptional()
-    experience_years?: number;
+  @IsNumber()
+  @IsOptional()
+  experience_years?: number;
 
-    @IsArray()
-    @IsOptional()
-    languages?: string[];
+  @IsArray()
+  @IsOptional()
+  languages?: string[];
 
-    @IsDecimal()
-    @IsOptional()
-    hourly_rate?: number;
+  @IsDecimal()
+  @IsOptional()
+  hourly_rate?: number;
 }
 
 export class UpdateCaregiverDto {
-    @IsString()
-    @IsOptional()
-    address?: string;
+  @IsString()
+  @IsOptional()
+  address?: string;
 
-    @IsArray()
-    @IsOptional()
-    skills?: string[];
+  @IsArray()
+  @IsOptional()
+  skills?: string[];
 
-    @IsArray()
-    @IsOptional()
-    certifications?: any[];
+  @IsArray()
+  @IsOptional()
+  certifications?: any[];
 
-    @IsNumber()
-    @IsOptional()
-    experience_years?: number;
+  @IsNumber()
+  @IsOptional()
+  experience_years?: number;
 
-    @IsDecimal()
-    @IsOptional()
-    hourly_rate?: number;
+  @IsDecimal()
+  @IsOptional()
+  hourly_rate?: number;
 
-    @IsOptional()
-    availabilityCalendar?: any;
+  @IsOptional()
+  availabilityCalendar?: any;
 }

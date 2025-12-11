@@ -4,9 +4,9 @@ import { UsersController } from './users.controller';
 import { CommonModule } from '../common/common.module';
 
 @Module({
-    imports: [CommonModule],
-    controllers: [UsersController],
-    providers: [UsersService],
-    exports: [UsersService],
+  imports: [CommonModule],
+  controllers: [UsersController],
+  providers: [UsersService],
+  exports: [UsersService],
 })
-export class UsersModule { }
+export class UsersModule {}

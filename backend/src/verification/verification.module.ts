@@ -4,9 +4,9 @@ import { VerificationController } from './verification.controller';
 import { CommonModule } from '../common/common.module';
 
 @Module({
-    imports: [CommonModule],
-    controllers: [VerificationController],
-    providers: [VerificationService],
-    exports: [VerificationService],
+  imports: [CommonModule],
+  controllers: [VerificationController],
+  providers: [VerificationService],
+  exports: [VerificationService],
 })
-export class VerificationModule { }
+export class VerificationModule {}

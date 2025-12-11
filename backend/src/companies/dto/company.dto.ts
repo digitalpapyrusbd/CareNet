@@ -1,103 +1,103 @@
 import {
-    IsString,
-    IsEmail,
-    IsOptional,
-    IsEnum,
-    IsDecimal,
-    IsArray,
+  IsString,
+  IsEmail,
+  IsOptional,
+  IsEnum,
+  IsDecimal,
+  IsArray,
 } from 'class-validator';
 import { PayoutMethod, SubscriptionTier } from '@prisma/client';
 
 export class CreateCompanyDto {
-    @IsString()
-    company_name: string;
+  @IsString()
+  company_name: string;
 
-    @IsString()
-    trade_license: string;
+  @IsString()
+  trade_license: string;
 
-    @IsString()
-    @IsOptional()
-    trade_license_url?: string;
+  @IsString()
+  @IsOptional()
+  trade_license_url?: string;
 
-    @IsString()
-    @IsOptional()
-    tin?: string;
+  @IsString()
+  @IsOptional()
+  tin?: string;
 
-    @IsString()
-    contact_person: string;
+  @IsString()
+  contact_person: string;
 
-    @IsString()
-    contact_phone: string;
+  @IsString()
+  contact_phone: string;
 
-    @IsEmail()
-    @IsOptional()
-    contact_email?: string;
+  @IsEmail()
+  @IsOptional()
+  contact_email?: string;
 
-    @IsString()
-    address: string;
+  @IsString()
+  address: string;
 
-    @IsString()
-    @IsOptional()
-    logo_url?: string;
+  @IsString()
+  @IsOptional()
+  logo_url?: string;
 
-    @IsString()
-    @IsOptional()
-    description?: string;
+  @IsString()
+  @IsOptional()
+  description?: string;
 
-    @IsArray()
-    @IsOptional()
-    specializations?: string[];
+  @IsArray()
+  @IsOptional()
+  specializations?: string[];
 
-    @IsEnum(PayoutMethod)
-    payout_method: PayoutMethod;
+  @IsEnum(PayoutMethod)
+  payout_method: PayoutMethod;
 
-    @IsString()
-    payout_account: string;
+  @IsString()
+  payout_account: string;
 }
 
 export class UpdateCompanyDto {
-    @IsString()
-    @IsOptional()
-    company_name?: string;
+  @IsString()
+  @IsOptional()
+  company_name?: string;
 
-    @IsString()
-    @IsOptional()
-    contact_person?: string;
+  @IsString()
+  @IsOptional()
+  contact_person?: string;
 
-    @IsString()
-    @IsOptional()
-    contact_phone?: string;
+  @IsString()
+  @IsOptional()
+  contact_phone?: string;
 
-    @IsEmail()
-    @IsOptional()
-    contact_email?: string;
+  @IsEmail()
+  @IsOptional()
+  contact_email?: string;
 
-    @IsString()
-    @IsOptional()
-    address?: string;
+  @IsString()
+  @IsOptional()
+  address?: string;
 
-    @IsString()
-    @IsOptional()
-    logo_url?: string;
+  @IsString()
+  @IsOptional()
+  logo_url?: string;
 
-    @IsString()
-    @IsOptional()
-    description?: string;
+  @IsString()
+  @IsOptional()
+  description?: string;
 
-    @IsArray()
-    @IsOptional()
-    specializations?: string[];
+  @IsArray()
+  @IsOptional()
+  specializations?: string[];
 
-    @IsEnum(PayoutMethod)
-    @IsOptional()
-    payout_method?: PayoutMethod;
+  @IsEnum(PayoutMethod)
+  @IsOptional()
+  payout_method?: PayoutMethod;
 
-    @IsString()
-    @IsOptional()
-    payout_account?: string;
+  @IsString()
+  @IsOptional()
+  payout_account?: string;
 }
 
 export class VerifyCompanyDto {
-    @IsString()
-    verification_notes: string;
+  @IsString()
+  verification_notes: string;
 }

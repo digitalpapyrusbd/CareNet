@@ -1,63 +1,71 @@
-import { IsString, IsEnum, IsNumber, IsArray, IsOptional, IsDecimal, IsBoolean } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsNumber,
+  IsArray,
+  IsOptional,
+  IsDecimal,
+  IsBoolean,
+} from 'class-validator';
 import { PackageCategory } from '@prisma/client';
 
 export class CreatePackageDto {
-    @IsString()
-    name: string;
+  @IsString()
+  name: string;
 
-    @IsString()
-    description: string;
+  @IsString()
+  description: string;
 
-    @IsEnum(PackageCategory)
-    category: PackageCategory;
+  @IsEnum(PackageCategory)
+  category: PackageCategory;
 
-    @IsDecimal()
-    price: number;
+  @IsDecimal()
+  price: number;
 
-    @IsNumber()
-    duration_days: number;
+  @IsNumber()
+  duration_days: number;
 
-    @IsNumber()
-    hours_per_day: number;
+  @IsNumber()
+  hours_per_day: number;
 
-    @IsArray()
-    inclusions: string[];
+  @IsArray()
+  inclusions: string[];
 
-    @IsArray()
-    @IsOptional()
-    exclusions?: string[];
+  @IsArray()
+  @IsOptional()
+  exclusions?: string[];
 
-    @IsNumber()
-    @IsOptional()
-    caregiver_count?: number;
+  @IsNumber()
+  @IsOptional()
+  caregiver_count?: number;
 
-    @IsNumber()
-    @IsOptional()
-    min_advance_days?: number;
+  @IsNumber()
+  @IsOptional()
+  min_advance_days?: number;
 }
 
 export class UpdatePackageDto {
-    @IsString()
-    @IsOptional()
-    name?: string;
+  @IsString()
+  @IsOptional()
+  name?: string;
 
-    @IsString()
-    @IsOptional()
-    description?: string;
+  @IsString()
+  @IsOptional()
+  description?: string;
 
-    @IsDecimal()
-    @IsOptional()
-    price?: number;
+  @IsDecimal()
+  @IsOptional()
+  price?: number;
 
-    @IsArray()
-    @IsOptional()
-    inclusions?: string[];
+  @IsArray()
+  @IsOptional()
+  inclusions?: string[];
 
-    @IsArray()
-    @IsOptional()
-    exclusions?: string[];
+  @IsArray()
+  @IsOptional()
+  exclusions?: string[];
 
-    @IsBoolean()
-    @IsOptional()
-    is_active?: boolean;
+  @IsBoolean()
+  @IsOptional()
+  is_active?: boolean;
 }

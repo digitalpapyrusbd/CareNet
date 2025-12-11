@@ -4,9 +4,9 @@ import { CaregiversController } from './caregivers.controller';
 import { CommonModule } from '../common/common.module';
 
 @Module({
-    imports: [CommonModule],
-    controllers: [CaregiversController],
-    providers: [CaregiversService],
-    exports: [CaregiversService],
+  imports: [CommonModule],
+  controllers: [CaregiversController],
+  providers: [CaregiversService],
+  exports: [CaregiversService],
 })
-export class CaregiversModule { }
+export class CaregiversModule {}

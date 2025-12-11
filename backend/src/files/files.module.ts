@@ -4,9 +4,9 @@ import { FilesController } from './files.controller';
 import { CommonModule } from '../common/common.module';
 
 @Module({
-    imports: [CommonModule],
-    controllers: [FilesController],
-    providers: [FilesService],
-    exports: [FilesService],
+  imports: [CommonModule],
+  controllers: [FilesController],
+  providers: [FilesService],
+  exports: [FilesService],
 })
-export class FilesModule { }
+export class FilesModule {}

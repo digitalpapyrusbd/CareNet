@@ -4,9 +4,9 @@ import { NegotiationsController } from './negotiations.controller';
 import { CommonModule } from '../common/common.module';
 
 @Module({
-    imports: [CommonModule],
-    controllers: [NegotiationsController],
-    providers: [NegotiationsService],
-    exports: [NegotiationsService],
+  imports: [CommonModule],
+  controllers: [NegotiationsController],
+  providers: [NegotiationsService],
+  exports: [NegotiationsService],
 })
-export class NegotiationsModule { }
+export class NegotiationsModule {}

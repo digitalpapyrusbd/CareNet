@@ -5,23 +5,23 @@ import { UserRole } from '@prisma/client';
 
 @Controller('analytics')
 export class AnalyticsController {
-    constructor(private readonly analyticsService: AnalyticsService) { }
+  constructor(private readonly analyticsService: AnalyticsService) {}
 
-    @Get('platform')
-    @Roles(UserRole.SUPER_ADMIN, UserRole.PLATFORM_ADMIN)
-    getPlatformStats() {
-        return this.analyticsService.getPlatformStats();
-    }
+  @Get('platform')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.PLATFORM_ADMIN)
+  getPlatformStats() {
+    return this.analyticsService.getPlatformStats();
+  }
 
-    @Get('company/:id')
-    @Roles(UserRole.AGENCY_ADMIN, UserRole.AGENCY_MANAGER, UserRole.SUPER_ADMIN)
-    getCompanyAnalytics(@Param('id') id: string) {
-        return this.analyticsService.getCompanyAnalytics(id);
-    }
+  @Get('company/:id')
+  @Roles(UserRole.AGENCY_ADMIN, UserRole.AGENCY_MANAGER, UserRole.SUPER_ADMIN)
+  getCompanyAnalytics(@Param('id') id: string) {
+    return this.analyticsService.getCompanyAnalytics(id);
+  }
 
-    @Get('revenue')
-    @Roles(UserRole.SUPER_ADMIN, UserRole.PLATFORM_ADMIN)
-    getRevenueBreakdown() {
-        return this.analyticsService.getRevenueBreakdown();
-    }
+  @Get('revenue')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.PLATFORM_ADMIN)
+  getRevenueBreakdown() {
+    return this.analyticsService.getRevenueBreakdown();
+  }
 }

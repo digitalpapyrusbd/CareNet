@@ -4,9 +4,9 @@ import { SubscriptionsController } from './subscriptions.controller';
 import { CommonModule } from '../common/common.module';
 
 @Module({
-    imports: [CommonModule],
-    controllers: [SubscriptionsController],
-    providers: [SubscriptionsService],
-    exports: [SubscriptionsService],
+  imports: [CommonModule],
+  controllers: [SubscriptionsController],
+  providers: [SubscriptionsService],
+  exports: [SubscriptionsService],
 })
-export class SubscriptionsModule { }
+export class SubscriptionsModule {}

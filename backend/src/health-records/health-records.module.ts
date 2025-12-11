@@ -4,9 +4,9 @@ import { HealthRecordsController } from './health-records.controller';
 import { CommonModule } from '../common/common.module';
 
 @Module({
-    imports: [CommonModule],
-    controllers: [HealthRecordsController],
-    providers: [HealthRecordsService],
-    exports: [HealthRecordsService],
+  imports: [CommonModule],
+  controllers: [HealthRecordsController],
+  providers: [HealthRecordsService],
+  exports: [HealthRecordsService],
 })
-export class HealthRecordsModule { }
+export class HealthRecordsModule {}

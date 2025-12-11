@@ -4,9 +4,9 @@ import { FeedbackController } from './feedback.controller';
 import { CommonModule } from '../common/common.module';
 
 @Module({
-    imports: [CommonModule],
-    controllers: [FeedbackController],
-    providers: [FeedbackService],
-    exports: [FeedbackService],
+  imports: [CommonModule],
+  controllers: [FeedbackController],
+  providers: [FeedbackService],
+  exports: [FeedbackService],
 })
-export class FeedbackModule { }
+export class FeedbackModule {}

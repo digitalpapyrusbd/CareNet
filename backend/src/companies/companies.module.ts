@@ -4,9 +4,9 @@ import { CompaniesController } from './companies.controller';
 import { CommonModule } from '../common/common.module';
 
 @Module({
-    imports: [CommonModule],
-    controllers: [CompaniesController],
-    providers: [CompaniesService],
-    exports: [CompaniesService],
+  imports: [CommonModule],
+  controllers: [CompaniesController],
+  providers: [CompaniesService],
+  exports: [CompaniesService],
 })
-export class CompaniesModule { }
+export class CompaniesModule {}

@@ -5,9 +5,9 @@ import { MessagesGateway } from './gateway/messages.gateway';
 import { CommonModule } from '../common/common.module';
 
 @Module({
-    imports: [CommonModule],
-    controllers: [MessagesController],
-    providers: [MessagesService, MessagesGateway],
-    exports: [MessagesService],
+  imports: [CommonModule],
+  controllers: [MessagesController],
+  providers: [MessagesService, MessagesGateway],
+  exports: [MessagesService],
 })
-export class MessagesModule { }
+export class MessagesModule {}

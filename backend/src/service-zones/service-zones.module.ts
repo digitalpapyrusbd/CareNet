@@ -4,9 +4,9 @@ import { ServiceZonesController } from './service-zones.controller';
 import { CommonModule } from '../common/common.module';
 
 @Module({
-    imports: [CommonModule],
-    controllers: [ServiceZonesController],
-    providers: [ServiceZonesService],
-    exports: [ServiceZonesService],
+  imports: [CommonModule],
+  controllers: [ServiceZonesController],
+  providers: [ServiceZonesService],
+  exports: [ServiceZonesService],
 })
-export class ServiceZonesModule { }
+export class ServiceZonesModule {}

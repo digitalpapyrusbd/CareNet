@@ -1,76 +1,82 @@
-import { IsString, IsDateString, IsEnum, IsOptional, IsArray } from 'class-validator';
+import {
+  IsString,
+  IsDateString,
+  IsEnum,
+  IsOptional,
+  IsArray,
+} from 'class-validator';
 import { Gender, MobilityLevel, CognitiveStatus } from '@prisma/client';
 
 export class CreatePatientDto {
-    @IsString()
-    name: string;
+  @IsString()
+  name: string;
 
-    @IsDateString()
-    date_of_birth: string;
+  @IsDateString()
+  date_of_birth: string;
 
-    @IsEnum(Gender)
-    gender: Gender;
+  @IsEnum(Gender)
+  gender: Gender;
 
-    @IsString()
-    @IsOptional()
-    blood_group?: string;
+  @IsString()
+  @IsOptional()
+  blood_group?: string;
 
-    @IsString()
-    address: string;
+  @IsString()
+  address: string;
 
-    @IsString()
-    emergency_contact_name: string;
+  @IsString()
+  emergency_contact_name: string;
 
-    @IsString()
-    emergency_contact_phone: string;
+  @IsString()
+  emergency_contact_phone: string;
 
-    @IsArray()
-    @IsOptional()
-    primaryConditions?: string[];
+  @IsArray()
+  @IsOptional()
+  primaryConditions?: string[];
 
-    @IsString()
-    @IsOptional()
-    allergies?: string;
+  @IsString()
+  @IsOptional()
+  allergies?: string;
 
-    @IsEnum(MobilityLevel)
-    @IsOptional()
-    mobility_level?: MobilityLevel;
+  @IsEnum(MobilityLevel)
+  @IsOptional()
+  mobility_level?: MobilityLevel;
 
-    @IsEnum(CognitiveStatus)
-    @IsOptional()
-    cognitive_status?: CognitiveStatus;
+  @IsEnum(CognitiveStatus)
+  @IsOptional()
+  cognitive_status?: CognitiveStatus;
 
-    @IsString()
-    @IsOptional()
-    photoUrl?: string;
+  @IsString()
+  @IsOptional()
+  photoUrl?: string;
 }
 
 export class UpdatePatientDto {
-    @IsString()
-    @IsOptional()
-    address?: string;
+  @IsString()
+  @IsOptional()
+  address?: string;
 
-    @IsString()
-    @IsOptional()
-    emergency_contact_name?: string;
+  @IsString()
+  @IsOptional()
+  emergency_contact_name?: string;
 
-    @IsString()
-    @IsOptional()
-    emergency_contact_phone?: string;
+  @IsString()
+  @IsOptional()
+  emergency_contact_phone?: string;
 
-    @IsArray()
-    @IsOptional()
-    primaryConditions?: string[];
+  @IsArray()
+  @IsOptional()
+  primaryConditions?: string[];
 
-    @IsString()
-    @IsOptional()
-    allergies?: string;
+  @IsString()
+  @IsOptional()
+  allergies?: string;
 
-    @IsEnum(MobilityLevel)
-    @IsOptional()
-    mobility_level?: MobilityLevel;
+  @IsEnum(MobilityLevel)
+  @IsOptional()
+  mobility_level?: MobilityLevel;
 
-    @IsEnum(CognitiveStatus)
-    @IsOptional()
-    cognitive_status?: CognitiveStatus;
+  @IsEnum(CognitiveStatus)
+  @IsOptional()
+  cognitive_status?: CognitiveStatus;
 }

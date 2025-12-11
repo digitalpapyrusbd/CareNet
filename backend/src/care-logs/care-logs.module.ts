@@ -4,9 +4,9 @@ import { CareLogsController } from './care-logs.controller';
 import { CommonModule } from '../common/common.module';
 
 @Module({
-    imports: [CommonModule],
-    controllers: [CareLogsController],
-    providers: [CareLogsService],
-    exports: [CareLogsService],
+  imports: [CommonModule],
+  controllers: [CareLogsController],
+  providers: [CareLogsService],
+  exports: [CareLogsService],
 })
-export class CareLogsModule { }
+export class CareLogsModule {}

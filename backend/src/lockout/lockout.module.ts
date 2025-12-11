@@ -4,9 +4,9 @@ import { LockoutController } from './lockout.controller';
 import { CommonModule } from '../common/common.module';
 
 @Module({
-    imports: [CommonModule],
-    controllers: [LockoutController],
-    providers: [LockoutService],
-    exports: [LockoutService],
+  imports: [CommonModule],
+  controllers: [LockoutController],
+  providers: [LockoutService],
+  exports: [LockoutService],
 })
-export class LockoutModule { }
+export class LockoutModule {}

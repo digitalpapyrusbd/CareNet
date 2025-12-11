@@ -6,10 +6,13 @@ import { UserRole } from '@prisma/client';
 @Controller('audit')
 @Roles(UserRole.SUPER_ADMIN, UserRole.PLATFORM_ADMIN)
 export class AuditController {
-    constructor(private readonly auditService: AuditService) { }
+  constructor(private readonly auditService: AuditService) {}
 
-    @Get()
-    findAll(@Query() query: any) {
-        return this.auditService.findAll(query.page, query.limit);
-    }
+  @Get()
+  findAll(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '20',
+  ) {
+    return this.auditService.findAll(+page, +limit);
+  }
 }

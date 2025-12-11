@@ -51,10 +51,12 @@ import { ServiceZonesModule } from './service-zones/service-zones.module';
     }),
 
     // Rate Limiting
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 100,
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100,
+      },
+    ]),
 
     // Cron Jobs
     ScheduleModule.forRoot(),
@@ -99,10 +101,4 @@ import { ServiceZonesModule } from './service-zones/service-zones.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
-
-
-
-
-
-
+export class AppModule {}

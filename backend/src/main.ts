@@ -32,10 +32,7 @@ async function bootstrap() {
   );
 
   // Global filters
-  app.useGlobalFilters(
-    new HttpExceptionFilter(),
-    new PrismaExceptionFilter(),
-  );
+  app.useGlobalFilters(new HttpExceptionFilter(), new PrismaExceptionFilter());
 
   // Global interceptors
   const reflector = app.get(Reflector);
@@ -45,10 +42,7 @@ async function bootstrap() {
   );
 
   // Global guards (JWT auth will be applied globally, but can be bypassed with @Public())
-  app.useGlobalGuards(
-    new JwtAuthGuard(reflector),
-    new RolesGuard(reflector),
-  );
+  app.useGlobalGuards(new JwtAuthGuard(reflector), new RolesGuard(reflector));
 
   const port = process.env.PORT || 4000;
   await app.listen(port, '0.0.0.0');
