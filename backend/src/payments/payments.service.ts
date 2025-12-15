@@ -1,162 +1,233 @@
-import { Injectable } from '@nestjs/common';
-import { BkashService } from './providers/bkash.service';
-import { NagadService } from './providers/nagad.service';
-import { EscrowService } from './escrow/escrow.service';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
-
-export type CreatePaymentDto = {
-  job_id?: string;
-  package_id?: string;
-  payment_method: 'BKASH' | 'NAGAD';
-  amount: number;
-  currency?: string;
-  reference?: string;
-};
-
-export type RefundPaymentDto = {
-  transactionId: string;
-  amount?: number;
-  reason?: string;
-};
+import {
+  CreatePaymentDto,
+  ProcessPaymentDto,
+  RefundPaymentDto,
+} from './dto/payment.dto';
+import { PaymentStatus, PaymentMethod } from '@prisma/client';
 
 @Injectable()
 export class PaymentsService {
-  constructor(
-    private bkashService: BkashService,
-    private nagadService: NagadService,
-    private escrowService: EscrowService,
-    private prisma: PrismaService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
-  async createPayment(dto: CreatePaymentDto, userId?: string) {
-    const provider = dto.payment_method.toLowerCase() as 'bkash' | 'nagad';
-    const reference = dto.job_id || dto.package_id || dto.reference || 'payment';
-
-    let paymentUrl: string;
-    let transactionId: string;
-
-    if (provider === 'bkash') {
-      const result = await this.bkashService.createCheckout({
-        amount: dto.amount,
-        currency: dto.currency || 'BDT',
-        reference,
-      });
-      paymentUrl = result.checkoutUrl;
-      transactionId = result.transactionId;
-    } else if (provider === 'nagad') {
-      const result = await this.nagadService.createCheckout({
-        amount: dto.amount,
-        currency: dto.currency || 'BDT',
-        reference,
-      });
-      paymentUrl = result.checkoutUrl;
-      transactionId = result.transactionId;
-    } else {
-      throw new Error('Invalid payment provider');
-    }
-
-    // Store payment in database
-    // Only include job_id if it's a valid cuid (not 'test-job-id' or similar)
-    const jobIdToUse = dto.job_id && dto.job_id.startsWith('cm') ? dto.job_id : null;
-    
-    const payment = await this.prisma.payments.create({
-      data: {
-        job_id: jobIdToUse,
-        payer_id: userId || 'system', // Use authenticated user ID
-        amount: dto.amount,
-        method: dto.payment_method,
-        transaction_id: transactionId,
-        status: 'PENDING',
-        invoice_number: `INV-${Date.now()}`,
-      },
+  /**
+   * Create a payment intent
+   */
+  async createPayment(userId: string, createPaymentDto: CreatePaymentDto) {
+    const job = await this.prisma.jobs.findUnique({
+      where: { id: createPaymentDto.job_id },
     });
 
-    return {
-      statusCode: 201,
-      message: 'Payment initiated successfully',
-      data: {
-        payment_url: paymentUrl,
-        transaction_id: transactionId,
-        amount: dto.amount,
-        currency: dto.currency || 'BDT',
-      },
-    };
-  }
-
-  async verifyPayment(provider: 'bkash' | 'nagad', transactionId: string) {
-    if (provider === 'bkash') {
-      return this.bkashService.verifyPayment(transactionId);
-    } else if (provider === 'nagad') {
-      return this.nagadService.verifyPayment(transactionId);
-    } else {
-      throw new Error('Invalid payment provider');
+    if (!job) {
+      throw new NotFoundException('Job not found');
     }
-  }
 
-  async getTransaction(transactionId: string) {
-    // Try both providers
-    const bkashTx = await this.bkashService.getTransaction(transactionId);
-    if (bkashTx) return { ...bkashTx, provider: 'bkash' };
-
-    const nagadTx = await this.nagadService.getTransaction(transactionId);
-    if (nagadTx) return { ...nagadTx, provider: 'nagad' };
-
-    return null;
-  }
-
-  async listTransactions(provider?: 'bkash' | 'nagad') {
-    if (provider === 'bkash') {
-      return this.bkashService.listTransactions();
-    } else if (provider === 'nagad') {
-      return this.nagadService.listTransactions();
-    } else {
-      // Return all
-      const bkashTxs = await this.bkashService.listTransactions();
-      const nagadTxs = await this.nagadService.listTransactions();
-      return [...bkashTxs, ...nagadTxs].sort(
-        (a, b) => b.created_at.getTime() - a.created_at.getTime(),
+    if (job.guardian_id !== userId) {
+      throw new BadRequestException(
+        'You are not authorized to pay for this job',
       );
     }
-  }
 
-  async refundPayment(dto: RefundPaymentDto) {
-    const tx = await this.getTransaction(dto.transactionId);
-    if (!tx) {
-      throw new Error('Transaction not found');
-    }
+    // Generate invoice number
+    const invoiceNumber = `INV-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
-    if (tx.escrow_id) {
-      await this.escrowService.refundEscrow(tx.escrow_id, dto.amount);
-    }
-
-    // Update provider transaction status
-    await this.prisma.provider_transactions.update({
-      where: { provider_tx_id: dto.transactionId },
-      data: { status: 'REFUNDED' },
-    });
-
-    await this.prisma.transaction_logs.create({
+    const payment = await this.prisma.payments.create({
       data: {
-        provider_transaction_id: tx.id,
-        action: 'REFUND',
-        previous_status: tx.status,
-        new_status: 'REFUNDED',
-        note: dto.reason || 'Refund processed',
+        job_id: createPaymentDto.job_id,
+        payer_id: userId,
+        amount: createPaymentDto.amount,
+        method: createPaymentDto.method,
+        transaction_id: `TXN-${Date.now()}`,
+        invoice_number: invoiceNumber,
+        status: PaymentStatus.PENDING,
       },
     });
 
+    // Create escrow
+    await this.prisma.escrows.create({
+      data: {
+        payment_id: payment.id,
+        amount: createPaymentDto.amount,
+        fee: createPaymentDto.amount * 0.05, // 5% platform fee
+        status: 'HELD',
+      },
+    });
+
+    return payment;
+  }
+
+  /**
+   * Process payment (webhook handler)
+   */
+  async processPayment(processPaymentDto: ProcessPaymentDto) {
+    const payment = await this.prisma.payments.findUnique({
+      where: { id: processPaymentDto.payment_id },
+    });
+
+    if (!payment) {
+      throw new NotFoundException('Payment not found');
+    }
+
+    const updatedPayment = await this.prisma.payments.update({
+      where: { id: processPaymentDto.payment_id },
+      data: {
+        status: PaymentStatus.COMPLETED,
+        paid_at: new Date(),
+        transaction_id:
+          processPaymentDto.transaction_id || payment.transaction_id,
+        gatewayResponse: processPaymentDto.gateway_response,
+      },
+    });
+
+    return updatedPayment;
+  }
+
+  /**
+   * Get payment by ID
+   */
+  async findOne(id: string, userId: string) {
+    const payment = await this.prisma.payments.findUnique({
+      where: { id },
+      include: {
+        jobs: {
+          select: {
+            id: true,
+            guardian_id: true,
+            company_id: true,
+          },
+        },
+        escrows: true,
+      },
+    });
+
+    if (!payment) {
+      throw new NotFoundException('Payment not found');
+    }
+
+    // Check authorization
+    if (payment.payer_id !== userId && payment.jobs.guardian_id !== userId) {
+      throw new BadRequestException('Unauthorized access to payment');
+    }
+
+    return payment;
+  }
+
+  /**
+   * Get user's payments
+   */
+  async getUserPayments(userId: string, page: number = 1, limit: number = 20) {
+    const skip = (page - 1) * limit;
+
+    const [payments, total] = await Promise.all([
+      this.prisma.payments.findMany({
+        where: { payer_id: userId },
+        skip,
+        take: limit,
+        include: {
+          jobs: {
+            select: {
+              id: true,
+              packages: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { created_at: 'desc' },
+      }),
+      this.prisma.payments.count({ where: { payer_id: userId } }),
+    ]);
+
     return {
-      transactionId: dto.transactionId,
-      refundedAmount: dto.amount || Number(tx.amount as any),
-      status: 'REFUNDED',
+      data: payments,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
 
-  async getEscrow(escrowId: string) {
-    return this.escrowService.getEscrow(escrowId);
+  /**
+   * Refund payment (Admin only)
+   */
+  async refundPayment(paymentId: string, refundDto: RefundPaymentDto) {
+    const payment = await this.prisma.payments.findUnique({
+      where: { id: paymentId },
+    });
+
+    if (!payment) {
+      throw new NotFoundException('Payment not found');
+    }
+
+    if (payment.status !== PaymentStatus.COMPLETED) {
+      throw new BadRequestException('Only completed payments can be refunded');
+    }
+
+    const updatedPayment = await this.prisma.payments.update({
+      where: { id: paymentId },
+      data: {
+        status: PaymentStatus.REFUNDED,
+        refund_amount: refundDto.amount,
+        refund_reason: refundDto.reason,
+      },
+    });
+
+    return updatedPayment;
   }
 
-  async listEscrows() {
-    return this.escrowService.listEscrows();
+  /**
+   * Release escrow (when job is completed)
+   */
+  async releaseEscrow(paymentId: string) {
+    const escrow = await this.prisma.escrows.findUnique({
+      where: { payment_id: paymentId },
+    });
+
+    if (!escrow) {
+      throw new NotFoundException('Escrow not found');
+    }
+
+    const updatedEscrow = await this.prisma.escrows.update({
+      where: { payment_id: paymentId },
+      data: {
+        status: 'RELEASED',
+        released_at: new Date(),
+      },
+    });
+
+    return updatedEscrow;
+  }
+
+  /**
+   * Webhook handler for payment gateways
+   */
+  async handleWebhook(provider: string, payload: any) {
+    // This would handle webhooks from bKash, Nagad, etc.
+    // Implementation depends on specific gateway requirements
+
+    console.log(`Webhook received from ${provider}:`, payload);
+
+    // Process the webhook based on provider
+    if (provider === 'bkash') {
+      return this.handleBkashWebhook(payload);
+    } else if (provider === 'nagad') {
+      return this.handleNagadWebhook(payload);
+    }
+
+    return { success: true };
+  }
+
+  private async handleBkashWebhook(payload: any) {
+    // bKash-specific webhook handling
+    return { success: true };
+  }
+
+  private async handleNagadWebhook(payload: any) {
+    // Nagad-specific webhook handling
+    return { success: true };
   }
 }

@@ -1,105 +1,362 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import {
-  PayoutMethod,
-  SubscriptionTier,
-  type companies as CompanyEntity,
-} from '@prisma/client';
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
-import { CreateCompanyDto } from './dto/create-company.dto';
-import { VerifyCompanyDto } from './dto/verify-company.dto';
+import {
+  CreateCompanyDto,
+  UpdateCompanyDto,
+  VerifyCompanyDto,
+} from './dto/company.dto';
+import { UserRole } from '@prisma/client';
 
 @Injectable()
 export class CompaniesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) {}
 
-  async upsertProfile(userId: string, dto: CreateCompanyDto) {
-    if (!userId) {
-      throw new BadRequestException('Missing authenticated user');
-    }
-
-    const owner = await this.prisma.users.findUnique({ where: { id: userId } });
-    if (!owner) {
-      throw new NotFoundException('User not found');
-    }
-
-    const timestamp = Date.now();
-    const payload = {
-      company_name: dto.name,
-      trade_license: dto.license_number,
-      trade_license_url: 'https://placeholder.caregiver.com/license.pdf',
-      tin: `TIN-${timestamp}`,
-      contact_person: owner.name,
-      contact_phone: dto.contact_phone,
-      contact_email:
-        dto.contact_email ?? owner.email ?? `company-${timestamp}@example.com`,
-      address: dto.address,
-      description: dto.description,
-      specializations: dto.service_areas ?? [],
-      payout_method: PayoutMethod.BKASH,
-      payout_account: `BKASH-${timestamp}`,
-    };
-
-    const company = await this.prisma.companies.upsert({
+  /**
+   * Create a new company (Agency)
+   */
+  async create(userId: string, createCompanyDto: CreateCompanyDto) {
+    // Check if user already has a company
+    const existingCompany = await this.prisma.companies.findUnique({
       where: { userId },
-      update: payload,
-      create: {
-        ...payload,
+    });
+
+    if (existingCompany) {
+      throw new BadRequestException('User already has a company registered');
+    }
+
+    // Update user role to AGENCY_ADMIN
+    await this.prisma.users.update({
+      where: { id: userId },
+      data: { role: UserRole.AGENCY_ADMIN },
+    });
+
+    const company = await this.prisma.companies.create({
+      data: {
         userId,
-        subscription_tier: SubscriptionTier.STARTER,
+        ...createCompanyDto,
+        specializations: createCompanyDto.specializations || [],
+      },
+      include: {
+        users: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+            email: true,
+          },
+        },
       },
     });
 
+    return company;
+  }
+
+  /**
+   * Get all companies with filters
+   */
+  async findAll(
+    page: number = 1,
+    limit: number = 20,
+    isVerified?: boolean,
+    search?: string,
+  ) {
+    const skip = (page - 1) * limit;
+
+    const where: Prisma.companiesWhereInput = { deleted_at: null };
+
+    if (isVerified !== undefined) {
+      where.is_verified = isVerified;
+    }
+
+    if (search) {
+      where.OR = [
+        { company_name: { contains: search, mode: 'insensitive' } },
+        { contact_person: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    const [companies, total] = await Promise.all([
+      this.prisma.companies.findMany({
+        where,
+        skip,
+        take: limit,
+        select: {
+          id: true,
+          company_name: true,
+          logo_url: true,
+          description: true,
+          address: true,
+          specializations: true,
+          rating_avg: true,
+          rating_count: true,
+          is_verified: true,
+          created_at: true,
+        },
+        orderBy: { created_at: 'desc' },
+      }),
+      this.prisma.companies.count({ where }),
+    ]);
+
     return {
-      statusCode: 201,
-      message: 'Company profile saved',
-      data: this.transformCompany(company),
+      data: companies,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
     };
   }
 
-  async listCompanies() {
-    const companies = await this.prisma.companies.findMany({
-      orderBy: { created_at: 'desc' },
+  /**
+   * Get company by ID
+   */
+  async findOne(id: string) {
+    const company = await this.prisma.companies.findUnique({
+      where: { id },
+      include: {
+        users: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+            email: true,
+          },
+        },
+        service_zones: true,
+        _count: {
+          select: {
+            caregivers: true,
+            packages: true,
+            jobs: true,
+          },
+        },
+      },
     });
 
-    return {
-      statusCode: 200,
-      message: 'Companies retrieved successfully',
-      data: companies.map((company) => this.transformCompany(company)),
-    };
+    if (!company || company.deleted_at) {
+      throw new NotFoundException('Company not found');
+    }
+
+    return company;
   }
 
-  async verifyCompany(id: string, dto: VerifyCompanyDto) {
-    const company = await this.prisma.companies.findUnique({ where: { id } });
+  /**
+   * Get company by user ID
+   */
+  async findByUserId(userId: string) {
+    const company = await this.prisma.companies.findUnique({
+      where: { userId },
+      include: {
+        service_zones: true,
+        _count: {
+          select: {
+            caregivers: true,
+            packages: true,
+            jobs: true,
+          },
+        },
+      },
+    });
+
+    if (!company || company.deleted_at) {
+      throw new NotFoundException('Company not found');
+    }
+
+    return company;
+  }
+
+  /**
+   * Update company
+   */
+  async update(
+    id: string,
+    userId: string,
+    userRole: UserRole,
+    updateCompanyDto: UpdateCompanyDto,
+  ) {
+    const company = await this.prisma.companies.findUnique({
+      where: { id },
+    });
+
+    if (!company || company.deleted_at) {
+      throw new NotFoundException('Company not found');
+    }
+
+    // Only company owner or admin can update
+    if (
+      company.userId !== userId &&
+      userRole !== UserRole.SUPER_ADMIN &&
+      userRole !== UserRole.PLATFORM_ADMIN
+    ) {
+      throw new ForbiddenException(
+        'You do not have permission to update this company',
+      );
+    }
+
+    const updatedCompany = await this.prisma.companies.update({
+      where: { id },
+      data: updateCompanyDto,
+    });
+
+    return updatedCompany;
+  }
+
+  /**
+   * Verify company (Admin only)
+   */
+  async verify(id: string, verifyCompanyDto: VerifyCompanyDto) {
+    const company = await this.prisma.companies.findUnique({
+      where: { id },
+    });
+
     if (!company) {
       throw new NotFoundException('Company not found');
     }
 
-    const isVerified = dto.verification_status === 'VERIFIED';
-    const updated = await this.prisma.companies.update({
+    const updatedCompany = await this.prisma.companies.update({
       where: { id },
       data: {
-        is_verified: isVerified,
-        verification_notes: dto.verification_notes,
+        is_verified: true,
+        verification_notes: verifyCompanyDto.verification_notes,
       },
     });
 
+    return updatedCompany;
+  }
+
+  /**
+   * Get company caregivers (roster)
+   */
+  async getCaregivers(id: string) {
+    const company = await this.prisma.companies.findUnique({
+      where: { id },
+    });
+
+    if (!company) {
+      throw new NotFoundException('Company not found');
+    }
+
+    const caregivers = await this.prisma.caregivers.findMany({
+      where: {
+        company_id: id,
+        deleted_at: null,
+      },
+      select: {
+        id: true,
+        users: {
+          select: {
+            name: true,
+            phone: true,
+          },
+        },
+        photo_url: true,
+        skills: true,
+        experience_years: true,
+        hourly_rate: true,
+        rating_avg: true,
+        rating_count: true,
+        is_available: true,
+        is_verified: true,
+      },
+    });
+
+    return caregivers;
+  }
+
+  /**
+   * Get company packages
+   */
+  async getPackages(id: string) {
+    const company = await this.prisma.companies.findUnique({
+      where: { id },
+    });
+
+    if (!company) {
+      throw new NotFoundException('Company not found');
+    }
+
+    const packages = await this.prisma.packages.findMany({
+      where: {
+        company_id: id,
+        is_active: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        category: true,
+        price: true,
+        duration_days: true,
+        hours_per_day: true,
+        inclusions: true,
+        exclusions: true,
+        caregiver_count: true,
+        created_at: true,
+      },
+      orderBy: { created_at: 'desc' },
+    });
+
+    return packages;
+  }
+
+  /**
+   * Get company statistics
+   */
+  async getStatistics(id: string) {
+    const [
+      totalCaregivers,
+      activeCaregivers,
+      totalPackages,
+      totalJobs,
+      completedJobs,
+    ] = await Promise.all([
+      this.prisma.caregivers.count({
+        where: { company_id: id, deleted_at: null },
+      }),
+      this.prisma.caregivers.count({
+        where: { company_id: id, is_available: true, deleted_at: null },
+      }),
+      this.prisma.packages.count({
+        where: { company_id: id, is_active: true },
+      }),
+      this.prisma.jobs.count({ where: { company_id: id } }),
+      this.prisma.jobs.count({
+        where: { company_id: id, status: 'COMPLETED' },
+      }),
+    ]);
+
     return {
-      statusCode: 200,
-      message: 'Company verification updated',
-      data: this.transformCompany(updated),
+      totalCaregivers,
+      activeCaregivers,
+      totalPackages,
+      totalJobs,
+      completedJobs,
     };
   }
 
-  private transformCompany(entity: CompanyEntity) {
-    return {
-      id: entity.id,
-      name: entity.company_name,
-      address: entity.address,
-      contact_phone: entity.contact_phone,
-      contact_email: entity.contact_email,
-      verification_status: entity.is_verified ? 'VERIFIED' : 'PENDING',
-      verification_notes: entity.verification_notes,
-      is_verified: entity.is_verified,
-    };
+  /**
+   * Soft delete company
+   */
+  async remove(id: string) {
+    const company = await this.prisma.companies.findUnique({
+      where: { id },
+    });
+
+    if (!company) {
+      throw new NotFoundException('Company not found');
+    }
+
+    await this.prisma.companies.update({
+      where: { id },
+      data: { deleted_at: new Date() },
+    });
+
+    return { message: 'Company deleted successfully' };
   }
 }

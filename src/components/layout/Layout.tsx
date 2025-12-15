@@ -1,9 +1,9 @@
 import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/Button';
-import { Navigation } from './Navigation';
-import { Sidebar } from './Sidebar';
+import { Button } from '@/components/ui/button';
+import Navigation from './Navigation';
+import Sidebar from './Sidebar';
 import { LanguageSwitcher, ThemeSwitcher } from '@/components/ui';
 
 interface LayoutProps {
@@ -102,57 +102,58 @@ const Layout: React.FC<LayoutProps> = ({
       </header>
 
       <div className="flex">
-          {/* Sidebar */}
-          {showSidebar && (
-            <aside className="w-64 bg-white dark:bg-gray-800 shadow-lg h-full">
-              <div className="flex h-full flex-col">
-                {/* Sidebar Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                  <h2 className="text-lg font-semibold text-gray-900">Menu</h2>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => document.getElementById('sidebar')?.classList.toggle('hidden')}
-                  >
-                    ×
-                  </Button>
-                </div>
-
-                {/* Sidebar Content */}
-                <div className="flex-1 overflow-y-auto">
-                  {sidebarContent || <Sidebar />}
-                </div>
+        {/* Sidebar */}
+        {showSidebar && (
+          <aside className="w-64 bg-white dark:bg-gray-800 shadow-lg h-full">
+            <div className="flex h-full flex-col">
+              {/* Sidebar Header */}
+              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                <h2 className="text-lg font-semibold text-gray-900">Menu</h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => document.getElementById('sidebar')?.classList.toggle('hidden')}
+                >
+                  ×
+                </Button>
               </div>
-            </aside>
-          )}
 
-          {/* Main Content */}
-          <main className="flex-1 p-6">
-            <div className="max-w-7xl mx-auto">
-              {children}
+              {/* Sidebar Content */}
+              <div className="flex-1 overflow-y-auto">
+                {sidebarContent || <Sidebar />}
+              </div>
             </div>
-          </main>
-        </div>
+          </aside>
+        )}
 
-        {/* Footer */}
-        <footer className="bg-white border-t border-gray-200 mt-auto">
-          <div className="max-w-7xl mx-auto px-4 py-6">
-            <div className="text-center text-sm text-gray-600">
-              <p>&copy; 2025 Caregiver Platform. All rights reserved.</p>
-              <div className="mt-2 flex justify-center space-x-4">
-                <Link href="/terms" className="text-gray-600 hover:text-gray-900">
-                  Terms of Service
-                </Link>
-                <span className="text-gray-400">|</span>
-                <Link href="/privacy" className="text-gray-600 hover:text-gray-900">
-                  Privacy Policy
-                </Link>
-              </div>
+        {/* Main Content */}
+        <main className="flex-1 p-6">
+          <div className="max-w-7xl mx-auto">
+            {children}
+          </div>
+        </main>
+      </div>
+
+      {/* Footer */}
+      <footer className="bg-white border-t border-gray-200 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="text-center text-sm text-gray-600">
+            <p>&copy; 2025 Caregiver Platform. All rights reserved.</p>
+            <div className="mt-2 flex justify-center space-x-4">
+              <Link href="/terms" className="text-gray-600 hover:text-gray-900">
+                Terms of Service
+              </Link>
+              <span className="text-gray-400">|</span>
+              <Link href="/privacy" className="text-gray-600 hover:text-gray-900">
+                Privacy Policy
+              </Link>
             </div>
           </div>
-        </footer>
-      </div>
+        </div>
+      </footer>
+    </div>
   );
 };
 
 export default Layout;
+export { Layout };

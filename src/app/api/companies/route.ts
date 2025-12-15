@@ -464,8 +464,9 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   }
 }
 
+// TODO: Move to /api/companies/[id]/packages/route.ts
 // POST /api/companies/[id]/packages - Create package for company
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+/* export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   // Check authentication and authorization
   const authResult = await authorizeResource('companies', 'write')(request);
   if (authResult) return authResult;
@@ -608,10 +609,11 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       { status: 500 }
     );
   }
-}
+} */
 
+// TODO: Move to /api/companies/[id]/service-zones/route.ts
 // POST /api/companies/[id]/service-zones - Create service zone for company
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+/* export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   // Check authentication and authorization
   const authResult = await authorizeResource('companies', 'write')(request);
   if (authResult) return authResult;
@@ -786,4 +788,4 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       { status: 500 }
     );
   }
-}
+} */

@@ -6,8 +6,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { escrowService } from '@/lib/escrow-service';
 import { z } from 'zod';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+// import { getServerSession } from 'next-auth';
+// import { authOptions } from '@/lib/auth';
 
 // Validation schemas
 const createEscrowSchema = z.object({

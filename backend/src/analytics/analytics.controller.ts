@@ -1,37 +1,27 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { AnalyticsService } from './analytics.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
+import { Roles } from '../common/decorators/roles.decorator';
+import { UserRole } from '@prisma/client';
 
 @Controller('analytics')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('SUPER_ADMIN', 'MODERATOR')
 export class AnalyticsController {
-  constructor(private analyticsService: AnalyticsService) {}
+  constructor(private readonly analyticsService: AnalyticsService) {}
 
-  @Get('overview')
-  async getOverview() {
-    return this.analyticsService.getOverview();
+  @Get('platform')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.PLATFORM_ADMIN)
+  getPlatformStats() {
+    return this.analyticsService.getPlatformStats();
   }
 
-  @Get('users')
-  async getUserMetrics() {
-    return this.analyticsService.getUserMetrics();
+  @Get('company/:id')
+  @Roles(UserRole.AGENCY_ADMIN, UserRole.AGENCY_MANAGER, UserRole.SUPER_ADMIN)
+  getCompanyAnalytics(@Param('id') id: string) {
+    return this.analyticsService.getCompanyAnalytics(id);
   }
 
   @Get('revenue')
-  async getRevenueMetrics() {
-    return this.analyticsService.getRevenueMetrics();
-  }
-
-  @Get('caregivers')
-  async getCaregiverPerformance() {
-    return this.analyticsService.getCaregiverPerformance();
-  }
-
-  @Get('companies')
-  async getCompanyPerformance() {
-    return this.analyticsService.getCompanyPerformance();
+  @Roles(UserRole.SUPER_ADMIN, UserRole.PLATFORM_ADMIN)
+  getRevenueBreakdown() {
+    return this.analyticsService.getRevenueBreakdown();
   }
 }

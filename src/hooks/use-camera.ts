@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 export interface CameraOptions {
   maxSize?: number; // Max file size in bytes (default: 2MB)
@@ -19,6 +19,7 @@ export function useCamera(options: CameraOptions = {}) {
   const [error, setError] = useState<string | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   const {
     maxSize = 2 * 1024 * 1024, // 2MB
@@ -26,12 +27,35 @@ export function useCamera(options: CameraOptions = {}) {
     facingMode = 'environment',
   } = options;
 
+  const stopCamera = useCallback(() => {
+    const activeStream = streamRef.current;
+
+    if (activeStream) {
+      activeStream.getTracks().forEach((track) => track.stop());
+    }
+
+    streamRef.current = null;
+    setStream(null);
+
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  }, []);
+
   const startCamera = useCallback(async () => {
     try {
       setError(null);
       
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      if (
+        typeof navigator === 'undefined' ||
+        !navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia
+      ) {
         throw new Error('Camera not supported on this device');
+      }
+
+      if (streamRef.current) {
+        stopCamera();
       }
 
       const mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -43,6 +67,7 @@ export function useCamera(options: CameraOptions = {}) {
         audio: false,
       });
 
+      streamRef.current = mediaStream;
       setStream(mediaStream);
       
       if (videoRef.current) {
@@ -52,18 +77,7 @@ export function useCamera(options: CameraOptions = {}) {
       setError(err instanceof Error ? err.message : 'Failed to access camera');
       console.error('Camera error:', err);
     }
-  }, [facingMode]);
-
-  const stopCamera = useCallback(() => {
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
-      setStream(null);
-    }
-    
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-  }, [stream]);
+  }, [facingMode, stopCamera]);
 
   const capturePhoto = useCallback(async (): Promise<CapturedImage | null> => {
     if (!videoRef.current || !stream) {
@@ -145,6 +159,28 @@ export function useCamera(options: CameraOptions = {}) {
       setIsCapturing(false);
     }
   }, [stream, quality, maxSize]);
+
+  useEffect(() => {
+    const videoElement = videoRef.current;
+
+    if (!videoElement) {
+      return;
+    }
+
+    videoElement.srcObject = stream ?? null;
+
+    return () => {
+      if (videoElement) {
+        videoElement.srcObject = null;
+      }
+    };
+  }, [stream]);
+
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, [stopCamera]);
 
   return {
     videoRef,

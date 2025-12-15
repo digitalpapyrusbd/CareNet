@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export default function useTheme() {
+export function useTheme() {
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
 
   function toggleTheme() {
@@ -14,5 +14,5 @@ export default function useTheme() {
   return { theme, setTheme, toggleTheme, changeTheme };
 }
 
-// Also export as named export for compatibility
-export { useTheme };
+// Also export as default for compatibility
+export default useTheme;

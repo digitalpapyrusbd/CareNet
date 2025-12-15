@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { offlineService } from '@/lib/offline-service';
 
 interface UseOfflineSyncOptions {
@@ -16,6 +16,17 @@ interface SyncStatus {
   queueLength: number;
 }
 
+const getTimerFns = () => {
+  const setIntervalFn =
+    (typeof globalThis !== 'undefined' && globalThis.setInterval)
+      || (typeof window !== 'undefined' ? window.setInterval : undefined);
+  const clearIntervalFn =
+    (typeof globalThis !== 'undefined' && globalThis.clearInterval)
+      || (typeof window !== 'undefined' ? window.clearInterval : undefined);
+
+  return { setIntervalFn, clearIntervalFn } as const;
+};
+
 export function useOfflineSync(options: UseOfflineSyncOptions = {}) {
   const [syncStatus, setSyncStatus] = useState<SyncStatus>({
     isOnline: navigator.onLine,
@@ -23,6 +34,7 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}) {
     lastSyncTime: null,
     queueLength: 0,
   });
+  const syncInProgressRef = useRef(false);
 
   // Update online status
   const updateOnlineStatus = useCallback(() => {
@@ -38,7 +50,6 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}) {
       const status = await offlineService.getSyncStatus();
       setSyncStatus(prev => ({
         ...prev,
-        isSyncing: false,
         lastSyncTime: status.lastSyncTime,
         queueLength: status.queueLength,
       }));
@@ -49,7 +60,9 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}) {
 
   // Manual sync
   const sync = useCallback(async () => {
-    if (syncStatus.isSyncing) return;
+    if (syncInProgressRef.current) return;
+
+    syncInProgressRef.current = true;
 
     setSyncStatus(prev => ({ ...prev, isSyncing: true }));
     
@@ -83,6 +96,8 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}) {
       if (options.onSyncComplete) {
         options.onSyncComplete(false, 0);
       }
+    } finally {
+      syncInProgressRef.current = false;
     }
   }, [options.onSyncStart, options.onSyncComplete, options.onSyncError]);
 
@@ -131,24 +146,29 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}) {
 
   // Initialize effects
   useEffect(() => {
-    // Listen for online/offline events
     window.addEventListener('online', updateOnlineStatus);
     window.addEventListener('offline', updateOnlineStatus);
-    
-    // Get initial sync status
+
     updateSyncStatus();
-    
-    // Auto sync if enabled
-    if (options.autoSync && options.syncInterval) {
-      const interval = setInterval(async () => {
+
+    let interval: ReturnType<typeof setInterval> | null = null;
+    const { setIntervalFn, clearIntervalFn } = getTimerFns();
+    if (options.autoSync && options.syncInterval && typeof setIntervalFn === 'function') {
+      interval = setIntervalFn(async () => {
         if (navigator.onLine && !syncStatus.isSyncing) {
           await sync();
         }
       }, options.syncInterval);
-      
-      return () => clearInterval(interval);
     }
-  }, [updateOnlineStatus, sync, options.autoSync, options.syncInterval]);
+
+    return () => {
+      window.removeEventListener('online', updateOnlineStatus);
+      window.removeEventListener('offline', updateOnlineStatus);
+      if (interval && typeof clearIntervalFn === 'function') {
+        clearIntervalFn(interval as any);
+      }
+    };
+  }, [updateOnlineStatus, updateSyncStatus, sync, options.autoSync, options.syncInterval, syncStatus.isSyncing]);
 
   return {
     syncStatus,

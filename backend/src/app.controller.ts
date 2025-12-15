@@ -1,5 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
+import { Public } from './common/decorators/public.decorator';
 
 @Controller()
 export class AppController {
@@ -10,12 +11,14 @@ export class AppController {
     return this.appService.getHello();
   }
 
+  @Public()
   @Get('health')
   getHealth() {
     return {
       status: 'ok',
       timestamp: new Date().toISOString(),
-      service: 'caregiver-backend',
+      service: 'CareNet Backend API',
+      version: '1.0.0',
     };
   }
 }

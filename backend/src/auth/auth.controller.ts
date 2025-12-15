@@ -1,188 +1,71 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Get,
-  UseGuards,
-  Req,
-  HttpCode,
-  HttpStatus,
-} from '@nestjs/common';
-import { Request } from 'express';
+import { Controller, Post, Body, UseGuards, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { Public } from '../common/decorators/public.decorator';
-import { LoginDto } from '../users/dto/login.dto';
-import { RegisterDto } from '../users/dto/register.dto';
-import { RefreshDto } from './dto/refresh.dto';
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { MfaVerifyDto } from './dto/mfa.dto';
+import { Public } from '../common/decorators/public.decorator';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Public()
-  @Post('login')
-  @HttpCode(HttpStatus.OK)
-  async login(@Body() loginDto: LoginDto) {
-    const result = await this.authService.login(loginDto.phone, loginDto.password);
-    if (!result) {
-      return {
-        statusCode: HttpStatus.UNAUTHORIZED,
-        message: 'Invalid credentials',
-        data: null,
-      };
-    }
-
-    // Convert null email to undefined for JWT payload
-    const jwtPayload = {
-      userId: result.user.id,
-      role: result.user.role,
-      phone: result.user.phone,
-      email: result.user.email || undefined,
-      name: result.user.name,
-    };
-
-    const { accessToken, refreshToken } = this.authService.generateTokenPair(jwtPayload);
-    
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Login successful',
-      data: {
-        accessToken,
-        refreshToken,
-        user: {
-          id: result.user.id,
-          phone: result.user.phone,
-          email: result.user.email,
-          name: result.user.name,
-          role: result.user.role,
-        },
-      },
-    };
-  }
-
-  @Public()
   @Post('register')
   async register(@Body() registerDto: RegisterDto) {
-    const result = await this.authService.register(registerDto);
-    
-    // Convert null email to undefined for JWT payload
-    const jwtPayload = {
-      userId: result.user.id,
-      role: result.user.role,
-      phone: result.user.phone,
-      email: result.user.email || undefined,
-      name: result.user.name,
-    };
-
-    const { accessToken, refreshToken } = this.authService.generateTokenPair(jwtPayload);
-    
-    return {
-      statusCode: HttpStatus.CREATED,
-      message: 'Registration successful',
-      data: {
-        accessToken,
-        refreshToken,
-        user: {
-          id: result.user.id,
-          phone: result.user.phone,
-          email: result.user.email,
-          name: result.user.name,
-          role: result.user.role,
-        },
-      },
-    };
-  }
-
-  @Public()
-  @Post('refresh')
-  @HttpCode(HttpStatus.OK)
-  async refresh(@Body() refreshDto: RefreshDto) {
-    const result = await this.authService.refreshToken(refreshDto.refreshToken);
-    if (!result) {
-      return {
-        statusCode: HttpStatus.UNAUTHORIZED,
-        message: 'Invalid refresh token',
-        data: null,
-      };
-    }
-
-    // Get user details to create proper response
-    const user = await this.authService.validateUser(refreshDto.phone, '');
-    if (!user) {
-      return {
-        statusCode: HttpStatus.UNAUTHORIZED,
-        message: 'Invalid refresh token',
-        data: null,
-      };
-    }
-
-    // Convert null email to undefined for JWT payload
-    const jwtPayload = {
-      userId: user.id,
-      role: user.role,
-      phone: user.phone,
-      email: user.email || undefined,
-      name: user.name,
-    };
-
-    const { accessToken, refreshToken } = this.authService.generateTokenPair(jwtPayload);
-    
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Token refreshed successfully',
-      data: {
-        accessToken,
-        refreshToken,
-      },
-    };
+    return this.authService.register(registerDto);
   }
 
   @Public()
   @Post('verify-otp')
-  @HttpCode(HttpStatus.OK)
   async verifyOtp(@Body() verifyOtpDto: VerifyOtpDto) {
-    const isValid = await this.authService.verifyOTP(verifyOtpDto.phone, verifyOtpDto.otp);
-    
-    if (!isValid) {
-      return {
-        statusCode: HttpStatus.BAD_REQUEST,
-        message: 'Invalid OTP',
-        data: null,
-      };
-    }
-
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'OTP verified successfully',
-      data: {
-        verified: true,
-      },
-    };
+    return this.authService.verifyOtp(verifyOtpDto);
   }
 
-  @Get('profile')
-  @UseGuards(JwtAuthGuard)
-  async getProfile(@Req() req: Request & { user: any }) {
-    const user = await this.authService.validateUser(req.user.userId, '');
-    
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Profile retrieved successfully',
-      data: user,
-    };
+  @Public()
+  @Post('login')
+  async login(@Body() loginDto: LoginDto) {
+    return this.authService.login(loginDto);
+  }
+
+  @Post('mfa/setup')
+  async setupMfa(@CurrentUser('id') userId: string) {
+    return this.authService.setupMfa(userId);
+  }
+
+  @Post('mfa/verify-setup')
+  async verifyMfaSetup(
+    @CurrentUser('id') userId: string,
+    @Body() body: { token: string },
+  ) {
+    return this.authService.verifyMfaSetup(userId, body.token);
+  }
+
+  @Public()
+  @Post('mfa/verify-login')
+  async verifyMfaLogin(@Body() mfaVerifyDto: MfaVerifyDto) {
+    return this.authService.verifyMfaLogin(
+      mfaVerifyDto.userId,
+      mfaVerifyDto.token,
+    );
+  }
+
+  @Public()
+  @Post('refresh')
+  async refresh(@Body() body: { refresh_token: string }) {
+    return this.authService.refreshToken(body.refresh_token);
   }
 
   @Post('logout')
-  @UseGuards(JwtAuthGuard)
-  @HttpCode(HttpStatus.OK)
-  async logout(@Req() req: Request & { user: any }) {
-    // In a real implementation, you might want to blacklist the token
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Logout successful',
-      data: null,
-    };
+  logout() {
+    // In a stateless JWT system, logout is typically handled client-side
+    // by removing the tokens. You could implement token blacklisting here if needed.
+    return { message: 'Logged out successfully' };
+  }
+
+  @Get('me')
+  getMe(@CurrentUser() user: any) {
+    return { user };
   }
 }

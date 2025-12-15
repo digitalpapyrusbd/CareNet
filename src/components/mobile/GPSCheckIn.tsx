@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useGeolocation, calculateDistance } from '@/hooks/use-geolocation';
 import { MapPin, CheckCircle, XCircle, Loader2, Navigation } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface GPSCheckInProps {

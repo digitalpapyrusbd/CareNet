@@ -1,0 +1,168 @@
+import { Package, Plus, Minus, Save } from "lucide-react";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Textarea } from "../ui/textarea";
+import { useState } from "react";
+
+interface CaregiverSubscriptionPackageCreatorProps {
+  onSave: (packageData: any) => void;
+  onPreview: (packageData: any) => void;
+}
+
+export function CaregiverSubscriptionPackageCreator({ onSave, onPreview }: CaregiverSubscriptionPackageCreatorProps) {
+  const [packageData, setPackageData] = useState({
+    name: "",
+    description: "",
+    monthlyFee: "",
+    jobLimit: "",
+    features: [""] as string[],
+    commissionRate: ""
+  });
+
+  const addFeature = () => {
+    setPackageData({ ...packageData, features: [...packageData.features, ""] });
+  };
+
+  const removeFeature = (index: number) => {
+    setPackageData({
+      ...packageData,
+      features: packageData.features.filter((_, i) => i !== index)
+    });
+  };
+
+  const updateFeature = (index: number, value: string) => {
+    const newFeatures = [...packageData.features];
+    newFeatures[index] = value;
+    setPackageData({ ...packageData, features: newFeatures });
+  };
+
+  return (
+    <div className="min-h-screen p-6">
+      <div className="max-w-2xl mx-auto">
+        <div className="mb-6">
+          <h1 style={{ color: '#535353' }}>Create Caregiver Subscription Package</h1>
+          <p style={{ color: '#848484' }}>Define a new subscription tier for caregivers</p>
+        </div>
+
+        <div className="finance-card p-6 mb-6">
+          <h3 className="mb-4" style={{ color: '#535353' }}>Basic Information</h3>
+          <div className="space-y-4">
+            <div>
+              <Label style={{ color: '#535353' }}>Package Name *</Label>
+              <Input
+                value={packageData.name}
+                onChange={(e) => setPackageData({ ...packageData, name: e.target.value })}
+                placeholder="e.g., Basic, Premium"
+                className="mt-2 bg-white/50 border-white/50"
+                style={{ color: '#535353' }}
+              />
+            </div>
+
+            <div>
+              <Label style={{ color: '#535353' }}>Description *</Label>
+              <Textarea
+                value={packageData.description}
+                onChange={(e) => setPackageData({ ...packageData, description: e.target.value })}
+                placeholder="Describe this package..."
+                className="mt-2 bg-white/50 border-white/50"
+                style={{ color: '#535353' }}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label style={{ color: '#535353' }}>Monthly Fee (৳) *</Label>
+                <Input
+                  type="number"
+                  value={packageData.monthlyFee}
+                  onChange={(e) => setPackageData({ ...packageData, monthlyFee: e.target.value })}
+                  placeholder="500"
+                  className="mt-2 bg-white/50 border-white/50"
+                  style={{ color: '#535353' }}
+                />
+              </div>
+
+              <div>
+                <Label style={{ color: '#535353' }}>Job Limit *</Label>
+                <Input
+                  type="number"
+                  value={packageData.jobLimit}
+                  onChange={(e) => setPackageData({ ...packageData, jobLimit: e.target.value })}
+                  placeholder="5"
+                  className="mt-2 bg-white/50 border-white/50"
+                  style={{ color: '#535353' }}
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label style={{ color: '#535353' }}>Commission Rate (%) *</Label>
+              <Input
+                type="number"
+                value={packageData.commissionRate}
+                onChange={(e) => setPackageData({ ...packageData, commissionRate: e.target.value })}
+                placeholder="10"
+                className="mt-2 bg-white/50 border-white/50"
+                style={{ color: '#535353' }}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="finance-card p-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 style={{ color: '#535353' }}>Features</h3>
+            <Button onClick={addFeature} size="sm" style={{
+              background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #A8E063 0%, #7CE577 100%)',
+              color: 'white'
+            }}>
+              <Plus className="w-4 h-4 mr-2" />Add Feature
+            </Button>
+          </div>
+
+          <div className="space-y-3">
+            {packageData.features.map((feature, index) => (
+              <div key={index} className="flex gap-2">
+                <Input
+                  value={feature}
+                  onChange={(e) => updateFeature(index, e.target.value)}
+                  placeholder="Enter feature description"
+                  className="flex-1 bg-white/50 border-white/50"
+                  style={{ color: '#535353' }}
+                />
+                <Button
+                  onClick={() => removeFeature(index)}
+                  variant="outline"
+                  size="sm"
+                  className="bg-white/50 border-white/50"
+                >
+                  <Minus className="w-4 h-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex gap-3">
+          <Button onClick={() => onPreview(packageData)} variant="outline" className="flex-1 bg-white/50 border-white/50">
+            Preview
+          </Button>
+          <Button
+            onClick={() => onSave(packageData)}
+            disabled={!packageData.name || !packageData.monthlyFee || !packageData.jobLimit || !packageData.commissionRate}
+            className="flex-1"
+            style={{
+              background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #A8E063 0%, #7CE577 100%)',
+              color: 'white',
+              opacity: (!packageData.name || !packageData.monthlyFee || !packageData.jobLimit || !packageData.commissionRate) ? 0.5 : 1
+            }}
+          >
+            <Save className="w-4 h-4 mr-2" />Save Package
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+

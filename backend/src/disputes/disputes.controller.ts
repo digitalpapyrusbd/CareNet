@@ -2,25 +2,54 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Body,
-  UseGuards,
-  Request,
+  Param,
+  Query,
 } from '@nestjs/common';
 import { DisputesService } from './disputes.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CreateDisputeDto, ResolveDisputeDto } from './dto/dispute.dto';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { Roles } from '../common/decorators/roles.decorator';
+import { UserRole } from '@prisma/client';
 
 @Controller('disputes')
-@UseGuards(JwtAuthGuard)
 export class DisputesController {
-  constructor(private disputesService: DisputesService) {}
+  constructor(private readonly disputesService: DisputesService) {}
 
   @Post()
-  async create(@Request() req, @Body() dto: any) {
-    return this.disputesService.create(req.user.userId, dto);
+  create(
+    @CurrentUser('id') userId: string,
+    @Body() createDto: CreateDisputeDto,
+  ) {
+    return this.disputesService.create(userId, createDto);
   }
 
   @Get()
-  async findAll() {
-    return this.disputesService.findAll();
+  @Roles(UserRole.MODERATOR, UserRole.PLATFORM_ADMIN, UserRole.SUPER_ADMIN)
+  findAll(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '20',
+  ) {
+    return this.disputesService.findAll(+page, +limit);
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.disputesService.findOne(id);
+  }
+
+  @Patch(':id/resolve')
+  @Roles(UserRole.MODERATOR, UserRole.PLATFORM_ADMIN, UserRole.SUPER_ADMIN)
+  resolve(@Param('id') id: string, @Body() resolveDto: ResolveDisputeDto) {
+    return this.disputesService.resolve(id, resolveDto);
+  }
+
+  @Post(':id/evidence')
+  addEvidence(
+    @Param('id') id: string,
+    @Body() body: { evidence_urls: string[] },
+  ) {
+    return this.disputesService.addEvidence(id, body.evidence_urls);
   }
 }

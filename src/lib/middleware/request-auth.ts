@@ -46,6 +46,7 @@ export function authorizeRequest(authUser: any, permission: string) {
   } catch (err: any) {
     return errorResponse('Authorization failed', 'AUTHZ_ERROR', 500)
   }
+}
 
 export function requireRole(authUser: any, roles: string[]) {
   if (!authUser) return errorResponse('Not authenticated', 'AUTH_REQUIRED', 401)

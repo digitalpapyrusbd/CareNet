@@ -71,7 +71,6 @@ export interface NagadPaymentResponse {
   agreementID?: string;
   agreementStatus?: string;
   agreementTime?: string;
-  };
   errorCode?: string;
   errorMessage?: string;
   statusCode?: string;

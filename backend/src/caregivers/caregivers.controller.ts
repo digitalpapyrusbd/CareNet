@@ -1,25 +1,62 @@
-import { Body, Controller, Param, Patch, Post, Request, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+} from '@nestjs/common';
 import { CaregiversService } from './caregivers.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { CreateCaregiverDto } from './dto/create-caregiver.dto';
-import { VerifyCaregiverDto } from './dto/verify-caregiver.dto';
+import { CreateCaregiverDto, UpdateCaregiverDto } from './dto/caregiver.dto';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { Roles } from '../common/decorators/roles.decorator';
+import { Public } from '../common/decorators/public.decorator';
+import { UserRole } from '@prisma/client';
 
 @Controller('caregivers')
-@UseGuards(JwtAuthGuard)
 export class CaregiversController {
   constructor(private readonly caregiversService: CaregiversService) {}
 
   @Post()
-  async create(@Request() req: any, @Body() dto: CreateCaregiverDto) {
-    const user = req.user ?? {};
-    return this.caregiversService.createProfile(user, dto);
+  @Roles(UserRole.CAREGIVER)
+  create(
+    @CurrentUser('id') userId: string,
+    @Body() createCaregiverDto: CreateCaregiverDto,
+  ) {
+    return this.caregiversService.create(userId, createCaregiverDto);
   }
 
-  @Patch(':id/verify')
-  async verify(
-    @Param('id') id: string,
-    @Body() dto: VerifyCaregiverDto,
+  @Public()
+  @Get()
+  findAll(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '20',
+    @Query() filters: any,
   ) {
-    return this.caregiversService.verifyCaregiver(id, dto);
+    return this.caregiversService.findAll(+page, +limit, filters);
+  }
+
+  @Public()
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.caregiversService.findOne(id);
+  }
+
+  @Patch(':id')
+  @Roles(UserRole.CAREGIVER)
+  update(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+    @Body() updateCaregiverDto: UpdateCaregiverDto,
+  ) {
+    return this.caregiversService.update(id, userId, updateCaregiverDto);
+  }
+
+  @Delete(':id')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.PLATFORM_ADMIN)
+  remove(@Param('id') id: string) {
+    return this.caregiversService.remove(id);
   }
 }

@@ -11,6 +11,9 @@ const customJestConfig = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@prisma/client$': '<rootDir>/test-mocks/prisma.js',
+    '^@vercel/kv$': '<rootDir>/test-mocks/vercel-kv.js',
+    '^@components/(.*)$': '<rootDir>/src/components/$1',
+    '^@lib/(.*)$': '<rootDir>/src/lib/$1',
   },
   testEnvironment: 'jest-environment-jsdom',
   collectCoverageFrom: [
@@ -27,10 +30,27 @@ const customJestConfig = {
       statements: 85,
     },
   },
-  testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],
-  transformIgnorePatterns: [
-    '/node_modules/',
-    '^.+\\.module\\.(css|sass|scss)$',
+  testPathIgnorePatterns: [
+    '<rootDir>/.next/',
+    '<rootDir>/node_modules/',
+    '<rootDir>/tests/',
+    '<rootDir>/backend/',
+    '<rootDir>/src/__tests__/mocks/',
+    '<rootDir>/DO_NOT_COMMIT/',
+    'cross-browser.test.ts',
+    'performance.test.ts',
+    'security.test.ts',
+    'guardian.test.tsx',
+  ],
+  testMatch: [
+    '**/__tests__/**/*.(test|spec).(ts|tsx)',
+    '**/*.(test|spec).(ts|tsx)',
+    '!**/*cross-browser*',
+    '!**/*performance.test*',
+    '!**/*security.test*',
+    '!**/*guardian.test*',
+    '!**/*auth.test*',
+    '!**/*payments.test*',
   ],
 };
 

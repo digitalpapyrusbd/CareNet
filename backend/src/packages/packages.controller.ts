@@ -7,54 +7,59 @@ import {
   Body,
   Param,
   Query,
-  UseGuards,
-  Req,
 } from '@nestjs/common';
-import type { Request } from 'express';
 import { PackagesService } from './packages.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { CreatePackageDto } from './dto/create-package.dto';
-import { UpdatePackageDto } from './dto/update-package.dto';
+import { CreatePackageDto, UpdatePackageDto } from './dto/package.dto';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { Roles } from '../common/decorators/roles.decorator';
+import { Public } from '../common/decorators/public.decorator';
+import { UserRole, PackageCategory } from '@prisma/client';
 
 @Controller('packages')
 export class PackagesController {
   constructor(private readonly packagesService: PackagesService) {}
 
-  @Get()
-  async findAll(@Query('active') active?: string) {
-    const isActive = active === 'true' ? true : active === 'false' ? false : undefined;
-    return await this.packagesService.findAll(isActive);
-  }
-
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return await this.packagesService.findOne(id);
-  }
-
   @Post()
-  @UseGuards(JwtAuthGuard)
-  async create(@Body() createPackageDto: CreatePackageDto, @Req() req: Request) {
-    const userId = (req as any).user?.userId || (req as any).user?.id;
-    
-    // For testing: Allow guardians to create packages by using their user_id as company_id
-    // In production, only COMPANY role users should create packages using their company_id
-    const companyId = userId;
-    
-    return await this.packagesService.create(createPackageDto, companyId);
+  @Roles(UserRole.AGENCY_ADMIN, UserRole.AGENCY_MANAGER)
+  create(
+    @CurrentUser('company_id') companyId: string,
+    @Body() createPackageDto: CreatePackageDto,
+  ) {
+    return this.packagesService.create(companyId, createPackageDto);
+  }
+
+  @Public()
+  @Get()
+  findAll(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '20',
+    @Query('category') category?: PackageCategory,
+  ) {
+    return this.packagesService.findAll(+page, +limit, category);
+  }
+
+  @Public()
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.packagesService.findOne(id);
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
-  async update(
+  @Roles(UserRole.AGENCY_ADMIN, UserRole.AGENCY_MANAGER)
+  update(
     @Param('id') id: string,
+    @CurrentUser('company_id') companyId: string,
     @Body() updatePackageDto: UpdatePackageDto,
   ) {
-    return await this.packagesService.update(id, updatePackageDto);
+    return this.packagesService.update(id, companyId, updatePackageDto);
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
-  async remove(@Param('id') id: string) {
-    return await this.packagesService.remove(id);
+  @Roles(UserRole.AGENCY_ADMIN, UserRole.AGENCY_MANAGER)
+  remove(
+    @Param('id') id: string,
+    @CurrentUser('company_id') companyId: string,
+  ) {
+    return this.packagesService.remove(id, companyId);
   }
 }

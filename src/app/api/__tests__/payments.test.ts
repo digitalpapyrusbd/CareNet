@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { POST as bkashPaymentHandler } from '../payments/bkash/route';
 import { POST as nagadPaymentHandler } from '../payments/nagad/route';
 import { POST as createPaymentHandler } from '../payments/create/route';
@@ -51,6 +51,33 @@ jest.mock('@/lib/payment-gateways/nagad', () => ({
   })),
 }));
 
+// Mock jsonwebtoken
+jest.mock('jsonwebtoken', () => ({
+  sign: jest.fn(),
+  verify: jest.fn().mockReturnValue({ userId: 'user1', role: 'GUARDIAN' }),
+}));
+
+// Mock @/lib/session
+jest.mock('@/lib/session', () => ({
+  createSession: jest.fn(),
+  getSession: jest.fn(),
+  validateSession: jest.fn().mockResolvedValue({ 
+    valid: true, 
+    session: { userId: 'user1', userRole: 'GUARDIAN' } 
+  }),
+}));
+
+// Helper to create NextRequest mock with user from middleware
+function createMockRequest(body: any, user: any = { id: 'user1', role: 'GUARDIAN' }): NextRequest {
+  return {
+    json: jest.fn().mockResolvedValue(body),
+    headers: new Headers({ 'Authorization': 'Bearer mock-token' }),
+    method: 'POST',
+    url: 'http://localhost:3000/api/payments',
+    user,
+  } as any;
+}
+
 describe('Payments API', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -83,13 +110,13 @@ describe('Payments API', () => {
       };
 
       // Mock user from middleware
-      const mockRequest = {
-        json: jest.fn().mockResolvedValue({
+      const mockRequest = createMockRequest(
+        {
           jobId: 'job1',
           amount: 1000,
-        }),
-        user: mockUser,
-      } as any;
+        },
+        mockUser
+      );
 
       mockPrismaClient.job.findUnique.mockResolvedValue(mockJob);
       mockPrismaClient.payment.create.mockResolvedValue(mockPayment);
@@ -104,10 +131,7 @@ describe('Payments API', () => {
     });
 
     it('returns error for missing fields', async () => {
-      const mockRequest = {
-        json: jest.fn().mockResolvedValue({}),
-        user: { id: 'user1', role: UserRole.GUARDIAN },
-      } as any;
+      const mockRequest = createMockRequest({}, { id: 'user1', role: UserRole.GUARDIAN });
 
       const response = await bkashPaymentHandler(mockRequest);
       const data = await response.json();
@@ -118,13 +142,13 @@ describe('Payments API', () => {
     });
 
     it('returns error for invalid job', async () => {
-      const mockRequest = {
-        json: jest.fn().mockResolvedValue({
+      const mockRequest = createMockRequest(
+        {
           jobId: 'invalid_job',
           amount: 1000,
-        }),
-        user: { id: 'user1', role: UserRole.GUARDIAN },
-      } as any;
+        },
+        { id: 'user1', role: UserRole.GUARDIAN }
+      );
 
       mockPrismaClient.job.findUnique.mockResolvedValue(null);
 
@@ -163,13 +187,13 @@ describe('Payments API', () => {
         invoiceNumber: 'INV_test123',
       };
 
-      const mockRequest = {
-        json: jest.fn().mockResolvedValue({
+      const mockRequest = createMockRequest(
+        {
           jobId: 'job1',
           amount: 1000,
-        }),
-        user: mockUser,
-      } as any;
+        },
+        mockUser
+      );
 
       mockPrismaClient.job.findUnique.mockResolvedValue(mockJob);
       mockPrismaClient.payment.create.mockResolvedValue(mockPayment);
@@ -201,8 +225,8 @@ describe('Payments API', () => {
         invoiceNumber: 'INV_test123',
       };
 
-      const mockRequest = {
-        json: jest.fn().mockResolvedValue({
+      const mockRequest = createMockRequest(
+        {
           amount: 1000,
           method: 'BKASH',
           jobId: 'job1',
@@ -211,9 +235,9 @@ describe('Payments API', () => {
             email: 'test@example.com',
             phone: '+8801712345678',
           },
-        }),
-        user: mockUser,
-      } as any;
+        },
+        mockUser
+      );
 
       mockPrismaClient.payment.create.mockResolvedValue(mockPayment);
       mockPrismaClient.payment.update.mockResolvedValue(mockPayment);
@@ -232,8 +256,8 @@ describe('Payments API', () => {
         role: 'GUARDIAN',
       };
 
-      const mockRequest = {
-        json: jest.fn().mockResolvedValue({
+      const mockRequest = createMockRequest(
+        {
           amount: 1000,
           method: 'INVALID_METHOD',
           customerInfo: {
@@ -241,9 +265,9 @@ describe('Payments API', () => {
             email: 'test@example.com',
             phone: '+8801712345678',
           },
-        }),
-        user: mockUser,
-      } as any;
+        },
+        mockUser
+      );
 
       const response = await createPaymentHandler(mockRequest);
       const data = await response.json();

@@ -1,115 +1,65 @@
 import {
   Controller,
-  Post,
   Get,
+  Post,
+  Patch,
   Body,
-  Query,
   Param,
-  UseGuards,
-  Request,
+  Query,
 } from '@nestjs/common';
-import type { CreatePaymentDto, RefundPaymentDto } from './payments.service';
 import { PaymentsService } from './payments.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RateLimit, RateLimitTier } from '../common/guards/throttle.guard';
+import {
+  CreatePaymentDto,
+  ProcessPaymentDto,
+  RefundPaymentDto,
+} from './dto/payment.dto';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { Roles } from '../common/decorators/roles.decorator';
+import { Public } from '../common/decorators/public.decorator';
+import { UserRole } from '@prisma/client';
 
 @Controller('payments')
-@UseGuards(JwtAuthGuard)
-@RateLimit(RateLimitTier.PAYMENT)
 export class PaymentsController {
-  constructor(private paymentsService: PaymentsService) {}
+  constructor(private readonly paymentsService: PaymentsService) {}
 
-  @Post('create')
-  async createPayment(@Body() dto: CreatePaymentDto, @Request() req) {
-    return this.paymentsService.createPayment(dto, req.user?.userId || req.user?.id);
-  }
-
-  @Get('bkash/callback')
-  async bkashCallback(@Query('transactionId') transactionId: string) {
-    const result = await this.paymentsService.verifyPayment(
-      'bkash',
-      transactionId,
-    );
-    return {
-      success: true,
-      message: 'Payment verified',
-      data: result,
-    };
-  }
-
-  @Get('nagad/callback')
-  async nagadCallback(@Query('transactionId') transactionId: string) {
-    const result = await this.paymentsService.verifyPayment(
-      'nagad',
-      transactionId,
-    );
-    return {
-      success: true,
-      message: 'Payment verified',
-      data: result,
-    };
-  }
-
-  @Post('nagad/webhook')
-  @RateLimit(RateLimitTier.WEBHOOK)
-  async nagadWebhook(
-    @Body()
-    webhookData: {
-      transactionId: string;
-      orderId: string;
-      status: string;
-      amount: number;
-      currency?: string;
-      paymentTime: string;
-      signature?: string;
-    },
+  @Post()
+  @Roles(UserRole.GUARDIAN)
+  create(
+    @CurrentUser('id') userId: string,
+    @Body() createPaymentDto: CreatePaymentDto,
   ) {
-    const { transactionId, orderId, status, amount, paymentTime } = webhookData;
-
-    // Verify webhook signature (in production, verify against Nagad's public key)
-    // For now, just log the webhook
-    console.log('[Nagad Webhook] Received:', {
-      transactionId,
-      orderId,
-      status,
-      amount,
-      paymentTime,
-    });
-
-    // Process the payment based on status
-    if (status === 'Success') {
-      await this.paymentsService.verifyPayment('nagad', transactionId);
-    }
-
-    // Return success to acknowledge receipt
-    return {
-      success: true,
-      message: 'Webhook processed',
-    };
+    return this.paymentsService.createPayment(userId, createPaymentDto);
   }
 
-  @Post('refund')
-  async refundPayment(@Body() dto: RefundPaymentDto) {
-    return this.paymentsService.refundPayment(dto);
+  @Get()
+  getMyPayments(
+    @CurrentUser('id') userId: string,
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '20',
+  ) {
+    return this.paymentsService.getUserPayments(userId, +page, +limit);
   }
 
-  @Get('transaction/:id')
-  async getTransaction(@Param('id') id: string) {
-    return this.paymentsService.getTransaction(id);
+  @Get(':id')
+  findOne(@Param('id') id: string, @CurrentUser('id') userId: string) {
+    return this.paymentsService.findOne(id, userId);
   }
 
-  @Get('transactions')
-  async listTransactions(@Query('provider') provider?: 'bkash' | 'nagad') {
-    return this.paymentsService.listTransactions(provider);
+  @Patch(':id/refund')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.PLATFORM_ADMIN)
+  refund(@Param('id') id: string, @Body() refundDto: RefundPaymentDto) {
+    return this.paymentsService.refundPayment(id, refundDto);
   }
 
-  @Get('escrow/:id')
-  async getEscrow(@Param('id') id: string) {
-    return this.paymentsService.getEscrow(id);
+  @Patch(':id/release-escrow')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.PLATFORM_ADMIN)
+  releaseEscrow(@Param('id') id: string) {
+    return this.paymentsService.releaseEscrow(id);
   }
 
-  @Get('escrows')
-  async listEscrows() {
-    return this.paymentsService.listEscrows();
+  @Public()
+  @Post('webhook/:provider')
+  handleWebhook(@Param('provider') provider: string, @Body() payload: any) {
+    return this.paymentsService.handleWebhook(provider, payload);
   }
 }

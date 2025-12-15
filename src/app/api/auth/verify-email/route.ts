@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import { kv } from '@vercel/kv';
-import { generateEmailVerificationToken } from '@/lib/auth';
+import crypto from 'crypto';
 
 // Email verification schema
 const sendVerificationSchema = z.object({
@@ -15,11 +15,6 @@ const verifyEmailTokenSchema = z.object({
   token: z.string().min(32, 'Invalid verification token'),
   email: z.string().email('Valid email is required'),
 });
-
-// Generate email verification token
-function generateEmailVerificationToken(): string {
-  return crypto.randomUUID() + crypto.randomUUID().replace(/-/g, '');
-}
 
 // Send email verification
 export async function POST(request: NextRequest) {

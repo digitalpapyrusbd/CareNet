@@ -1,0 +1,11 @@
+
+  # CareNet Workflow Diagram
+
+  This is a code bundle for CareNet Workflow Diagram. The original project is available at https://www.figma.com/design/Ws4ZGEK8vR0XutsKHvNVxn/CareNet-Workflow-Diagram.
+
+  ## Running the code
+
+  Run `npm i` to install the dependencies.
+
+  Run `npm run dev` to start the development server.
+  

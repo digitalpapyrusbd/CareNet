@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useLayoutEffect, useRef } from 'react';
 import { ApiResponse, PaginatedResponse } from '@/types';
 
 interface UseApiOptions<T> {
@@ -28,31 +28,35 @@ export const useApi = <T = any>(
     error: null,
   });
 
+  // Destructure options outside to avoid dependency issues
+  const { immediate, onSuccess, onError } = options;
+
   const execute = useCallback(async (...args: any[]): Promise<T> => {
     setState(prev => ({ ...prev, loading: true, error: null }));
 
     try {
       const result = await apiFunction(...args);
       setState({ data: result, loading: false, error: null });
-      options.onSuccess?.(result);
+      onSuccess?.(result);
       return result;
     } catch (error) {
       const errorObj = error instanceof Error ? error : new Error('An error occurred');
       setState(prev => ({ ...prev, loading: false, error: errorObj }));
-      options.onError?.(errorObj);
+      onError?.(errorObj);
       throw errorObj;
     }
-  }, [apiFunction, options]);
+  }, [apiFunction, onSuccess, onError]);
 
   const reset = useCallback(() => {
     setState({ data: null, loading: false, error: null });
   }, []);
 
   useEffect(() => {
-    if (options.immediate) {
+    if (immediate) {
       execute();
     }
-  }, [execute, options.immediate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return {
     ...state,
@@ -82,6 +86,8 @@ interface UsePaginatedApiReturn<T> extends UsePaginatedApiState<T> {
   refresh: () => void;
 }
 
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+
 export const usePaginatedApi = <T = any>(
   apiFunction: (page: number, limit: number, ...args: any[]) => Promise<PaginatedResponse<T>>,
   options: UsePaginatedApiOptions<T> = {}
@@ -98,13 +104,29 @@ export const usePaginatedApi = <T = any>(
     hasPreviousPage: false,
   });
 
+  // Destructure options with default to avoid dependency issues
+  const { immediate = true, onSuccess, onError } = options;
+  const isMountedRef = useRef(true);
+  const requestIdRef = useRef(0);
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   const fetchData = useCallback(async () => {
+    const requestId = ++requestIdRef.current;
     setState(prev => ({ ...prev, loading: true, error: null }));
 
     try {
       const result = await apiFunction(page, limit);
       const hasNextPage = page < result.pagination.totalPages;
       const hasPreviousPage = page > 1;
+
+      if (!isMountedRef.current || requestId !== requestIdRef.current) {
+        return;
+      }
 
       setState({
         data: result,
@@ -115,13 +137,17 @@ export const usePaginatedApi = <T = any>(
         hasNextPage,
         hasPreviousPage,
       });
-      options.onSuccess?.(result);
+      onSuccess?.(result);
     } catch (error) {
       const errorObj = error instanceof Error ? error : new Error('An error occurred');
-      setState(prev => ({ ...prev, loading: false, error: errorObj }));
-      options.onError?.(errorObj);
+
+      if (isMountedRef.current && requestId === requestIdRef.current) {
+        setState(prev => ({ ...prev, loading: false, error: errorObj }));
+      }
+
+      onError?.(errorObj);
     }
-  }, [apiFunction, page, limit, options]);
+  }, [apiFunction, page, limit, onSuccess, onError]);
 
   const nextPage = useCallback(() => {
     if (state.hasNextPage) {
@@ -139,11 +165,11 @@ export const usePaginatedApi = <T = any>(
     fetchData();
   }, [fetchData]);
 
-  useEffect(() => {
-    if (options.immediate !== false) {
+  useIsomorphicLayoutEffect(() => {
+    if (immediate) {
       fetchData();
     }
-  }, [fetchData, options.immediate]);
+  }, [fetchData, immediate]);
 
   return {
     ...state,

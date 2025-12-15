@@ -1,199 +1,192 @@
-import Link from 'next/link';
+'use client';
 
-export default function HomePage() {
+import { useRouter } from 'next/navigation';
+import { Heart, Shield, Clock, Users, Star, ArrowRight, Phone, Mail } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+export default function LandingPage() {
+  const router = useRouter();
+
+  const features = [
+    { icon: Shield, title: 'Verified Caregivers', description: 'All caregivers undergo thorough background checks' },
+    { icon: Clock, title: '24/7 Support', description: 'Round-the-clock assistance whenever you need it' },
+    { icon: Heart, title: 'Quality Care', description: 'Experienced professionals providing compassionate care' },
+    { icon: Users, title: 'Trusted Agencies', description: 'Licensed agencies with proven track records' },
+  ];
+
+  const testimonials = [
+    { name: 'Mrs. Fatima Ahmed', role: 'Guardian', rating: 5, text: 'CareNet helped me find the perfect caregiver for my mother. The platform is easy to use and the caregivers are highly professional.' },
+    { name: 'Rashid Khan', role: 'Caregiver', rating: 5, text: 'As a caregiver, CareNet connects me with families who truly appreciate my work. The payment system is transparent and reliable.' },
+    { name: 'Green Care Agency', role: 'Agency', rating: 5, text: 'Managing our caregivers and clients has never been easier. CareNet\'s platform streamlines everything.' },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">Caregiver Platform</h1>
-            </div>
-            <nav className="flex space-x-8">
-              <Link href="/auth/login" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
-                Login
-              </Link>
-              <Link href="/auth/register" className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
-                Register
-              </Link>
-            </nav>
-          </div>
-        </div>
-      </header>
-
+    <div className="min-h-screen">
       {/* Hero Section */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center">
-          <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-            Professional Caregiver Services
-            <span className="block text-blue-600">for Families in Bangladesh</span>
-          </h1>
-          <p className="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-            Connect with verified caregivers, manage patient care, and ensure quality healthcare services for your loved ones.
+      <div className="px-6 pt-8 pb-12">
+        <div className="flex items-center justify-center mb-8">
+          <div 
+            className="flex items-center justify-center w-20 h-20 rounded-full"
+            style={{
+              background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FFB3C1 0%, #FF8FA3 100%)',
+              boxShadow: '0px 4px 18px rgba(255, 143, 163, 0.35)'
+            }}
+          >
+            <Heart className="w-10 h-10 text-white fill-current" />
+          </div>
+        </div>
+
+        <div className="text-center mb-8">
+          <h1 className="mb-4" style={{ color: '#535353' }}>CareNet</h1>
+          <p className="text-lg mb-6" style={{ color: '#848484' }}>
+            Quality care, connected
           </p>
-          <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
-            <div className="rounded-md shadow">
-              <Link
-                href="/auth/register"
-                className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10"
+          <p className="mb-8" style={{ color: '#535353' }}>
+            Bangladesh's trusted platform for connecting families with verified caregivers and professional agencies
+          </p>
+
+          <div className="flex flex-col gap-3 max-w-md mx-auto">
+            <Button
+              onClick={() => router.push('/auth/role-selection')}
+              size="lg"
+              className="w-full"
+              style={{
+                background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FFB3C1 0%, #FF8FA3 100%)',
+                boxShadow: '0px 4px 18px rgba(255, 143, 163, 0.35)',
+                color: 'white',
+                border: 'none'
+              }}
+            >
+              Get Started
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+            <Button
+              onClick={() => router.push('/auth/login')}
+              size="lg"
+              variant="outline"
+              className="w-full bg-white/50 border-white/50"
+              style={{ color: '#535353' }}
+            >
+              Login
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Features Section */}
+      <div className="px-6 py-12">
+        <h2 className="text-center mb-8" style={{ color: '#535353' }}>Why Choose CareNet?</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-4xl mx-auto">
+          {features.map((feature, index) => (
+            <div key={index} className="finance-card p-6">
+              <div 
+                className="inline-flex items-center justify-center w-12 h-12 rounded-full mb-4"
+                style={{
+                  background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #8EC5FC 0%, #5B9FFF 100%)',
+                  boxShadow: '0px 4px 18px rgba(91, 159, 255, 0.3)'
+                }}
               >
-                Get Started
-              </Link>
+                <feature.icon className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="mb-2" style={{ color: '#535353' }}>{feature.title}</h3>
+              <p className="text-sm" style={{ color: '#848484' }}>{feature.description}</p>
             </div>
-            <div className="mt-3 rounded-md shadow sm:mt-0 sm:ml-3">
-              <Link
-                href="/about"
-                className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10"
-              >
-                Learn More
-              </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Testimonials Section */}
+      <div className="px-6 py-12">
+        <h2 className="text-center mb-8" style={{ color: '#535353' }}>What Our Users Say</h2>
+        <div className="space-y-4 max-w-2xl mx-auto">
+          {testimonials.map((testimonial, index) => (
+            <div key={index} className="finance-card p-6">
+              <div className="flex items-center gap-3 mb-3">
+                <div 
+                  className="w-12 h-12 rounded-full flex items-center justify-center"
+                  style={{
+                    background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FFB3C1 0%, #FF8FA3 100%)'
+                  }}
+                >
+                  <span className="text-white">{testimonial.name.charAt(0)}</span>
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold" style={{ color: '#535353' }}>{testimonial.name}</p>
+                  <p className="text-sm" style={{ color: '#848484' }}>{testimonial.role}</p>
+                </div>
+                <div className="flex items-center gap-1">
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-current" style={{ color: '#FFD54F' }} />
+                  ))}
+                </div>
+              </div>
+              <p className="text-sm" style={{ color: '#535353' }}>{testimonial.text}</p>
             </div>
-          </div>
+          ))}
         </div>
+      </div>
 
-        {/* Features Section */}
-        <div className="mt-20">
-          <div className="text-center">
-            <h2 className="text-3xl font-extrabold text-gray-900">How It Works</h2>
-            <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-500">
-              Simple steps to get quality care for your loved ones
-            </p>
-          </div>
-
-          <div className="mt-12">
-            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-              {/* Feature 1 */}
-              <div className="pt-6">
-                <div className="flow-root bg-white rounded-lg px-6 pb-8">
-                  <div className="flex justify-center">
-                    <div className="flex items-center justify-center h-12 w-12 rounded-md bg-blue-500 text-white">
-                      <span className="text-xl font-bold">1</span>
-                    </div>
-                  </div>
-                  <h3 className="mt-6 text-lg font-medium text-gray-900 text-center">Register</h3>
-                  <p className="mt-2 text-base text-gray-500 text-center">
-                    Create your account as a guardian or company and complete verification
-                  </p>
-                </div>
-              </div>
-
-              {/* Feature 2 */}
-              <div className="pt-6">
-                <div className="flow-root bg-white rounded-lg px-6 pb-8">
-                  <div className="flex justify-center">
-                    <div className="flex items-center justify-center h-12 w-12 rounded-md bg-blue-500 text-white">
-                      <span className="text-xl font-bold">2</span>
-                    </div>
-                  </div>
-                  <h3 className="mt-6 text-lg font-medium text-gray-900 text-center">Find Caregivers</h3>
-                  <p className="mt-2 text-base text-gray-500 text-center">
-                    Browse verified caregivers and select the best match for your needs
-                  </p>
-                </div>
-              </div>
-
-              {/* Feature 3 */}
-              <div className="pt-6">
-                <div className="flow-root bg-white rounded-lg px-6 pb-8">
-                  <div className="flex justify-center">
-                    <div className="flex items-center justify-center h-12 w-12 rounded-md bg-blue-500 text-white">
-                      <span className="text-xl font-bold">3</span>
-                    </div>
-                  </div>
-                  <h3 className="mt-6 text-lg font-medium text-gray-900 text-center">Manage Care</h3>
-                  <p className="mt-2 text-base text-gray-500 text-center">
-                    Schedule appointments, track care logs, and handle payments securely
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+      {/* CTA Section */}
+      <div className="px-6 py-12">
+        <div className="finance-card p-8 text-center max-w-2xl mx-auto">
+          <h2 className="mb-4" style={{ color: '#535353' }}>Ready to Get Started?</h2>
+          <p className="mb-6" style={{ color: '#848484' }}>
+            Join thousands of families and caregivers finding quality care solutions
+          </p>
+          <Button
+            onClick={() => router.push('/guardian/packages')}
+            size="lg"
+            style={{
+              background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FFB3C1 0%, #FF8FA3 100%)',
+              boxShadow: '0px 4px 18px rgba(255, 143, 163, 0.35)',
+              color: 'white',
+              border: 'none'
+            }}
+          >
+            Browse Agencies
+            <ArrowRight className="w-5 h-5 ml-2" />
+          </Button>
         </div>
-
-        {/* Role Selection */}
-        <div className="mt-20">
-          <div className="text-center">
-            <h2 className="text-3xl font-extrabold text-gray-900">Join Our Platform</h2>
-            <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-500">
-              Choose your role and start your journey with us
-            </p>
-          </div>
-
-          <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            <Link
-              href="/auth/register?role=guardian"
-              className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
-            >
-              <div className="text-center">
-                <div className="mx-auto h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
-                  <span className="text-2xl">👨‍👩‍👧‍👦</span>
-                </div>
-                <h3 className="mt-4 text-lg font-medium text-gray-900">Guardian</h3>
-                <p className="mt-2 text-sm text-gray-500">
-                  Find caregivers for your loved ones
-                </p>
-              </div>
-            </Link>
-
-            <Link
-              href="/auth/register?role=company"
-              className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
-            >
-              <div className="text-center">
-                <div className="mx-auto h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <span className="text-2xl">🏢</span>
-                </div>
-                <h3 className="mt-4 text-lg font-medium text-gray-900">Company</h3>
-                <p className="mt-2 text-sm text-gray-500">
-                  Manage caregiver services
-                </p>
-              </div>
-            </Link>
-
-            <Link
-              href="/auth/register?role=caregiver"
-              className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
-            >
-              <div className="text-center">
-                <div className="mx-auto h-12 w-12 bg-purple-100 rounded-full flex items-center justify-center">
-                  <span className="text-2xl">👩‍⚕️</span>
-                </div>
-                <h3 className="mt-4 text-lg font-medium text-gray-900">Caregiver</h3>
-                <p className="mt-2 text-sm text-gray-500">
-                  Provide professional care services
-                </p>
-              </div>
-            </Link>
-
-            <Link
-              href="/auth/register?role=moderator"
-              className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
-            >
-              <div className="text-center">
-                <div className="mx-auto h-12 w-12 bg-red-100 rounded-full flex items-center justify-center">
-                  <span className="text-2xl">🛡️</span>
-                </div>
-                <h3 className="mt-4 text-lg font-medium text-gray-900">Moderator</h3>
-                <p className="mt-2 text-sm text-gray-500">
-                  Verify and monitor platform quality
-                </p>
-              </div>
-            </Link>
-          </div>
-        </div>
-      </main>
+      </div>
 
       {/* Footer */}
-      <footer className="bg-white mt-20">
-        <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <p className="text-base text-gray-500">
-              © 2025 Caregiver Platform Bangladesh. All rights reserved.
-            </p>
+      <div className="px-6 py-8 border-t border-white/30">
+        <div className="max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+            <div>
+              <h3 className="mb-3" style={{ color: '#535353' }}>CareNet</h3>
+              <p className="text-sm" style={{ color: '#848484' }}>
+                Quality care, connected across Bangladesh
+              </p>
+            </div>
+            <div>
+              <h4 className="mb-3" style={{ color: '#535353' }}>Quick Links</h4>
+              <ul className="space-y-2 text-sm" style={{ color: '#848484' }}>
+                <li><a href="/about" className="hover:underline">About Us</a></li>
+                <li><a href="#how-it-works" className="hover:underline">How It Works</a></li>
+                <li><a href="/terms" className="hover:underline">Terms & Conditions</a></li>
+                <li><a href="/privacy" className="hover:underline">Privacy Policy</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="mb-3" style={{ color: '#535353' }}>Contact</h4>
+              <div className="space-y-2 text-sm" style={{ color: '#848484' }}>
+                <div className="flex items-center gap-2">
+                  <Phone className="w-4 h-4" />
+                  <span>+880 1XXX-XXXXXX</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Mail className="w-4 h-4" />
+                  <span>support@carenet.bd</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="mt-8 pt-8 border-t border-white/30 text-center text-sm" style={{ color: '#848484' }}>
+            <p>&copy; 2024 CareNet Platform. All rights reserved.</p>
           </div>
         </div>
-      </footer>
+      </div>
     </div>
   );
 }

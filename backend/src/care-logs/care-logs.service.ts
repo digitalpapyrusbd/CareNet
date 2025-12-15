@@ -1,248 +1,141 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
-import { CreateCareLogDto } from './dto/create-care-log.dto';
-import { CheckInDto } from './dto/check-in.dto';
-import { CheckOutDto } from './dto/check-out.dto';
-import { UpdateLogDto } from './dto/update-log.dto';
+import { CareLogType, Prisma } from '@prisma/client';
+import { CreateCareLogDto, UpdateCareLogDto } from './dto/care-log.dto';
 
 @Injectable()
 export class CareLogsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(userId: string, createCareLogDto: CreateCareLogDto) {
-    // Find caregiver by user_id
-    const caregiver = await this.prisma.caregivers.findFirst({
-      where: { userId: userId },
-    });
-
-    if (!caregiver) {
-      return {
-        statusCode: 404,
-        message: 'Caregiver profile not found',
-        data: null,
-      };
-    }
-
-    const careLog = await this.prisma.care_logs.create({
-      data: {
-        caregiver_id: caregiver.id,
-        job_id: createCareLogDto.job_id,
-        patient_id: createCareLogDto.patient_id,
-        log_type: createCareLogDto.log_type,
-        timestamp: new Date(),
-        location_lat: createCareLogDto.location_lat,
-        location_lng: createCareLogDto.location_lng,
-        data: createCareLogDto.data || {},
-        notes: createCareLogDto.notes,
-        photo_urls: createCareLogDto.photo_urls || [],
-      },
-    });
-
-    return {
-      statusCode: 201,
-      message: 'Care log created successfully',
-      data: careLog,
-    };
-  }
-
-  async checkIn(userId: string, dto: CheckInDto) {
-    // Find caregiver by user_id
-    const caregiver = await this.prisma.caregivers.findFirst({
-      where: { userId: userId },
-    });
-
-    if (!caregiver) {
-      return {
-        statusCode: 404,
-        message: 'Caregiver profile not found',
-        data: null,
-      };
-    }
-
-    const careLog = await this.prisma.care_logs.create({
-      data: {
-        caregiver_id: caregiver.id,
-        job_id: dto.job_id,
-        patient_id: dto.patient_id,
-        log_type: 'CHECK_IN',
-        timestamp: new Date(),
-        location_lat: dto.location.latitude,
-        location_lng: dto.location.longitude,
-        data: {
-          checkInTime: new Date().toISOString(),
+  async create(caregiverId: string, jobId: string, data: CreateCareLogDto) {
+    const job = await this.prisma.jobs.findUnique({
+      where: { id: jobId },
+      include: {
+        assignments: {
+          where: { caregiver_id: { in: [caregiverId] } },
         },
-        notes: null,
-        photo_urls: [],
       },
     });
 
-    return {
-      statusCode: 201,
-      message: 'Check-in recorded successfully',
-      data: careLog,
-    };
-  }
+    if (!job) throw new NotFoundException('Job not found');
 
-  async checkOut(userId: string, dto: CheckOutDto) {
-    // Find caregiver by user_id
-    const caregiver = await this.prisma.caregivers.findFirst({
-      where: { userId: userId },
+    // Resolve caregiver entity id from userId (caregiverId passed here is usually userId from controller)
+    const caregiver = await this.prisma.caregivers.findUnique({
+      where: { userId: caregiverId },
     });
+    if (!caregiver) throw new NotFoundException('Caregiver profile not found');
 
-    if (!caregiver) {
-      return {
-        statusCode: 404,
-        message: 'Caregiver profile not found',
-        data: null,
-      };
-    }
+    // Find assignment
+    const assignment = await this.prisma.assignments.findFirst({
+      where: { job_id: jobId, caregiver_id: caregiver.id },
+    });
+    if (!assignment) throw new NotFoundException('Assignment not found');
 
-    const careLog = await this.prisma.care_logs.create({
+    const log = await this.prisma.care_logs.create({
       data: {
+        job_id: jobId,
+        assignment_id: assignment.id,
         caregiver_id: caregiver.id,
-        job_id: dto.job_id,
-        patient_id: dto.patient_id,
-        log_type: 'CHECK_OUT',
+        patient_id: job.patient_id,
+        log_type: data.log_type || CareLogType.ACTIVITY,
         timestamp: new Date(),
-        location_lat: dto.location.latitude,
-        location_lng: dto.location.longitude,
-        data: {
-          checkOutTime: new Date().toISOString(),
-        },
-        notes: dto.final_notes,
-        photo_urls: [],
+        data: (data.data || {}) as Prisma.InputJsonValue,
+        notes: data.notes,
+        vitals: data.vitals as Prisma.InputJsonValue,
+        activities: data.activities as Prisma.InputJsonValue,
+        photo_urls: data.photoUrls || [],
       },
     });
 
-    return {
-      statusCode: 201,
-      message: 'Check-out recorded successfully',
-      data: careLog,
-    };
+    return log;
   }
 
-  async update(id: string, dto: UpdateLogDto) {
-    const careLog = await this.prisma.care_logs.update({
+  async update(id: string, dto: UpdateCareLogDto) {
+    const log = await this.prisma.care_logs.findUnique({
+      where: { id },
+    });
+
+    if (!log) throw new NotFoundException('Care log not found');
+
+    return this.prisma.care_logs.update({
       where: { id },
       data: {
+        log_type: dto.log_type,
         notes: dto.notes,
+        vitals: dto.vitals as Prisma.InputJsonValue,
+        activities: dto.activities as Prisma.InputJsonValue,
         photo_urls: dto.photoUrls,
-        data: dto.data,
+        data: dto.data as Prisma.InputJsonValue,
       },
       include: {
-        caregiver: {
+        caregivers: {
           select: {
             id: true,
-            phone: true,
-          },
-        },
-        patient: {
-          select: {
-            id: true,
-            name: true,
+            userId: true,
           },
         },
       },
     });
-
-    return {
-      statusCode: 200,
-      message: 'Care log updated successfully',
-      data: careLog,
-    };
-  }
-
-  async findByJob(jobId: string) {
-    const careLogs = await this.prisma.care_logs.findMany({
-      where: { job_id: jobId },
-      include: {
-        caregiver: {
-          select: {
-            id: true,
-            phone: true,
-          },
-        },
-        patient: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-      },
-      orderBy: { timestamp: 'desc' },
-    });
-
-    return {
-      statusCode: 200,
-      message: 'Care logs retrieved successfully',
-      data: careLogs,
-    };
-  }
-
-  async findByPatient(patientId: string) {
-    const careLogs = await this.prisma.care_logs.findMany({
-      where: { patient_id: patientId },
-      include: {
-        caregiver: {
-          select: {
-            id: true,
-            phone: true,
-          },
-        },
-        patient: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-      },
-      orderBy: { timestamp: 'desc' },
-    });
-
-    return {
-      statusCode: 200,
-      message: 'Care logs retrieved successfully',
-      data: careLogs,
-    };
   }
 
   async findOne(id: string) {
-    const careLog = await this.prisma.care_logs.findUnique({
+    const log = await this.prisma.care_logs.findUnique({
       where: { id },
       include: {
-        caregiver: {
+        caregivers: {
           select: {
             id: true,
-            phone: true,
-          },
-        },
-        patient: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        job: {
-          select: {
-            id: true,
-            status: true,
+            userId: true,
           },
         },
       },
     });
 
-    if (!careLog) {
-      return {
-        statusCode: 404,
-        message: 'Care log not found',
-        data: null,
-      };
+    if (!log) throw new NotFoundException('Care log not found');
+
+    return log;
+  }
+
+  async findByJob(jobId: string) {
+    const logs = await this.prisma.care_logs.findMany({
+      where: { job_id: jobId },
+      orderBy: { timestamp: 'desc' },
+      include: {
+        caregivers: {
+          select: {
+            id: true,
+            userId: true,
+          },
+        },
+      },
+    });
+
+    return logs;
+  }
+
+  async findByCaregiver(caregiverId: string, jobId?: string) {
+    const caregiver = await this.prisma.caregivers.findUnique({
+      where: { userId: caregiverId },
+    });
+
+    if (!caregiver) throw new NotFoundException('Caregiver profile not found');
+
+    const where: Prisma.care_logsWhereInput = { caregiver_id: caregiver.id };
+    if (jobId) {
+      where.job_id = jobId;
     }
 
-    return {
-      statusCode: 200,
-      message: 'Care log retrieved successfully',
-      data: careLog,
-    };
+    return this.prisma.care_logs.findMany({
+      where,
+      orderBy: { timestamp: 'desc' },
+      include: {
+        caregivers: {
+          select: {
+            id: true,
+            userId: true,
+          },
+        },
+      },
+    });
   }
 }

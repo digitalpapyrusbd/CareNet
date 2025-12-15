@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { GPSCheckIn } from './GPSCheckIn';
 import { CameraCapture } from './CameraCapture';
 import type { CapturedImage } from '@/hooks/use-camera';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Camera, MapPin, CheckCircle, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { apiCall } from '@/lib/api-client';

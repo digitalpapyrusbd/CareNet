@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useCamera, CapturedImage } from '@/hooks/use-camera';
 import { X, RotateCw } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 interface CameraCaptureProps {
   onCapture: (image: CapturedImage) => void;

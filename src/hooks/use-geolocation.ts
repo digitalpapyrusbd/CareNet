@@ -36,7 +36,9 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
   } = options;
 
   const getCurrentPosition = () => {
-    if (!('geolocation' in navigator)) {
+    const geolocation = typeof navigator !== 'undefined' ? navigator.geolocation : undefined;
+
+    if (!geolocation || typeof geolocation.getCurrentPosition !== 'function') {
       setError({
         code: 0,
         message: 'Geolocation is not supported by your browser',
@@ -47,7 +49,7 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
     setLoading(true);
     setError(null);
 
-    navigator.geolocation.getCurrentPosition(
+    geolocation.getCurrentPosition(
       (pos) => {
         setPosition({
           latitude: pos.coords.latitude,
@@ -77,7 +79,9 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
   };
 
   const watchPosition = () => {
-    if (!('geolocation' in navigator)) {
+    const geolocation = typeof navigator !== 'undefined' ? navigator.geolocation : undefined;
+
+    if (!geolocation || typeof geolocation.watchPosition !== 'function' || typeof geolocation.clearWatch !== 'function') {
       setError({
         code: 0,
         message: 'Geolocation is not supported by your browser',
@@ -85,7 +89,7 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
       return null;
     }
 
-    const watchId = navigator.geolocation.watchPosition(
+    const watchId = geolocation.watchPosition(
       (pos) => {
         setPosition({
           latitude: pos.coords.latitude,
@@ -112,7 +116,7 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
     );
 
     return () => {
-      navigator.geolocation.clearWatch(watchId);
+      geolocation.clearWatch(watchId);
     };
   };
 

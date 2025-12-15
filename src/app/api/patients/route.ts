@@ -1,3 +1,4 @@
+/* OLD VERSION - TODO: Remove after verifying new version works
 import { NextResponse } from 'next/server';
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
@@ -24,6 +25,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false, error: 'server_error', details: err?.message }, { status: 500 });
   }
 }
+*/
+
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticate, authorize } from '@/lib/middleware/auth';
 import { prisma } from '@/lib/db';
@@ -119,6 +122,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/* TODO: Move this to a separate route file
 // Create new patient
 export async function POST(request: NextRequest) {
   // Check authentication and authorization
@@ -221,3 +225,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+*/

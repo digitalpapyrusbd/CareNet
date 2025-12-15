@@ -1,3 +1,5 @@
+import React from 'react';
+
 // User-related types
 export interface User {
   id: string;

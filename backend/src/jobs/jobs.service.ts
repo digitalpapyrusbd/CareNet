@@ -1,381 +1,314 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
-import { JobStatus, AssignmentRole, AssignmentStatus } from '@prisma/client';
-import { CreateJobDto } from './dto/create-job.dto';
+import { CreateJobDto, UpdateJobDto, AssignCaregiverDto } from './dto/job.dto';
+import { JobStatus, UserRole, AssignmentStatus, Prisma } from '@prisma/client';
 
 @Injectable()
 export class JobsService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll() {
-    const jobs = await this.prisma.jobs.findMany({
-      include: {
-        patients: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        companies: {
-          select: {
-            id: true,
-            company_name: true,
-          },
-        },
-        users: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        packages: {
-          select: {
-            id: true,
-            name: true,
-            price: true,
-          },
-        },
-      },
-      orderBy: {
-        created_at: 'desc',
-      },
-    });
-
-    return {
-      statusCode: 200,
-      message: 'Jobs retrieved successfully',
-      data: jobs,
-    };
-  }
-
-  async findOne(id: string) {
-    const job = await this.prisma.jobs.findUnique({
-      where: { id },
-      include: {
-        patients: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        companies: {
-          select: {
-            id: true,
-            company_name: true,
-          },
-        },
-        users: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        packages: {
-          select: {
-            id: true,
-            name: true,
-            price: true,
-          },
-        },
-      },
-    });
-
-    if (!job) {
-      return {
-        statusCode: 404,
-        message: 'Job not found',
-        data: null,
-      };
-    }
-
-    return {
-      statusCode: 200,
-      message: 'Job retrieved successfully',
-      data: job,
-    };
-  }
-
-  async create(createJobDto: CreateJobDto, userId: string) {
-    // Get the package to calculate pricing
+  async create(guardianId: string, createJobDto: CreateJobDto) {
     const pkg = await this.prisma.packages.findUnique({
       where: { id: createJobDto.package_id },
     });
 
     if (!pkg) {
-      return {
-        statusCode: 404,
-        message: 'Package not found',
-        data: null,
-      };
+      throw new NotFoundException('Package not found');
     }
 
-    // Get the package's company to assign the job
-    const company = await this.prisma.companies.findUnique({
-      where: { id: pkg.company_id },
+    const patient = await this.prisma.patients.findUnique({
+      where: { id: createJobDto.patient_id },
     });
 
-    if (!company) {
-      return {
-        statusCode: 404,
-        message: 'Company not found for this package',
-        data: null,
-      };
+    if (!patient || patient.guardian_id !== guardianId) {
+      throw new ForbiddenException('Patient not found or not owned by you');
     }
-
-    // Calculate total price based on package
-    const packagePrice = Number(pkg.price.toString());
-    let total_price = packagePrice;
-    if (createJobDto.total_price !== undefined) {
-      total_price = createJobDto.total_price;
-    }
-    const commission_amount = total_price * 0.15; // 15% commission
-    const payout_amount = total_price - commission_amount;
 
     const job = await this.prisma.jobs.create({
       data: {
         package_id: createJobDto.package_id,
+        guardian_id: guardianId,
         patient_id: createJobDto.patient_id,
-        company_id: company.id,
-        guardian_id: userId,
+        company_id: pkg.company_id,
         start_date: new Date(createJobDto.start_date),
-        end_date: new Date(createJobDto.end_date),
+        end_date: createJobDto.end_date
+          ? new Date(createJobDto.end_date)
+          : new Date(new Date().setMonth(new Date().getMonth() + 1)),
+        special_instructions: createJobDto.special_instructions,
         status: JobStatus.PENDING_ASSIGNMENT,
-        total_price: total_price,
-        commission_amount: commission_amount,
-        payout_amount: payout_amount,
-        special_instructions: createJobDto.special_instructions || null,
-      },
-      include: {
-        patients: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        packages: {
-          select: {
-            id: true,
-            name: true,
-            price: true,
-          },
-        },
-        users: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        companies: {
-          select: {
-            id: true,
-            company_name: true,
-          },
-        },
+        total_price: pkg.price,
+        commission_amount: Number(pkg.price) * 0.1,
+        payout_amount: Number(pkg.price) * 0.9,
       },
     });
 
-    return {
-      statusCode: 201,
-      message: 'Job created successfully',
-      data: job,
-    };
+    return job;
   }
 
-  async update(id: string, updateJobDto: any) {
-    const job = await this.prisma.jobs.update({
-      where: { id },
-      data: {
-        status: updateJobDto.status,
-        completion_notes: updateJobDto.completion_notes,
-        cancelled_reason: updateJobDto.cancelled_reason,
-        cancelled_at: updateJobDto.cancelled_at ? new Date(updateJobDto.cancelled_at) : null,
-        cancelled_by: updateJobDto.cancelled_by,
-      },
-      include: {
-        patients: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        companies: {
-          select: {
-            id: true,
-            company_name: true,
-          },
-        },
-        users: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        packages: {
-          select: {
-            id: true,
-            name: true,
-            price: true,
-          },
-        },
-      },
-    });
-
-    return {
-      statusCode: 200,
-      message: 'Job updated successfully',
-      data: job,
-    };
-  }
-
-  async remove(id: string) {
-    const job = await this.prisma.jobs.delete({
-      where: { id },
-    });
-
-    return {
-      statusCode: 200,
-      message: 'Job deleted successfully',
-      data: job,
-    };
-  }
-
-  async assignCaregiver(
-    jobId: string,
-    caregiverId: string,
-    role: AssignmentRole = AssignmentRole.PRIMARY,
-    shiftStart?: string,
-    shiftEnd?: string,
-    daysOfWeek?: string[],
+  async findAll(
+    userId: string,
+    userRole: UserRole,
+    page: number = 1,
+    limit: number = 20,
   ) {
-    // First check if job exists and is in PENDING_ASSIGNMENT status
+    const skip = (page - 1) * limit;
+    const where: Prisma.jobsWhereInput = {};
+
+    if (userRole === UserRole.GUARDIAN) {
+      where.guardian_id = userId;
+    } else if (
+      userRole === UserRole.AGENCY_ADMIN ||
+      userRole === UserRole.AGENCY_MANAGER
+    ) {
+      const company = await this.prisma.companies.findUnique({
+        where: { userId },
+      });
+      if (company) where.company_id = company.id;
+    } else if (userRole === UserRole.CAREGIVER) {
+      const caregiver = await this.prisma.caregivers.findUnique({
+        where: { userId },
+      });
+      if (caregiver) {
+        where.assignments = {
+          some: { caregiver_id: caregiver.id },
+        };
+      }
+    }
+
+    const [jobs, total] = await Promise.all([
+      this.prisma.jobs.findMany({
+        where,
+        skip,
+        take: limit,
+        include: {
+          packages: { select: { name: true } },
+          patients: { select: { name: true } },
+          assignments: {
+            include: {
+              caregivers_assignments_caregiver_idTocaregivers: {
+                include: {
+                  users: { select: { name: true } },
+                },
+              },
+            },
+          },
+        },
+        orderBy: { created_at: 'desc' },
+      }),
+      this.prisma.jobs.count({ where }),
+    ]);
+
+    return {
+      data: jobs,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
+
+  async findOne(id: string, userId: string, userRole: UserRole) {
     const job = await this.prisma.jobs.findUnique({
-      where: { id: jobId },
+      where: { id },
+      include: {
+        packages: true,
+        patients: true,
+        companies: true,
+        assignments: {
+          include: {
+            caregivers_assignments_caregiver_idTocaregivers: {
+              include: {
+                users: { select: { name: true, phone: true } },
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!job) {
-      return {
-        statusCode: 404,
-        message: 'Job not found',
-        data: null,
-      };
+      throw new NotFoundException('Job not found');
+    }
+
+    if (
+      job.guardian_id !== userId &&
+      userRole !== UserRole.SUPER_ADMIN &&
+      userRole !== UserRole.PLATFORM_ADMIN
+    ) {
+      const company = await this.prisma.companies.findUnique({
+        where: { userId },
+      });
+      if (!company || company.id !== job.company_id) {
+        // Also allow caregiver assigned to this job
+        const isAssigned = job.assignments.some(
+          (a) =>
+            a.caregivers_assignments_caregiver_idTocaregivers?.userId ===
+            userId,
+        );
+        if (!isAssigned) {
+          throw new ForbiddenException('Access denied');
+        }
+      }
+    }
+
+    return job;
+  }
+
+  async update(id: string, userId: string, updateJobDto: UpdateJobDto) {
+    const job = await this.prisma.jobs.findUnique({ where: { id } });
+
+    if (!job) {
+      throw new NotFoundException('Job not found');
+    }
+
+    if (job.guardian_id !== userId) {
+      throw new ForbiddenException('Only the guardian can update this job');
     }
 
     if (job.status !== JobStatus.PENDING_ASSIGNMENT) {
-      return {
-        statusCode: 400,
-        message: 'Job is not in pending assignment status',
-        data: null,
-      };
+      throw new BadRequestException('Can only update pending jobs');
     }
 
-    // Create assignment
-    const assignment = await this.prisma.assignments.create({
+    const updatedJob = await this.prisma.jobs.update({
+      where: { id },
       data: {
-        job_id: jobId,
-        caregiver_id: caregiverId,
-        role,
-        shift_start_time: shiftStart ?? '09:00',
-        shift_end_time: shiftEnd ?? '17:00',
-        days_of_week: daysOfWeek ?? [],
-        status: AssignmentStatus.ASSIGNED,
+        start_date: updateJobDto.start_date
+          ? new Date(updateJobDto.start_date)
+          : undefined,
+        end_date: updateJobDto.end_date
+          ? new Date(updateJobDto.end_date)
+          : undefined,
+        special_instructions: updateJobDto.special_instructions,
       },
     });
 
-    // Update job status to ACTIVE
-    await this.prisma.jobs.update({
-      where: { id: jobId },
-      data: {
-        status: JobStatus.ACTIVE,
-      },
-    });
-
-    return {
-      statusCode: 201,
-      message: 'Caregiver assigned successfully',
-      data: assignment,
-    };
+    return updatedJob;
   }
 
-  async completeJob(jobId: string, completionNotes?: string) {
-    const job = await this.prisma.jobs.findUnique({
-      where: { id: jobId },
-    });
+  async assignCaregivers(
+    id: string,
+    userId: string,
+    assignDto: AssignCaregiverDto,
+  ) {
+    const job = await this.prisma.jobs.findUnique({ where: { id } });
 
     if (!job) {
-      return {
-        statusCode: 404,
-        message: 'Job not found',
-        data: null,
-      };
+      throw new NotFoundException('Job not found');
     }
 
-    // Update job status to COMPLETED
+    const company = await this.prisma.companies.findUnique({
+      where: { userId },
+    });
+    if (!company || company.id !== job.company_id) {
+      throw new ForbiddenException('Only the agency can assign caregivers');
+    }
+
+    await this.prisma.assignments.deleteMany({ where: { job_id: id } });
+
+    await Promise.all(
+      assignDto.caregiver_ids.map((caregiverId) =>
+        this.prisma.assignments.create({
+          data: {
+            job_id: id,
+            caregiver_id: caregiverId,
+            status: AssignmentStatus.ASSIGNED,
+            shift_start_time: '09:00', // Default
+            shift_end_time: '17:00', // Default
+            days_of_week: ['MON', 'TUE', 'WED', 'THU', 'FRI'], // Default
+          },
+        }),
+      ),
+    );
+
+    return { message: 'Caregivers assigned successfully' };
+  }
+
+  async acceptJob(id: string, userId: string) {
+    const caregiver = await this.prisma.caregivers.findUnique({
+      where: { userId },
+    });
+    if (!caregiver) {
+      throw new NotFoundException('Caregiver profile not found');
+    }
+
+    const assignment = await this.prisma.assignments.findFirst({
+      where: {
+        job_id: id,
+        caregiver_id: caregiver.id,
+      },
+    });
+
+    if (!assignment) {
+      throw new NotFoundException('Job assignment not found');
+    }
+
+    await this.prisma.assignments.update({
+      where: { id: assignment.id },
+      data: { status: AssignmentStatus.ACTIVE },
+    });
+
+    const allAssignments = await this.prisma.assignments.findMany({
+      where: { job_id: id },
+    });
+
+    const allAccepted = allAssignments.every(
+      (a) => a.status === AssignmentStatus.ACTIVE,
+    );
+
+    if (allAccepted) {
+      await this.prisma.jobs.update({
+        where: { id },
+        data: { status: JobStatus.ACTIVE },
+      });
+    }
+
+    return { message: 'Job accepted successfully' };
+  }
+
+  async completeJob(id: string, userId: string) {
+    const job = await this.prisma.jobs.findUnique({ where: { id } });
+
+    if (!job) {
+      throw new NotFoundException('Job not found');
+    }
+
+    if (job.guardian_id !== userId) {
+      throw new ForbiddenException('Only the guardian can complete this job');
+    }
+
     const updatedJob = await this.prisma.jobs.update({
-      where: { id: jobId },
+      where: { id },
       data: {
         status: JobStatus.COMPLETED,
-        completion_notes: completionNotes,
+        // completed_at field doesn't exist in schema
       },
     });
 
-    // Update assignment status to COMPLETED
-    await this.prisma.assignments.updateMany({
-      where: {
-        job_id: jobId,
-        status: 'ACTIVE',
-      },
-      data: {
-        status: 'COMPLETED',
-      },
-    });
-
-    return {
-      statusCode: 200,
-      message: 'Job completed successfully',
-      data: updatedJob,
-    };
+    return updatedJob;
   }
 
-  async cancelJob(jobId: string, reason: string, cancelledBy: string) {
-    const job = await this.prisma.jobs.findUnique({
-      where: { id: jobId },
-    });
+  async cancelJob(id: string, userId: string) {
+    const job = await this.prisma.jobs.findUnique({ where: { id } });
 
     if (!job) {
-      return {
-        statusCode: 404,
-        message: 'Job not found',
-        data: null,
-      };
+      throw new NotFoundException('Job not found');
     }
 
-    // Update job status to CANCELLED
+    if (job.guardian_id !== userId) {
+      throw new ForbiddenException('Only the guardian can cancel this job');
+    }
+
     const updatedJob = await this.prisma.jobs.update({
-      where: { id: jobId },
+      where: { id },
       data: {
         status: JobStatus.CANCELLED,
-        cancelled_reason: reason,
         cancelled_at: new Date(),
-        cancelled_by: cancelledBy,
+        cancelled_by: userId,
       },
     });
 
-    // Update assignment status to REPLACED
-    await this.prisma.assignments.updateMany({
-      where: {
-        job_id: jobId,
-        status: 'ACTIVE',
-      },
-      data: {
-        status: 'REPLACED',
-        replacement_reason: reason,
-      },
-    });
-
-    return {
-      statusCode: 200,
-      message: 'Job cancelled successfully',
-      data: updatedJob,
-    };
+    return updatedJob;
   }
 }

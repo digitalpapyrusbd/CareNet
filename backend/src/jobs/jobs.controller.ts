@@ -1,104 +1,86 @@
 import {
-  BadRequestException,
-  Body,
   Controller,
-  Delete,
   Get,
-  Param,
-  Patch,
   Post,
-  Req,
-  UseGuards,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
 } from '@nestjs/common';
-import type { Request } from 'express';
 import { JobsService } from './jobs.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { CreateJobDto } from './dto/create-job.dto';
-import { AssignmentRole } from '@prisma/client';
-import { AssignCaregiverDto } from './dto/assign-caregiver.dto';
-
-type AuthenticatedRequest = Request & {
-  user?: {
-    userId?: string;
-    id?: string;
-  };
-};
+import { CreateJobDto, UpdateJobDto, AssignCaregiverDto } from './dto/job.dto';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { Roles } from '../common/decorators/roles.decorator';
+import { UserRole } from '@prisma/client';
 
 @Controller('jobs')
-@UseGuards(JwtAuthGuard)
 export class JobsController {
   constructor(private readonly jobsService: JobsService) {}
 
+  @Post()
+  @Roles(UserRole.GUARDIAN)
+  create(
+    @CurrentUser('id') userId: string,
+    @Body() createJobDto: CreateJobDto,
+  ) {
+    return this.jobsService.create(userId, createJobDto);
+  }
+
   @Get()
-  async findAll() {
-    return await this.jobsService.findAll();
+  findAll(
+    @CurrentUser('id') userId: string,
+    @CurrentUser('role') userRole: UserRole,
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '20',
+  ) {
+    return this.jobsService.findAll(userId, userRole, +page, +limit);
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return await this.jobsService.findOne(id);
-  }
-
-  @Post()
-  async create(
-    @Body() createJobDto: CreateJobDto,
-    @Req() req: AuthenticatedRequest,
+  findOne(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+    @CurrentUser('role') userRole: UserRole,
   ) {
-    const userId = req.user?.userId ?? req.user?.id;
-    if (!userId) {
-      throw new BadRequestException('Missing authenticated user');
-    }
-
-    return await this.jobsService.create(createJobDto, userId);
+    return this.jobsService.findOne(id, userId, userRole);
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateJobDto: any) {
-    return await this.jobsService.update(id, updateJobDto);
+  @Roles(UserRole.GUARDIAN)
+  update(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+    @Body() updateJobDto: UpdateJobDto,
+  ) {
+    return this.jobsService.update(id, userId, updateJobDto);
+  }
+
+  @Patch(':id/assign')
+  @Roles(UserRole.AGENCY_ADMIN, UserRole.AGENCY_MANAGER)
+  assignCaregivers(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+    @Body() assignDto: AssignCaregiverDto,
+  ) {
+    return this.jobsService.assignCaregivers(id, userId, assignDto);
+  }
+
+  @Patch(':id/accept')
+  @Roles(UserRole.CAREGIVER)
+  acceptJob(@Param('id') id: string, @CurrentUser('id') userId: string) {
+    return this.jobsService.acceptJob(id, userId);
+  }
+
+  @Patch(':id/complete')
+  @Roles(UserRole.GUARDIAN)
+  completeJob(@Param('id') id: string, @CurrentUser('id') userId: string) {
+    return this.jobsService.completeJob(id, userId);
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
-    return await this.jobsService.remove(id);
-  }
-
-  @Post(':id/assign')
-  async assignCaregiver(
-    @Param('id') id: string,
-    @Body() body: { caregiverId: string; role?: AssignmentRole },
-  ) {
-    return await this.jobsService.assignCaregiver(
-      id,
-      body.caregiverId,
-      body.role,
-    );
-  }
-
-  @Post('assign')
-  async assignCaregiverToJob(@Body() dto: AssignCaregiverDto) {
-    return this.jobsService.assignCaregiver(
-      dto.job_id,
-      dto.caregiver_id,
-      dto.role,
-      dto.shift_start_time,
-      dto.shift_end_time,
-      dto.days_of_week,
-    );
-  }
-
-  @Post(':id/complete')
-  async completeJob(
-    @Param('id') id: string,
-    @Body() body: { completionNotes?: string },
-  ) {
-    return await this.jobsService.completeJob(id, body.completionNotes);
-  }
-
-  @Post(':id/cancel')
-  async cancelJob(
-    @Param('id') id: string,
-    @Body() body: { reason: string; cancelledBy: string },
-  ) {
-    return await this.jobsService.cancelJob(id, body.reason, body.cancelledBy);
+  @Roles(UserRole.GUARDIAN)
+  cancelJob(@Param('id') id: string, @CurrentUser('id') userId: string) {
+    return this.jobsService.cancelJob(id, userId);
   }
 }

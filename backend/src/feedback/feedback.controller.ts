@@ -1,27 +1,18 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  UseGuards,
-  Request,
-} from '@nestjs/common';
-import { FeedbackService } from './feedback.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import { FeedbackService, CreateFeedbackDto } from './feedback.service';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @Controller('feedback')
-@UseGuards(JwtAuthGuard)
 export class FeedbackController {
-  constructor(private feedbackService: FeedbackService) {}
+  constructor(private readonly feedbackService: FeedbackService) { }
 
   @Post()
-  async create(@Request() req, @Body() dto: any) {
-    return this.feedbackService.create(req.user.userId, dto);
+  create(@CurrentUser('id') userId: string, @Body() data: CreateFeedbackDto) {
+    return this.feedbackService.create(userId, data);
   }
 
-  @Get('caregiver/:id')
-  async getCaregiverRatings(@Param('id') id: string) {
-    return this.feedbackService.getCaregiverRatings(id);
+  @Get()
+  findByTarget(@Query('type') type: string, @Query('id') id: string) {
+    return this.feedbackService.findByTarget(type, id);
   }
 }

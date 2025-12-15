@@ -6,51 +6,47 @@ import {
   Delete,
   Body,
   Param,
-  UseGuards,
-  Req,
 } from '@nestjs/common';
-import type { Request } from 'express';
 import { PatientsService } from './patients.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { CreatePatientDto } from './dto/create-patient.dto';
-import { UpdatePatientDto } from './dto/update-patient.dto';
+import { CreatePatientDto, UpdatePatientDto } from './dto/patient.dto';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { Roles } from '../common/decorators/roles.decorator';
+import { UserRole } from '@prisma/client';
 
 @Controller('patients')
-@UseGuards(JwtAuthGuard)
+@Roles(UserRole.GUARDIAN)
 export class PatientsController {
   constructor(private readonly patientsService: PatientsService) {}
 
+  @Post()
+  create(
+    @CurrentUser('id') guardianId: string,
+    @Body() createPatientDto: CreatePatientDto,
+  ) {
+    return this.patientsService.create(guardianId, createPatientDto);
+  }
+
   @Get()
-  async findAll(@Req() req: Request) {
-    const userId = (req as any).user?.userId || (req as any).user?.id;
-    return await this.patientsService.findAll(userId);
+  findAll(@CurrentUser('id') guardianId: string) {
+    return this.patientsService.findAll(guardianId);
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string, @Req() req: Request) {
-    const userId = (req as any).user?.userId || (req as any).user?.id;
-    return await this.patientsService.findOne(id, userId);
-  }
-
-  @Post()
-  async create(@Body() createPatientDto: CreatePatientDto, @Req() req: Request) {
-    const userId = (req as any).user?.userId || (req as any).user?.id;
-    return await this.patientsService.create(createPatientDto, userId);
+  findOne(@Param('id') id: string, @CurrentUser('id') guardianId: string) {
+    return this.patientsService.findOne(id, guardianId);
   }
 
   @Patch(':id')
-  async update(
+  update(
     @Param('id') id: string,
+    @CurrentUser('id') guardianId: string,
     @Body() updatePatientDto: UpdatePatientDto,
-    @Req() req: Request,
   ) {
-    const userId = (req as any).user?.userId || (req as any).user?.id;
-    return await this.patientsService.update(id, userId, updatePatientDto);
+    return this.patientsService.update(id, guardianId, updatePatientDto);
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string, @Req() req: Request) {
-    const userId = (req as any).user?.userId || (req as any).user?.id;
-    return await this.patientsService.remove(id, userId);
+  remove(@Param('id') id: string, @CurrentUser('id') guardianId: string) {
+    return this.patientsService.remove(id, guardianId);
   }
 }

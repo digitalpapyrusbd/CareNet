@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { authenticate, getCurrentUser } from '@/lib/middleware/auth';
-import { NotificationService } from '@/lib/notification-service';
+import notificationService from '@/lib/notification-service';
 
 // Validation schema
 const sendNotificationSchema = z.object({

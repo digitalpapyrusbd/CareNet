@@ -1,99 +1,73 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
-import { CreateNotificationDto } from './dto/create-notification.dto';
+import { NotificationType, NotificationStatus } from '@prisma/client';
 
 @Injectable()
 export class NotificationsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(dto: CreateNotificationDto) {
+  async create(
+    userId: string,
+    title: string,
+    message: string,
+    type: NotificationType = NotificationType.IN_APP,
+  ) {
     const notification = await this.prisma.notifications.create({
       data: {
-        userId: dto.userId,
-        type: dto.type,
-        channel: dto.channel,
-        title: dto.title,
-        body: dto.body,
-        data: dto.data || {},
-        status: 'PENDING',
+        userId: userId, // camelCase as per schema
+        title,
+        body: message, // body as per schema
+        type,
+        channel: type === NotificationType.IN_APP ? 'IN_APP' : 'PUSH',
+        status: NotificationStatus.PENDING,
       },
     });
 
-    // Trigger actual sending based on type
-    await this.sendNotification(notification);
+    // TODO: Integrate with FCM/Twilio/SendGrid based on type
 
     return notification;
   }
 
-  async sendNotification(notification: any) {
-    // Update status to SENT for now
-    // In production, integrate with actual services
+  async findAll(userId: string, page: number = 1, limit: number = 20) {
+    const skip = (page - 1) * limit;
+
+    const [notifications, total] = await Promise.all([
+      this.prisma.notifications.findMany({
+        where: { userId },
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' }, // createdAt camelCase
+      }),
+      this.prisma.notifications.count({ where: { userId } }),
+    ]);
+
+    return {
+      data: notifications,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
+
+  async markAsRead(id: string, userId?: string) {
     await this.prisma.notifications.update({
-      where: { id: notification.id },
-      data: {
-        status: 'SENT',
-        sent_at: new Date(),
-      },
-    });
-  }
-
-  async sendSMS(phone: string, message: string) {
-    // Twilio integration placeholder
-    console.log(`Sending SMS to ${phone}: ${message}`);
-    // TODO: Implement actual Twilio integration
-    return { success: true, message: 'SMS queued for delivery' };
-  }
-
-  async sendEmail(email: string, subject: string, body: string) {
-    // SendGrid integration placeholder
-    console.log(`Sending email to ${email}: ${subject}`);
-    // TODO: Implement actual SendGrid integration
-    return { success: true, message: 'Email queued for delivery' };
-  }
-
-  async sendPush(userId: string, title: string, body: string) {
-    // Web Push API placeholder
-    console.log(`Sending push to user ${userId}: ${title}`);
-    // TODO: Implement actual Web Push integration
-    return { success: true, message: 'Push notification queued' };
-  }
-
-  async findByUser(userId: string) {
-    return this.prisma.notifications.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'desc' },
-    });
-  }
-
-  async markAsRead(id: string, userId: string) {
-    const notification = await this.prisma.notifications.findFirst({
-      where: { id, userId },
-    });
-
-    if (!notification) {
-      throw new NotFoundException('Notification not found');
-    }
-
-    return this.prisma.notifications.update({
       where: { id },
       data: {
-        status: 'READ',
+        status: NotificationStatus.READ,
         read_at: new Date(),
       },
     });
+
+    return { message: 'Notification marked as read' };
   }
 
-  async delete(id: string, userId: string) {
-    const notification = await this.prisma.notifications.findFirst({
-      where: { id, userId },
+  async markAllAsRead(userId: string) {
+    await this.prisma.notifications.updateMany({
+      where: { userId, read_at: null },
+      data: {
+        status: NotificationStatus.READ,
+        read_at: new Date(),
+      },
     });
 
-    if (!notification) {
-      throw new NotFoundException('Notification not found');
-    }
-
-    return this.prisma.notifications.delete({
-      where: { id },
-    });
+    return { message: 'All notifications marked as read' };
   }
 }

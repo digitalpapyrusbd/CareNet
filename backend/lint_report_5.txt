@@ -1,0 +1,196 @@
+
+> backend@0.0.1 lint
+> eslint "{src,apps,libs,test}/**/*.ts" --fix
+
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\analytics\analytics.service.ts
+   3:10  error  'UserRole' is defined but never used          @typescript-eslint/no-unused-vars
+  34:11  error  'company' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\audit\audit.service.ts
+  15:9  error  Unsafe assignment of an `any` value  @typescript-eslint/no-unsafe-assignment
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\auth\auth.controller.ts
+   1:34  error  'UseGuards' is defined but never used  @typescript-eslint/no-unused-vars
+  69:14  error  Unsafe assignment of an `any` value    @typescript-eslint/no-unsafe-assignment
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\auth\auth.service.spec.ts
+   36:7   error  'jwtService' is assigned a value but never used       @typescript-eslint/no-unused-vars
+   37:7   error  'configService' is assigned a value but never used    @typescript-eslint/no-unused-vars
+   90:7   error  Unsafe assignment of an `any` value                   @typescript-eslint/no-unsafe-assignment
+  138:60  error  Async arrow function has no 'await' expression        @typescript-eslint/require-await
+  192:13  error  Unsafe assignment of an `any` value                   @typescript-eslint/no-unsafe-assignment
+  194:21  error  Unsafe member access .access_token on an `any` value  @typescript-eslint/no-unsafe-member-access
+  195:21  error  Unsafe member access .user on an `any` value          @typescript-eslint/no-unsafe-member-access
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\auth\auth.service.ts
+   16:10  error  'UserRole' is defined but never used                        @typescript-eslint/no-unused-vars
+  117:11  error  Unsafe assignment of an `any` value                         @typescript-eslint/no-unsafe-assignment
+  122:9   error  Unsafe assignment of an `any` value                         @typescript-eslint/no-unsafe-assignment
+  122:25  error  Unsafe member access .phone on an `any` value               @typescript-eslint/no-unsafe-member-access
+  123:9   error  Unsafe assignment of an `any` value                         @typescript-eslint/no-unsafe-assignment
+  123:25  error  Unsafe member access .email on an `any` value               @typescript-eslint/no-unsafe-member-access
+  124:9   error  Unsafe assignment of an `any` value                         @typescript-eslint/no-unsafe-assignment
+  124:33  error  Unsafe member access .password_hash on an `any` value       @typescript-eslint/no-unsafe-member-access
+  125:9   error  Unsafe assignment of an `any` value                         @typescript-eslint/no-unsafe-assignment
+  125:24  error  Unsafe member access .name on an `any` value                @typescript-eslint/no-unsafe-member-access
+  126:9   error  Unsafe assignment of an `any` value                         @typescript-eslint/no-unsafe-assignment
+  126:24  error  Unsafe member access .role on an `any` value                @typescript-eslint/no-unsafe-member-access
+  127:9   error  Unsafe assignment of an `any` value                         @typescript-eslint/no-unsafe-assignment
+  127:28  error  Unsafe member access .language on an `any` value            @typescript-eslint/no-unsafe-member-access
+  143:20  error  Unexpected `await` of a non-Promise (non-"Thenable") value  @typescript-eslint/await-thenable
+  198:20  error  Unexpected `await` of a non-Promise (non-"Thenable") value  @typescript-eslint/await-thenable
+  344:13  error  Unsafe assignment of an `any` value                         @typescript-eslint/no-unsafe-assignment
+  349:18  error  Unsafe assignment of an `any` value                         @typescript-eslint/no-unsafe-assignment
+  349:30  error  Unsafe member access .sub on an `any` value                 @typescript-eslint/no-unsafe-member-access
+  372:7   error  Unsafe assignment of an `any` value                         @typescript-eslint/no-unsafe-assignment
+  377:7   error  Unsafe assignment of an `any` value                         @typescript-eslint/no-unsafe-assignment
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\caregivers\caregivers.controller.ts
+  38:58  warning  Unsafe argument of type `any` assigned to a parameter of type `CaregiverFilters | undefined`  @typescript-eslint/no-unsafe-argument
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\caregivers\caregivers.service.spec.ts
+  109:11  error  Unsafe assignment of an `any` value  @typescript-eslint/no-unsafe-assignment
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\common\decorators\current-user.decorator.ts
+  5:11  error  Unsafe assignment of an `any` value            @typescript-eslint/no-unsafe-assignment
+  6:11  error  Unsafe assignment of an `any` value            @typescript-eslint/no-unsafe-assignment
+  6:26  error  Unsafe member access .user on an `any` value   @typescript-eslint/no-unsafe-member-access
+  8:5   error  Unsafe return of a value of type `any`         @typescript-eslint/no-unsafe-return
+  8:26  error  Unsafe member access [data] on an `any` value  @typescript-eslint/no-unsafe-member-access
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\common\filters\http-exception.filter.ts
+  27:7   error  Unsafe assignment of an `any` value              @typescript-eslint/no-unsafe-assignment
+  30:40  error  Unsafe member access .message on an `any` value  @typescript-eslint/no-unsafe-member-access
+  31:7   error  Unsafe assignment of an `any` value              @typescript-eslint/no-unsafe-assignment
+  33:40  error  Unsafe member access .error on an `any` value    @typescript-eslint/no-unsafe-member-access
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\common\filters\prisma-exception.filter.ts
+  18:11  error  Unsafe assignment of an `any` value             @typescript-eslint/no-unsafe-assignment
+  27:9   error  Unexpected lexical declaration in case block    no-case-declarations
+  55:7   error  Unsafe assignment of an `any` value             @typescript-eslint/no-unsafe-assignment
+  55:21  error  Unsafe member access .url on an `any` value     @typescript-eslint/no-unsafe-member-access
+  56:7   error  Unsafe assignment of an `any` value             @typescript-eslint/no-unsafe-assignment
+  56:23  error  Unsafe member access .method on an `any` value  @typescript-eslint/no-unsafe-member-access
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\common\guards\feature-access.guard.ts
+  14:11  error    Unsafe assignment of an `any` value                                     @typescript-eslint/no-unsafe-assignment
+  15:11  error    Unsafe assignment of an `any` value                                     @typescript-eslint/no-unsafe-assignment
+  15:26  error    Unsafe member access .user on an `any` value                            @typescript-eslint/no-unsafe-member-access
+  24:9   error    Unsafe assignment of an `any` value                                     @typescript-eslint/no-unsafe-assignment
+  24:23  error    Unsafe member access .id on an `any` value                              @typescript-eslint/no-unsafe-member-access
+  34:11  error    Unsafe assignment of an `any` value                                     @typescript-eslint/no-unsafe-assignment
+  34:27  error    Unsafe member access .route on an `any` value                           @typescript-eslint/no-unsafe-member-access
+  35:11  error    Unsafe assignment of an `any` value                                     @typescript-eslint/no-unsafe-assignment
+  35:28  error    Unsafe member access .method on an `any` value                          @typescript-eslint/no-unsafe-member-access
+  36:45  warning  Unsafe argument of type `any` assigned to a parameter of type `string`  @typescript-eslint/no-unsafe-argument
+  36:52  warning  Unsafe argument of type `any` assigned to a parameter of type `string`  @typescript-eslint/no-unsafe-argument
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\common\guards\jwt-auth.guard.ts
+  29:38  error  'info' is defined but never used        @typescript-eslint/no-unused-vars
+  33:5   error  Unsafe return of a value of type `any`  @typescript-eslint/no-unsafe-return
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\common\guards\roles.guard.ts
+  25:11  error  Unsafe assignment of an `any` value           @typescript-eslint/no-unsafe-assignment
+  31:55  error  Unsafe member access .role on an `any` value  @typescript-eslint/no-unsafe-member-access
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\common\interceptors\logging.interceptor.ts
+  16:11  error    Unsafe assignment of an `any` value                                 @typescript-eslint/no-unsafe-assignment
+  17:11  error    Unsafe assignment of an `any` value                                 @typescript-eslint/no-unsafe-assignment
+  22:21  warning  Unsafe argument of type `any` assigned to a parameter of type `{}`  @typescript-eslint/no-unsafe-argument
+  28:16  error    'data' is defined but never used                                    @typescript-eslint/no-unused-vars
+  37:77  error    Unsafe member access .message on an `any` value                     @typescript-eslint/no-unsafe-member-access
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\common\prisma\prisma.service.ts
+  40:11  error  Unsafe return of a value of type `any`              @typescript-eslint/no-unsafe-return
+  40:18  error  Unsafe call of a(n) `any` typed value               @typescript-eslint/no-unsafe-call
+  40:33  error  Unsafe member access .deleteMany on an `any` value  @typescript-eslint/no-unsafe-member-access
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\companies\companies.service.spec.ts
+  126:11  error  Unsafe assignment of an `any` value  @typescript-eslint/no-unsafe-assignment
+  127:13  error  Unsafe assignment of an `any` value  @typescript-eslint/no-unsafe-assignment
+  226:11  error  Unsafe assignment of an `any` value  @typescript-eslint/no-unsafe-assignment
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\companies\companies.service.ts
+   73:13  error  Unsafe member access .is_verified on an `error` typed value  @typescript-eslint/no-unsafe-member-access
+   77:13  error  Unsafe member access .OR on an `error` typed value           @typescript-eslint/no-unsafe-member-access
+   85:9   error  Unsafe assignment of an error typed value                    @typescript-eslint/no-unsafe-assignment
+  102:37  error  Unsafe assignment of an error typed value                    @typescript-eslint/no-unsafe-assignment
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\companies\dto\company.dto.ts
+  6:3   error  'IsDecimal' is defined but never used         @typescript-eslint/no-unused-vars
+  9:24  error  'SubscriptionTier' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\disputes\disputes.service.ts
+   36:9   error  Unsafe assignment of an `any` value                   @typescript-eslint/no-unsafe-assignment
+  105:3   error  Async method 'addEvidence' has no 'await' expression  @typescript-eslint/require-await
+  105:21  error  'id' is defined but never used                        @typescript-eslint/no-unused-vars
+  105:33  error  'evidenceUrls' is defined but never used              @typescript-eslint/no-unused-vars
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\feedback\feedback.controller.ts
+  11:48  warning  Unsafe argument of type `any` assigned to a parameter of type `CreateFeedbackDto`  @typescript-eslint/no-unsafe-argument
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\health-records\health-records.controller.ts
+  13:45  warning  Unsafe argument of type `any` assigned to a parameter of type `string`                 @typescript-eslint/no-unsafe-argument
+  13:50  error    Unsafe member access .patient_id on an `any` value                                     @typescript-eslint/no-unsafe-member-access
+  13:62  warning  Unsafe argument of type `any` assigned to a parameter of type `CreateHealthRecordDto`  @typescript-eslint/no-unsafe-argument
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\jobs\jobs.service.spec.ts
+    9:31  error  'AssignmentStatus' is defined but never used  @typescript-eslint/no-unused-vars
+   97:11  error  Unsafe assignment of an `any` value           @typescript-eslint/no-unsafe-assignment
+  140:11  error  Unsafe assignment of an `any` value           @typescript-eslint/no-unsafe-assignment
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\lockout\lockout.service.ts
+  34:9   error  Unsafe assignment of an `any` value                        @typescript-eslint/no-unsafe-assignment
+  34:34  error  Unsafe member access .locked_features on an `any` value    @typescript-eslint/no-unsafe-member-access
+  35:9   error  Unsafe assignment of an `any` value                        @typescript-eslint/no-unsafe-assignment
+  35:34  error  Unsafe member access .active_features on an `any` value    @typescript-eslint/no-unsafe-member-access
+  64:3   error  Async method 'grantGracePeriod' has no 'await' expression  @typescript-eslint/require-await
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\main.ts
+  53:1  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\messages\gateway\messages.gateway.ts
+  66:30  error    Unsafe assignment of an `any` value                                                                                                                                 @typescript-eslint/no-unsafe-assignment
+  66:45  error    Unsafe member access .message on an `any` value                                                                                                                     @typescript-eslint/no-unsafe-member-access
+  87:5   warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  98:5   warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\messages\messages.service.ts
+  43:13  error  Unsafe assignment of an `any` value  @typescript-eslint/no-unsafe-assignment
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\notifications\notifications.service.ts
+  50:32  error  'userId' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\packages\packages.service.ts
+   4:3   error  'ForbiddenException' is defined but never used    @typescript-eslint/no-unused-vars
+  43:13  error  Unsafe member access .category on an `any` value  @typescript-eslint/no-unsafe-member-access
+  48:9   error  Unsafe assignment of an `any` value               @typescript-eslint/no-unsafe-assignment
+  63:36  error  Unsafe assignment of an `any` value               @typescript-eslint/no-unsafe-assignment
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\payments\payments.controller.ts
+  13:3  error  'ProcessPaymentDto' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\payments\payments.service.ts
+   12:25  error  'PaymentMethod' is defined but never used                    @typescript-eslint/no-unused-vars
+   83:9   error  Unsafe assignment of an `any` value                          @typescript-eslint/no-unsafe-assignment
+  224:3   error  Async method 'handleBkashWebhook' has no 'await' expression  @typescript-eslint/require-await
+  224:36  error  'payload' is defined but never used                          @typescript-eslint/no-unused-vars
+  229:3   error  Async method 'handleNagadWebhook' has no 'await' expression  @typescript-eslint/require-await
+  229:36  error  'payload' is defined but never used                          @typescript-eslint/no-unused-vars
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\service-zones\service-zones.controller.ts
+  14:44  warning  Unsafe argument of type `any` assigned to a parameter of type `CreateServiceZoneDto`  @typescript-eslint/no-unsafe-argument
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\service-zones\service-zones.service.ts
+  26:9  error  Unsafe assignment of an `any` value  @typescript-eslint/no-unsafe-assignment
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\shops\shops.service.ts
+   73:9  error  Unsafe assignment of an `any` value  @typescript-eslint/no-unsafe-assignment
+  112:9  error  Unsafe assignment of an `any` value  @typescript-eslint/no-unsafe-assignment
+
+C:\Users\callz\OneDrive\Documents\My Projects\SynologyDrive\Websites\Caregiver\backend\src\users\users.service.spec.ts
+  4:20  error  'KYCStatus' is defined but never used  @typescript-eslint/no-unused-vars
+
+Ô£û 121 problems (110 errors, 11 warnings)
+

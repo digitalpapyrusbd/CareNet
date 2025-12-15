@@ -1,51 +1,29 @@
-import { Controller, Post, Get, Patch, Param, Body, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch } from '@nestjs/common';
 import { CareLogsService } from './care-logs.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { CreateCareLogDto } from './dto/create-care-log.dto';
-import { CheckInDto } from './dto/check-in.dto';
-import { CheckOutDto } from './dto/check-out.dto';
-import { UpdateLogDto } from './dto/update-log.dto';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { CreateCareLogDto, UpdateCareLogDto } from './dto/care-log.dto';
 
 @Controller('care-logs')
-@UseGuards(JwtAuthGuard)
 export class CareLogsController {
   constructor(private readonly careLogsService: CareLogsService) {}
 
   @Post()
-  async create(@Req() req: any, @Body() createCareLogDto: CreateCareLogDto) {
-    const userId = req.user?.userId || req.user?.id;
-    return await this.careLogsService.create(userId, createCareLogDto);
-  }
-
-  @Post('check-in')
-  async checkIn(@Req() req: any, @Body() dto: CheckInDto) {
-    const userId = req.user?.userId || req.user?.id;
-    return await this.careLogsService.checkIn(userId, dto);
-  }
-
-  @Patch(':id')
-  async update(@Param('id') id: string, @Body() dto: UpdateLogDto) {
-    return await this.careLogsService.update(id, dto);
-  }
-
-  @Post('check-out')
-  async checkOut(@Req() req: any, @Body() dto: CheckOutDto) {
-    const userId = req.user?.userId || req.user?.id;
-    return await this.careLogsService.checkOut(userId, dto);
+  create(@CurrentUser('id') userId: string, @Body() dto: CreateCareLogDto) {
+    return this.careLogsService.create(userId, dto.job_id, dto);
   }
 
   @Get('job/:jobId')
-  async findByJob(@Param('jobId') jobId: string) {
-    return await this.careLogsService.findByJob(jobId);
-  }
-
-  @Get('patient/:patientId')
-  async findByPatient(@Param('patientId') patientId: string) {
-    return await this.careLogsService.findByPatient(patientId);
+  findByJob(@Param('jobId') jobId: string) {
+    return this.careLogsService.findByJob(jobId);
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return await this.careLogsService.findOne(id);
+  findOne(@Param('id') id: string) {
+    return this.careLogsService.findOne(id);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() dto: UpdateCareLogDto) {
+    return this.careLogsService.update(id, dto);
   }
 }

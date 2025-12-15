@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { DisputesController } from './disputes.controller';
 import { DisputesService } from './disputes.service';
-import { PrismaModule } from '../common/prisma/prisma.module';
+import { DisputesController } from './disputes.controller';
+import { CommonModule } from '../common/common.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [CommonModule],
   controllers: [DisputesController],
   providers: [DisputesService],
   exports: [DisputesService],

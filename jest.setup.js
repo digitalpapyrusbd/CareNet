@@ -1,5 +1,11 @@
 import '@testing-library/jest-dom';
 import { configure } from '@testing-library/react';
+import { server } from './src/__tests__/mocks/server';
+import { toHaveNoViolations } from 'jest-axe';
+
+// Extend Jest matchers with jest-axe
+expect.extend(toHaveNoViolations);
+
 // Polyfills for test environment (jsdom)
 try {
   // Fetch polyfill for environments where fetch is not available
@@ -7,6 +13,55 @@ try {
 } catch (e) {
   // ignore if not installed; we'll still provide lightweight shims below
 }
+
+// Ensure interval timers exist (some environments strip them from global)
+if (typeof global.setInterval !== 'function') {
+  global.setInterval = (fn, delay = 0, ...args) => global.setTimeout(fn, delay, ...args);
+}
+
+if (typeof global.clearInterval !== 'function') {
+  global.clearInterval = (id) => global.clearTimeout(id);
+}
+
+// Mock global fetch for tests that need it - make it a proper jest.fn() with all methods
+global.fetch = jest.fn(() =>
+  Promise.resolve({
+    ok: true,
+    status: 200,
+    json: () => Promise.resolve({}),
+    text: () => Promise.resolve(''),
+  })
+);
+
+// Mock @upstash/redis to avoid ESM issues
+jest.mock('@upstash/redis', () => ({
+  Redis: jest.fn().mockImplementation(() => ({
+    get: jest.fn(),
+    set: jest.fn(),
+    del: jest.fn(),
+    incr: jest.fn(),
+    expire: jest.fn(),
+  })),
+  Ratelimit: jest.fn().mockImplementation(() => ({
+    limit: jest.fn().mockResolvedValue({ success: true, remaining: 10 }),
+  })),
+}));
+
+// Mock bcryptjs to avoid module issues
+jest.mock('bcryptjs', () => ({
+  hash: jest.fn().mockResolvedValue('hashed-password'),
+  compare: jest.fn().mockResolvedValue(true),
+  genSalt: jest.fn().mockResolvedValue('salt'),
+}));
+
+// Mock useTheme hook
+jest.mock('@/hooks/useTheme', () => ({
+  useTheme: () => ({
+    theme: 'light',
+    toggleTheme: jest.fn(),
+    setTheme: jest.fn(),
+  }),
+}));
 
 // TextEncoder/TextDecoder polyfill for older jsdom/node environments
 try {
@@ -202,6 +257,9 @@ global.testUtils = {
 // Suppress console warnings in tests
 const originalError = console.error;
 beforeAll(() => {
+  // Start MSW server
+  server.listen({ onUnhandledRequest: 'warn' });
+  
   console.error = (...args) => {
     if (
       typeof args[0] === 'string' &&
@@ -213,6 +271,21 @@ beforeAll(() => {
   };
 });
 
+// Reset handlers between tests
+afterEach(() => {
+  server.resetHandlers();
+  // Clear fetch mock calls
+  if (global.fetch && typeof global.fetch.mockClear === 'function') {
+    global.fetch.mockClear();
+  }
+  // Ensure each test finishes with real timers to avoid leakage between suites
+  if (typeof jest !== 'undefined' && typeof jest.useRealTimers === 'function') {
+    jest.useRealTimers();
+  }
+});
+
 afterAll(() => {
+  // Stop MSW server
+  server.close();
   console.error = originalError;
 });

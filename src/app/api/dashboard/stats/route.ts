@@ -160,8 +160,8 @@ export async function GET(request: NextRequest) {
       case UserRole.GUARDIAN:
         // Guardian stats
         const [
-          totalPatientsCount,
-          activeJobsCount,
+          guardianPatientsCount,
+          guardianActiveJobsCount,
           totalSpentData,
           pendingPaymentsCount,
         ] = await Promise.all([
@@ -188,8 +188,8 @@ export async function GET(request: NextRequest) {
           ]);
 
         stats = {
-          totalPatients: totalPatientsCount,
-          activeJobs: activeJobsCount,
+          totalPatients: guardianPatientsCount,
+          activeJobs: guardianActiveJobsCount,
           totalSpent: totalSpentData._sum.amount || 0,
           pendingPayments: pendingPaymentsCount,
           recentActivity: await getRecentActivity('GUARDIAN', user.id),
