@@ -57,15 +57,18 @@ export default function LandingPage() {
                 border: 'none'
               }}
             >
-              Get Started
+              Register
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
             <Button
               onClick={() => router.push('/auth/login')}
               size="lg"
-              variant="outline"
-              className="w-full bg-white/50 border-white/50"
-              style={{ color: '#535353' }}
+              className="w-full"
+              style={{
+                background: '#16a34a',
+                color: 'white',
+                border: 'none'
+              }}
             >
               Login
             </Button>

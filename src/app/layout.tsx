@@ -6,6 +6,7 @@ import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import { ServiceWorkerRegistration } from '@/components/providers/ServiceWorkerRegistration';
 import { TouchTargetAuditPanel } from '@/hooks/use-touch-audit';
 import { PerformanceMonitoring } from '@/components/performance/PerformanceMonitoring';
+import { UniversalNav } from '@/components/layout/UniversalNav';
 import './globals.css';
 
 const inter = Inter({ 
@@ -74,6 +75,8 @@ export default function RootLayout({
               <div id="main-content" className="min-h-screen flex flex-col">
                 {children}
               </div>
+              {/* Global universal navigation (includes mobile bottom menu) */}
+              <UniversalNav />
             </ClientProviders>
           </TranslationProvider>
         </ThemeProvider>

@@ -82,7 +82,7 @@ const Layout: React.FC<LayoutProps> = ({
               ) : (
                 <div className="flex space-x-2">
                   <Link href="/auth/login">
-                    <Button variant="outline" size="sm">
+                    <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white">
                       Login
                     </Button>
                   </Link>

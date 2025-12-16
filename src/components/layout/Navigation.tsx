@@ -186,10 +186,10 @@ const Navigation: React.FC<NavigationProps> = ({ className = '' }) => {
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
                   <Link
                     href="/auth/login"
-                    className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-md text-sm font-medium"
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium"
                   >
                     {t('auth.login')}
                   </Link>
@@ -271,7 +271,7 @@ const Navigation: React.FC<NavigationProps> = ({ className = '' }) => {
               <div className="space-y-2">
                 <Link
                   href="/auth/login"
-                  className="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-md text-sm font-medium dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white"
+                  className="block w-full text-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium"
                 >
                   {t('auth.login')}
                 </Link>
