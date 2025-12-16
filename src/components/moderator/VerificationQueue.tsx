@@ -1,4 +1,4 @@
-import { Users, Building2, Clock, CheckCircle, AlertCircle } from "lucide-react";
+import { Users, Building2, Clock, CheckCircle, AlertCircle, X } from "lucide-react";
 import { Button } from "../ui/button";
 import { useState } from "react";
 
