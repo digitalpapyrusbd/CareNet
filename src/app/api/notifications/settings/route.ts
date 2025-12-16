@@ -75,7 +75,7 @@ export async function PUT(request: NextRequest) {
     const settings: any = {};
     
     for (const key of allowedSettings) {
-      if (body.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(body, key)) {
         settings[key] = Boolean(body[key]);
       }
     }

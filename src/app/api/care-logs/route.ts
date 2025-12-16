@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     const where: any = {};
     
     switch (user.role) {
-      case UserRole.GUARDIAN:
+      case UserRole.GUARDIAN: {
         // Guardians can only see care logs for their patients
         const guardianPatients = await prisma.patient.findMany({
           where: { guardianId: user.id },
@@ -53,13 +53,14 @@ export async function GET(request: NextRequest) {
           where.patientId = { in: patientIds };
         }
         break;
+      }
         
       case UserRole.CAREGIVER:
         // Caregivers can only see their own care logs
         where.caregiverId = user.id;
         break;
         
-      case UserRole.COMPANY:
+      case UserRole.COMPANY: {
         // Companies can see care logs for their caregivers
         const company = await prisma.company.findUnique({
           where: { userId: user.id },
@@ -71,6 +72,7 @@ export async function GET(request: NextRequest) {
           };
         }
         break;
+      }
     }
     
     if (jobId) {

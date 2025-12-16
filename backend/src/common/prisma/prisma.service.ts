@@ -8,6 +8,9 @@ export class PrismaService
 {
   constructor() {
     super({
+      adapter: {
+        url: process.env.DATABASE_URL,
+      },
       log: ['query', 'info', 'warn', 'error'],
     });
   }

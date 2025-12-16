@@ -6,8 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { escrowService } from '@/lib/escrow-service';
 import { z } from 'zod';
-// import { getServerSession } from 'next-auth';
-// import { authOptions } from '@/lib/auth';
+import { authenticate, getCurrentUser } from '@/lib/middleware/auth';
 
 // Validation schemas
 const createEscrowSchema = z.object({
@@ -51,9 +50,13 @@ const getUserEscrowSchema = z.object({
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const authResult = await authenticate(request);
+    if (authResult) {
+      return authResult;
+    }
     
-    if (!session?.user) {
+    const user = getCurrentUser(request);
+    if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -76,7 +79,7 @@ export async function GET(request: NextRequest) {
       }
 
       // Check if user has permission to view this escrow
-      const hasPermission = await checkEscrowPermission(session.user.id, session.user.role, escrow);
+      const hasPermission = await checkEscrowPermission(user.id, user.role, escrow);
       
       if (!hasPermission) {
         return NextResponse.json(
@@ -92,8 +95,8 @@ export async function GET(request: NextRequest) {
     } else {
       // Get user's escrow transactions
       const userEscrows = await escrowService.getUserEscrowTransactions(
-        session.user.id,
-        session.user.role as 'GUARDIAN' | 'CAREGIVER' | 'COMPANY',
+        user.id,
+        user.role as 'GUARDIAN' | 'CAREGIVER' | 'COMPANY',
         status || undefined
       );
 
@@ -117,9 +120,13 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const authResult = await authenticate(request);
+    if (authResult) {
+      return authResult;
+    }
     
-    if (!session?.user) {
+    const user = getCurrentUser(request);
+    if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -131,13 +138,13 @@ export async function POST(request: NextRequest) {
 
     switch (action) {
       case 'create':
-        return handleCreateEscrow(body, session);
+        return handleCreateEscrow(body, user);
       case 'release':
-        return handleReleaseEscrow(body, session);
+        return handleReleaseEscrow(body, user);
       case 'refund':
-        return handleRefundEscrow(body, session);
+        return handleRefundEscrow(body, user);
       case 'dispute':
-        return handleCreateDispute(body, session);
+        return handleCreateDispute(body, user);
       default:
         return NextResponse.json(
           { error: 'Invalid action' },
@@ -156,12 +163,12 @@ export async function POST(request: NextRequest) {
 /**
  * Handle escrow creation
  */
-async function handleCreateEscrow(body: any, session: any) {
+async function handleCreateEscrow(body: any, user: any) {
   try {
     const validatedData = createEscrowSchema.parse(body);
     
     // Check permissions for creating escrow
-    const hasPermission = await checkCreateEscrowPermission(session.user.id, session.user.role, validatedData);
+    const hasPermission = await checkCreateEscrowPermission(user.id, user.role, validatedData);
     
     if (!hasPermission) {
       return NextResponse.json(
@@ -195,12 +202,12 @@ async function handleCreateEscrow(body: any, session: any) {
 /**
  * Handle escrow release
  */
-async function handleReleaseEscrow(body: any, session: any) {
+async function handleReleaseEscrow(body: any, user: any) {
   try {
     const validatedData = releaseEscrowSchema.parse(body);
     
     // Check permissions for releasing escrow
-    const hasPermission = await checkReleaseEscrowPermission(session.user.id, session.user.role, validatedData.escrowId);
+    const hasPermission = await checkReleaseEscrowPermission(user.id, user.role, validatedData.escrowId);
     
     if (!hasPermission) {
       return NextResponse.json(
@@ -212,7 +219,7 @@ async function handleReleaseEscrow(body: any, session: any) {
     const escrow = await escrowService.releaseEscrow({
       escrowId: validatedData.escrowId,
       reason: validatedData.reason,
-      releasedBy: session.user.id,
+      releasedBy: user.id,
       evidence: validatedData.evidence,
     });
 
@@ -239,12 +246,12 @@ async function handleReleaseEscrow(body: any, session: any) {
 /**
  * Handle escrow refund
  */
-async function handleRefundEscrow(body: any, session: any) {
+async function handleRefundEscrow(body: any, user: any) {
   try {
     const validatedData = refundEscrowSchema.parse(body);
     
     // Check permissions for refunding escrow
-    const hasPermission = await checkRefundEscrowPermission(session.user.id, session.user.role, validatedData.escrowId);
+    const hasPermission = await checkRefundEscrowPermission(user.id, user.role, validatedData.escrowId);
     
     if (!hasPermission) {
       return NextResponse.json(
@@ -256,7 +263,7 @@ async function handleRefundEscrow(body: any, session: any) {
     const escrow = await escrowService.refundEscrow({
       escrowId: validatedData.escrowId,
       reason: validatedData.reason,
-      refundedBy: session.user.id,
+      refundedBy: user.id,
       evidence: validatedData.evidence,
     });
 
@@ -283,12 +290,12 @@ async function handleRefundEscrow(body: any, session: any) {
 /**
  * Handle dispute creation
  */
-async function handleCreateDispute(body: any, session: any) {
+async function handleCreateDispute(body: any, user: any) {
   try {
     const validatedData = disputeEscrowSchema.parse(body);
     
     // Check permissions for creating dispute
-    const hasPermission = await checkDisputeEscrowPermission(session.user.id, session.user.role, validatedData.escrowId);
+    const hasPermission = await checkDisputeEscrowPermission(user.id, user.role, validatedData.escrowId);
     
     if (!hasPermission) {
       return NextResponse.json(
@@ -301,7 +308,7 @@ async function handleCreateDispute(body: any, session: any) {
       escrowId: validatedData.escrowId,
       reason: validatedData.reason,
       description: validatedData.description,
-      disputedBy: session.user.id,
+      disputedBy: user.id,
       evidence: validatedData.evidence,
     });
 
@@ -360,7 +367,7 @@ async function checkEscrowPermission(userId: string, userRole: string, escrow: a
 /**
  * Check if user has permission to create escrow
  */
-async function checkCreateEscrowPermission(userId: string, userRole: string, escrowData: any): Promise<boolean> {
+async function checkCreateEscrowPermission(_userId: string, userRole: string, _escrowData: any): Promise<boolean> {
   // Only moderators and super admins can create escrows manually
   // (Escrows are typically created automatically when payments are completed)
   return userRole === 'MODERATOR' || userRole === 'SUPER_ADMIN';
@@ -398,7 +405,7 @@ async function checkReleaseEscrowPermission(userId: string, userRole: string, es
 /**
  * Check if user has permission to refund escrow
  */
-async function checkRefundEscrowPermission(userId: string, userRole: string, escrowId: string): Promise<boolean> {
+async function checkRefundEscrowPermission(_userId: string, userRole: string, _escrowId: string): Promise<boolean> {
   // Only moderators and super admins can refund escrows
   return userRole === 'MODERATOR' || userRole === 'SUPER_ADMIN';
 }

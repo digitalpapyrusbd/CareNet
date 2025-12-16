@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { hashPassword, verifyPassword, generateOTP } from '@/lib/auth';
-import { getUserByPhone, updateUserLastLogin } from '@/lib/db-utils';
+import { hashPassword, generateOTP } from '@/lib/auth';
+import { getUserByPhone } from '@/lib/db-utils';
 import { prisma } from '@/lib/db';
 import { kv } from '@vercel/kv';
 import { deleteUserSessions } from '@/lib/session';
@@ -180,10 +180,11 @@ export async function POST(request: NextRequest) {
     });
     
     // Send reset OTP/token (in production, use SMS/email service)
+    let resetUrl: string | undefined;
     if (validatedData.method === 'PHONE') {
       console.log(`Password reset OTP for ${validatedData.phone}: ${otp}`); // Development only
     } else {
-      const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password?token=${resetToken}&email=${encodeURIComponent(validatedData.email!)}`;
+      resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password?token=${resetToken}&email=${encodeURIComponent(validatedData.email!)}`;
       console.log(`Password reset URL for ${validatedData.email}: ${resetUrl}`); // Development only
     }
     
@@ -484,7 +485,6 @@ export async function GET(request: NextRequest) {
       });
     }
     
-    const timeSinceRequest = Date.now() - new Date(resetData.timestamp).getTime();
     const expiresIn = Math.max(0, Math.floor((new Date(resetData.expiresAt).getTime() - Date.now()) / 1000));
     
     return NextResponse.json({

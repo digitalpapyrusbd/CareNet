@@ -114,6 +114,51 @@ class NotificationService {
     
     return await this.smsProvider.sendSMS(phoneNumber, message);
   }
+
+  /**
+   * Send notification (generic method for SMS, EMAIL, PUSH, IN_APP)
+   */
+  async sendNotification(request: {
+    userId: string;
+    type: 'SMS' | 'EMAIL' | 'PUSH' | 'IN_APP';
+    recipient: string;
+    subject: string;
+    body: string;
+    data?: any;
+  }): Promise<{ success: boolean; messageId?: string }> {
+    try {
+      let success = false;
+      const messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+      switch (request.type) {
+        case 'SMS':
+          success = await this.smsProvider.sendSMS(request.recipient, request.body);
+          break;
+        case 'EMAIL':
+          // TODO: Implement email sending
+          console.log(`[EMAIL] To: ${request.recipient}, Subject: ${request.subject}, Body: ${request.body}`);
+          success = true;
+          break;
+        case 'PUSH':
+          // TODO: Implement push notification
+          console.log(`[PUSH] To: ${request.userId}, Title: ${request.subject}, Body: ${request.body}`);
+          success = true;
+          break;
+        case 'IN_APP':
+          // TODO: Implement in-app notification storage
+          console.log(`[IN_APP] To: ${request.userId}, Title: ${request.subject}, Body: ${request.body}`);
+          success = true;
+          break;
+        default:
+          success = false;
+      }
+
+      return { success, messageId };
+    } catch (error) {
+      console.error('Send notification error:', error);
+      return { success: false };
+    }
+  }
 }
 
 // Singleton instance

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { authenticate, getCurrentUser } from '@/lib/middleware/auth';
-import notificationService from '@/lib/notification-service';
+import notificationServiceInstance from '@/lib/notification-service';
 
 // Validation schema
 const sendNotificationSchema = z.object({
@@ -34,9 +34,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = sendNotificationSchema.parse(body);
 
-    // Initialize notification service
-    const notificationService = new NotificationService();
-
     // Send notification
     const notificationRequest = {
       userId: validatedData.userId,
@@ -47,7 +44,7 @@ export async function POST(request: NextRequest) {
       data: validatedData.data,
     };
 
-    const result = await notificationService.sendNotification(notificationRequest);
+    const result = await notificationServiceInstance.sendNotification(notificationRequest);
 
     return NextResponse.json({
       success: result.success,

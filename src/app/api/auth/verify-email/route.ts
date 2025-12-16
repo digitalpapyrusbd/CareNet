@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import { kv } from '@vercel/kv';
-import crypto from 'crypto';
+import { generateSecureToken } from '@/lib/security';
 
 // Email verification schema
 const sendVerificationSchema = z.object({
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Generate verification token
-    const token = generateEmailVerificationToken();
+    const token = generateSecureToken(32);
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
     
     // Store verification data

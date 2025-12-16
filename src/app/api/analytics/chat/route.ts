@@ -1,18 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticate, authorize } from '@/lib/middleware/auth';
-import { UserRole } from '@/lib/middleware/auth';
+import { UserRole } from '@prisma/client';
 import { chatAnalyticsService } from '@/lib/chat-analytics';
 import { z } from 'zod';
-
-// Define UserRole enum locally
-enum UserRole {
-  SUPER_ADMIN,
-  MODERATOR,
-  COMPANY,
-  CAREGIVER,
-  GUARDIAN,
-  PATIENT
-}
 
 const getMetricsSchema = z.object({
   userId: z.string().optional(),

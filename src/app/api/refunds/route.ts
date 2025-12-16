@@ -6,8 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { refundService } from '@/lib/refund-service';
 import { z } from 'zod';
-// import { getServerSession } from 'next-auth';
-// import { authOptions } from '@/lib/auth';
+import { authenticate, getCurrentUser } from '@/lib/middleware/auth';
 
 // Validation schemas
 const createRefundSchema = z.object({
@@ -28,14 +27,7 @@ const rejectRefundSchema = z.object({
   reason: z.string(),
 });
 
-const getRefundSchema = z.object({
-  refundId: z.string(),
-});
-
-const getStatisticsSchema = z.object({
-  startDate: z.string().datetime().optional(),
-  endDate: z.string().datetime().optional(),
-});
+// Unused schemas removed to fix lint errors
 
 /**
  * GET /api/refunds
@@ -43,9 +35,13 @@ const getStatisticsSchema = z.object({
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const authResult = await authenticate(request);
+    if (authResult) {
+      return authResult;
+    }
     
-    if (!session?.user) {
+    const user = getCurrentUser(request);
+    if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -62,8 +58,8 @@ export async function GET(request: NextRequest) {
     if (statistics === 'true') {
       // Get refund statistics
       const stats = await refundService.getRefundStatistics(
-        session.user.id,
-        session.user.role as 'GUARDIAN' | 'CAREGIVER' | 'COMPANY',
+        user.id,
+        user.role as 'GUARDIAN' | 'CAREGIVER' | 'COMPANY',
         startDate ? new Date(startDate) : undefined,
         endDate ? new Date(endDate) : undefined
       );
@@ -84,7 +80,7 @@ export async function GET(request: NextRequest) {
       }
 
       // Check if user has permission to view this refund
-      const hasPermission = await checkRefundPermission(session.user.id, session.user.role, refund);
+      const hasPermission = await checkRefundPermission(user.id, user.role, refund);
       
       if (!hasPermission) {
         return NextResponse.json(
@@ -100,8 +96,8 @@ export async function GET(request: NextRequest) {
     } else {
       // Get user's refunds
       const userRefunds = await refundService.getUserRefunds(
-        session.user.id,
-        session.user.role as 'GUARDIAN' | 'CAREGIVER' | 'COMPANY',
+        user.id,
+        user.role as 'GUARDIAN' | 'CAREGIVER' | 'COMPANY',
         status || undefined
       );
 
@@ -125,9 +121,13 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const authResult = await authenticate(request);
+    if (authResult) {
+      return authResult;
+    }
     
-    if (!session?.user) {
+    const user = getCurrentUser(request);
+    if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -139,13 +139,13 @@ export async function POST(request: NextRequest) {
 
     switch (action) {
       case 'create':
-        return handleCreateRefund(body, session);
+        return handleCreateRefund(body, user);
       case 'process':
-        return handleProcessRefund(body, session);
+        return handleProcessRefund(body, user);
       case 'reject':
-        return handleRejectRefund(body, session);
+        return handleRejectRefund(body, user);
       case 'check-eligibility':
-        return handleCheckEligibility(body, session);
+        return handleCheckEligibility(body, user);
       default:
         return NextResponse.json(
           { error: 'Invalid action' },
@@ -164,12 +164,12 @@ export async function POST(request: NextRequest) {
 /**
  * Handle refund request creation
  */
-async function handleCreateRefund(body: any, session: any) {
+async function handleCreateRefund(body: any, user: any) {
   try {
     const validatedData = createRefundSchema.parse(body);
     
     // Check permissions for creating refund
-    const hasPermission = await checkCreateRefundPermission(session.user.id, session.user.role, validatedData.paymentId);
+    const hasPermission = await checkCreateRefundPermission(user.id, user.role, validatedData.paymentId);
     
     if (!hasPermission) {
       return NextResponse.json(
@@ -183,7 +183,7 @@ async function handleCreateRefund(body: any, session: any) {
       amount: validatedData.amount,
       reason: validatedData.reason,
       type: validatedData.type,
-      requestedBy: session.user.id,
+      requestedBy: user.id,
       evidence: validatedData.evidence,
       metadata: validatedData.metadata,
     });
@@ -211,12 +211,12 @@ async function handleCreateRefund(body: any, session: any) {
 /**
  * Handle refund processing
  */
-async function handleProcessRefund(body: any, session: any) {
+async function handleProcessRefund(body: any, user: any) {
   try {
     const validatedData = processRefundSchema.parse(body);
     
     // Check permissions for processing refund
-    const hasPermission = await checkProcessRefundPermission(session.user.id, session.user.role);
+    const hasPermission = await checkProcessRefundPermission(user.id, user.role);
     
     if (!hasPermission) {
       return NextResponse.json(
@@ -227,7 +227,7 @@ async function handleProcessRefund(body: any, session: any) {
 
     const refund = await refundService.processRefund(
       validatedData.refundId,
-      session.user.id
+      user.id
     );
 
     return NextResponse.json({
@@ -253,12 +253,12 @@ async function handleProcessRefund(body: any, session: any) {
 /**
  * Handle refund rejection
  */
-async function handleRejectRefund(body: any, session: any) {
+async function handleRejectRefund(body: any, user: any) {
   try {
     const validatedData = rejectRefundSchema.parse(body);
     
     // Check permissions for rejecting refund
-    const hasPermission = await checkProcessRefundPermission(session.user.id, session.user.role);
+    const hasPermission = await checkProcessRefundPermission(user.id, user.role);
     
     if (!hasPermission) {
       return NextResponse.json(
@@ -270,7 +270,7 @@ async function handleRejectRefund(body: any, session: any) {
     const refund = await refundService.rejectRefund(
       validatedData.refundId,
       validatedData.reason,
-      session.user.id
+      user.id
     );
 
     return NextResponse.json({
@@ -296,7 +296,7 @@ async function handleRejectRefund(body: any, session: any) {
 /**
  * Handle refund eligibility check
  */
-async function handleCheckEligibility(body: any, session: any) {
+async function handleCheckEligibility(body: any, user: any) {
   try {
     const { paymentId, amount } = body;
     
@@ -308,7 +308,7 @@ async function handleCheckEligibility(body: any, session: any) {
     }
 
     // Check if user has permission to check eligibility for this payment
-    const hasPermission = await checkCreateRefundPermission(session.user.id, session.user.role, paymentId);
+    const hasPermission = await checkCreateRefundPermission(user.id, user.role, paymentId);
     
     if (!hasPermission) {
       return NextResponse.json(

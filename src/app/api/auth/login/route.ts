@@ -4,7 +4,7 @@ import { verifyPassword, generateTokenPair, extractTokenFromHeader, verifyRefres
 import { getUserByPhone, updateUserLastLogin, getUserById } from '@/lib/db-utils';
 import { prisma } from '@/lib/db';
 import { UserRole } from '@prisma/client';
-import { createSession, deleteSession, getUserSessions, verifySessionMFA } from '@/lib/session';
+import { createSession, deleteSession, getUserSessions, verifySessionMFA, deleteUserSessions } from '@/lib/session';
 import { kv } from '@vercel/kv';
 import speakeasy from 'speakeasy';
 

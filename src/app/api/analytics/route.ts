@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { authenticate, authorize } from '@/lib/middleware/auth';
+import { authorize } from '@/lib/middleware/auth';
 import { prisma } from '@/lib/db';
 import { UserRole } from '@/lib/auth';
 
