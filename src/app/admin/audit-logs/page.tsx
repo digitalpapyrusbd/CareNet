@@ -2,14 +2,12 @@
 
 import { UniversalNav } from '@/components/layout/UniversalNav';
 
-import { useRouter } from 'next/navigation';
-import { FileText, Search, Filter, Download } from 'lucide-react';
+import { FileText, Search, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 
 export default function AuditLogsPage() {
-  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | 'admin' | 'moderator' | 'agency' | 'caregiver' | 'guardian'>('all');
 
@@ -62,7 +60,7 @@ export default function AuditLogsPage() {
 
           <div className="flex gap-2 overflow-x-auto">
             {['all', 'admin', 'moderator', 'agency', 'caregiver', 'guardian'].map((role) => (
-              <button key={role} onClick={() => setRoleFilter(role as any)}
+              <button key={role} onClick={() => setRoleFilter(role as unknown)}
                 className="px-3 py-1 rounded-lg capitalize text-xs whitespace-nowrap" style={{
                   background: roleFilter === role ? 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #8EC5FC 0%, #5B9FFF 100%)' : 'rgba(255, 255, 255, 0.5)',
                   color: roleFilter === role ? 'white' : '#535353'

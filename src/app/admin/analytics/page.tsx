@@ -2,13 +2,11 @@
 
 import { UniversalNav } from '@/components/layout/UniversalNav';
 
-import { useRouter } from 'next/navigation';
-import { TrendingUp, Users, Building, DollarSign, Activity } from 'lucide-react';
+import { Users, Building, DollarSign, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 
 export default function AdminAnalyticsPage() {
-  const router = useRouter();
   const [period, setPeriod] = useState<'week' | 'month' | 'year'>('month');
 
   const stats = {
@@ -47,7 +45,7 @@ export default function AdminAnalyticsPage() {
 
           <div className="flex gap-2 mb-6">
             {['week', 'month', 'year'].map((p) => (
-              <button key={p} onClick={() => setPeriod(p as any)}
+              <button key={p} onClick={() => setPeriod(p as unknown)}
                 className="flex-1 px-4 py-2 rounded-lg capitalize text-sm" style={{
                   background: period === p ? 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #8EC5FC 0%, #5B9FFF 100%)' : 'rgba(255, 255, 255, 0.5)',
                   color: period === p ? 'white' : '#535353'

@@ -2,14 +2,12 @@
 
 import { UniversalNav } from '@/components/layout/UniversalNav';
 
-import { useRouter } from 'next/navigation';
 import { Lock, Unlock, Search, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 
 export default function LockedAccountsPage() {
-  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
 
   const lockedAccounts = [

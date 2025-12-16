@@ -24,8 +24,7 @@ export default function ManualUnlockPage() {
       alert('Please confirm that you want to unlock this account');
       return;
     }
-    
-    console.log('Manual unlock:', { accountId: id, reason });
+
     router.push('/admin/locked-accounts');
   };
 

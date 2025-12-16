@@ -32,8 +32,6 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json(response);
     } catch (error: any) {
-        console.error('AI Agent chat error:', error);
-
         return NextResponse.json(
             {
                 error: error.message || 'Internal server error',

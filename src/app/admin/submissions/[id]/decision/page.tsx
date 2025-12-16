@@ -26,7 +26,6 @@ export default function AdminDecisionPage() {
       return;
     }
     
-    console.log('Admin decision:', { submissionId: id, decision: selectedDecision, feedback });
     router.back();
   };
 
@@ -75,7 +74,7 @@ export default function AdminDecisionPage() {
                 <div className="flex-1">
                   <h3 style={{ color: '#535353' }}>Approve</h3>
                   <p className="text-sm" style={{ color: '#848484' }}>
-                    Finalize and activate (moderator's recommendation accepted)
+                    Finalize and activate (moderator&apos;s recommendation accepted)
                   </p>
                 </div>
               </div>
@@ -133,7 +132,7 @@ export default function AdminDecisionPage() {
                 <div className="flex-1">
                   <h3 style={{ color: '#535353' }}>Override & Reject</h3>
                   <p className="text-sm" style={{ color: '#848484' }}>
-                    Reject regardless of moderator's recommendation
+                    Reject regardless of moderator&apos;s recommendation
                   </p>
                 </div>
               </div>

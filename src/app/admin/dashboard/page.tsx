@@ -3,8 +3,7 @@
 import { UniversalNav } from '@/components/layout/UniversalNav';
 
 import { useRouter } from 'next/navigation';
-import { Shield, Users, Building2, DollarSign, TrendingUp, Activity, AlertCircle, CheckCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Shield, Users, DollarSign, TrendingUp, Activity, AlertCircle, CheckCircle } from 'lucide-react';
 
 export default function AdminDashboardPage() {
   const router = useRouter();

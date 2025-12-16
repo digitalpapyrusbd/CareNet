@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     let data: any = {};
 
     switch (type) {
-      case 'overview':
+      case 'overview': {
         // Get overview metrics
         const [
           totalUsers,
@@ -129,8 +129,9 @@ export async function GET(request: NextRequest) {
           },
         };
         break;
+      }
 
-      case 'users':
+      case 'users': {
         // Get user analytics
         const [
           userGrowth,
@@ -179,8 +180,9 @@ export async function GET(request: NextRequest) {
           registrationsByDay: userRegistrationsByDay,
         };
         break;
+      }
 
-      case 'jobs':
+      case 'jobs': {
         // Get job analytics
         const [
           jobStatus,
@@ -280,8 +282,9 @@ export async function GET(request: NextRequest) {
           topPackages: enrichedTopPackages,
         };
         break;
+      }
 
-      case 'payments':
+      case 'payments': {
         // Get payment analytics
         const [
           paymentMethods,
@@ -340,8 +343,9 @@ export async function GET(request: NextRequest) {
           volume: paymentVolume,
         };
         break;
+      }
 
-      case 'disputes':
+      case 'disputes': {
         // Get dispute analytics
         const [
           disputeTypes,
@@ -403,6 +407,7 @@ export async function GET(request: NextRequest) {
           byDay: disputesByDay,
         };
         break;
+      }
 
       default:
         return NextResponse.json(
@@ -422,7 +427,6 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Analytics error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
