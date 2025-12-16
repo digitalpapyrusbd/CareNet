@@ -10,7 +10,7 @@ import {
   UpdateCompanyDto,
   VerifyCompanyDto,
 } from './dto/company.dto';
-import { UserRole } from '@prisma/client';
+import { UserRole, Prisma } from '@prisma/client';
 
 @Injectable()
 export class CompaniesService {

@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Body, Query } from '@nestjs/common';
-import { FeedbackService, CreateFeedbackDto } from './feedback.service';
+import { FeedbackService } from './feedback.service';
+import type { CreateFeedbackDto } from './feedback.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @Controller('feedback')

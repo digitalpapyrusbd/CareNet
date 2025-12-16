@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Body, Param } from '@nestjs/common';
-import { HealthRecordsService, CreateHealthRecordDto } from './health-records.service';
+import { HealthRecordsService } from './health-records.service';
+import type { CreateHealthRecordDto } from './health-records.service';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 
