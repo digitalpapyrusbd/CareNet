@@ -118,12 +118,15 @@ async function main() {
 
   console.log('🧹 Cleaned existing data');
 
+  // Shared password hash for demo accounts
+  const demoPasswordHash = await hashPassword('1234');
+
   // Create Super Admin
   const superAdmin = await prisma.users.create({
     data: {
       role: UserRole.SUPER_ADMIN,
       phone: '+8801712345678',
-      email: 'admin@caregiver.com',
+      email: 'admin@carenet.com',
       password_hash: await hashPassword('admin123'),
       name: 'Super Admin',
       language: 'en',
@@ -137,7 +140,7 @@ async function main() {
     data: {
       role: UserRole.MODERATOR,
       phone: '+8801712345679',
-      email: 'moderator@caregiver.com',
+      email: 'moderator@carenet.com',
       password_hash: await hashPassword('moderator123'),
       name: 'Platform Moderator',
       language: 'en',
@@ -146,12 +149,66 @@ async function main() {
     },
   });
 
+  // Demo Super Admins
+  const demoSuperAdmins = await Promise.all([
+    {
+      email: 'demosuperadmin1@carenet.com',
+      phone: '+8801711111101',
+      name: 'Demo Super Admin 1',
+    },
+    {
+      email: 'demosuperadmin2@carenet.com',
+      phone: '+8801711111102',
+      name: 'Demo Super Admin 2',
+    },
+  ].map((u) =>
+    prisma.users.create({
+      data: {
+        role: UserRole.SUPER_ADMIN,
+        phone: u.phone,
+        email: u.email,
+        password_hash: demoPasswordHash,
+        name: u.name,
+        language: 'en',
+        kyc_status: KyCStatus.VERIFIED,
+        is_active: true,
+      },
+    })
+  ));
+
+  // Demo Moderators
+  const demoModerators = await Promise.all([
+    {
+      email: 'demomoderator1@carenet.com',
+      phone: '+8801711111201',
+      name: 'Demo Moderator 1',
+    },
+    {
+      email: 'demomoderator2@carenet.com',
+      phone: '+8801711111202',
+      name: 'Demo Moderator 2',
+    },
+  ].map((u) =>
+    prisma.users.create({
+      data: {
+        role: UserRole.MODERATOR,
+        phone: u.phone,
+        email: u.email,
+        password_hash: demoPasswordHash,
+        name: u.name,
+        language: 'en',
+        kyc_status: KyCStatus.VERIFIED,
+        is_active: true,
+      },
+    })
+  ));
+
   // Create Company
   const companyUser = await prisma.users.create({
     data: {
       role: UserRole.COMPANY,
       phone: '+8801712345680',
-      email: 'company@caregiver.com',
+      email: 'company@carenet.com',
       password_hash: await hashPassword('company123'),
       name: 'Care Services Ltd',
       language: 'en',
@@ -182,12 +239,48 @@ async function main() {
     },
   });
 
+  // Demo Companies (Agencies)
+  const demoCompanies = [] as { userId: string; companyId: string }[];
+  for (let i = 1; i <= 2; i++) {
+    const user = await prisma.users.create({
+      data: {
+        role: UserRole.COMPANY,
+        phone: `+88017120000${i}`,
+        email: `democompany${i}@carenet.com`,
+        password_hash: demoPasswordHash,
+        name: `Demo Company ${i}`,
+        language: 'en',
+        kyc_status: KyCStatus.VERIFIED,
+        is_active: true,
+      },
+    });
+
+    const companyRow = await prisma.companies.create({
+      data: {
+        userId: user.id,
+        company_name: `Demo Agency ${i}`,
+        trade_license: `TRD-DEMO-${i}`,
+        contact_person: `Demo Contact ${i}`,
+        contact_phone: `+88017120010${i}`,
+        address: `Demo Agency Address ${i}, Dhaka`,
+        payout_method: 'BANK_TRANSFER',
+        payout_account: `0000${i}123456`,
+        subscription_tier: SubscriptionTier.STARTER,
+        rating_avg: 4.0,
+        rating_count: 0,
+        is_verified: false,
+      },
+    });
+
+    demoCompanies.push({ userId: user.id, companyId: companyRow.id });
+  }
+
   // Create Caregivers
   const caregiver1User = await prisma.users.create({
     data: {
       role: UserRole.CAREGIVER,
       phone: '+8801712345682',
-      email: 'caregiver1@caregiver.com',
+      email: 'caregiver1@carenet.com',
       password_hash: await hashPassword('caregiver123'),
       name: 'Fatima Akter',
       language: 'bn',
@@ -223,7 +316,7 @@ async function main() {
     data: {
       role: UserRole.CAREGIVER,
       phone: '+8801712345683',
-      email: 'caregiver2@caregiver.com',
+      email: 'caregiver2@carenet.com',
       password_hash: await hashPassword('caregiver123'),
       name: 'Rahman Khan',
       language: 'bn',
@@ -259,12 +352,53 @@ async function main() {
     },
   });
 
+  // Demo Caregivers
+  for (let i = 1; i <= 2; i++) {
+    const user = await prisma.users.create({
+      data: {
+        role: UserRole.CAREGIVER,
+        phone: `+88017130000${i}`,
+        email: `democaregiver${i}@carenet.com`,
+        password_hash: demoPasswordHash,
+        name: `Demo Caregiver ${i}`,
+        language: 'en',
+        kyc_status: KyCStatus.VERIFIED,
+        is_active: true,
+      },
+    });
+
+    await prisma.caregivers.create({
+      data: {
+        userId: user.id,
+        company_id: demoCompanies[i - 1]?.companyId,
+        nid: `55667788990${i}`,
+        nid_url: `https://example.com/demo-nid-${i}.pdf`,
+        photo_url: `https://example.com/demo-photo-${i}.jpg`,
+        date_of_birth: new Date('1992-01-0' + i),
+        gender: i % 2 === 0 ? Gender.MALE : Gender.FEMALE,
+        address: `Demo Caregiver Address ${i}, Dhaka`,
+        skills: ['basic_care', 'companionship'],
+        certifications: ['basic_first_aid'],
+        experience_years: 2 + i,
+        languages: ['bn', 'en'],
+        hourly_rate: 300 + i * 20,
+        background_check_status: BackgroundCheckStatus.CLEARED,
+        background_check_date: new Date('2024-01-0' + i),
+        rating_avg: 0,
+        rating_count: 0,
+        total_jobs_completed: 0,
+        is_available: true,
+        is_verified: false,
+      },
+    });
+  }
+
   // Create Guardian
   const guardianUser = await prisma.users.create({
     data: {
       role: UserRole.GUARDIAN,
       phone: '+8801712345684',
-      email: 'guardian@caregiver.com',
+      email: 'guardian@carenet.com',
       password_hash: await hashPassword('guardian123'),
       name: 'Ahmed Hassan',
       language: 'en',
@@ -272,6 +406,69 @@ async function main() {
       is_active: true,
     },
   });
+
+  // Demo Guardians (and patients for them)
+  for (let i = 1; i <= 2; i++) {
+    const guardian = await prisma.users.create({
+      data: {
+        role: UserRole.GUARDIAN,
+        phone: `+88017140000${i}`,
+        email: `demoguardian${i}@carenet.com`,
+        password_hash: demoPasswordHash,
+        name: `Demo Guardian ${i}`,
+        language: 'en',
+        kyc_status: KyCStatus.VERIFIED,
+        is_active: true,
+      },
+    });
+
+    await prisma.patients.create({
+      data: {
+        guardian_id: guardian.id,
+        name: `Demo Patient ${i}`,
+        date_of_birth: new Date('1950-06-0' + i),
+        gender: Gender.FEMALE,
+        blood_group: 'A+',
+        address: `Demo Patient Address ${i}, Dhaka`,
+        emergency_contact_name: `Demo Guardian ${i}`,
+        emergency_contact_phone: guardian.phone,
+        primaryConditions: ['hypertension'],
+        allergies: 'None',
+        mobility_level: MobilityLevel.ASSISTED,
+        cognitive_status: CognitiveStatus.NORMAL,
+        photoUrl: `https://example.com/demo-patient-${i}.jpg`,
+        consent_data_sharing: true,
+        consent_marketing: false,
+      },
+    });
+  }
+
+  // Demo Patients as user accounts (optional)
+  await Promise.all([
+    {
+      email: 'demopatient1@carenet.com',
+      phone: '+880171500001',
+      name: 'Demo Patient User 1',
+    },
+    {
+      email: 'demopatient2@carenet.com',
+      phone: '+880171500002',
+      name: 'Demo Patient User 2',
+    },
+  ].map((u) =>
+    prisma.users.create({
+      data: {
+        role: UserRole.PATIENT,
+        phone: u.phone,
+        email: u.email,
+        password_hash: demoPasswordHash,
+        name: u.name,
+        language: 'en',
+        kyc_status: KyCStatus.PENDING,
+        is_active: true,
+      },
+    })
+  ));
 
   // Create Patient
   const patient = await prisma.patients.create({
@@ -511,10 +708,17 @@ async function main() {
   console.log('✅ Database seeding completed successfully!');
   console.log('📊 Created:');
   console.log(`   - 1 Super Admin: ${superAdmin.name}`);
+  console.log('   - 2 Demo Super Admins');
   console.log(`   - 1 Moderator: ${moderator.name}`);
+  console.log('   - 2 Demo Moderators');
   console.log(`   - 1 Company: ${company.company_name}`);
+  console.log('   - 2 Demo Companies (agencies)');
   console.log(`   - 2 Caregivers: User IDs ${caregiver1.userId}, ${caregiver2.userId}`);
+  console.log('   - 2 Demo Caregivers');
   console.log(`   - 1 Guardian: ${guardianUser.name}`);
+  console.log('   - 2 Demo Guardians');
+  console.log('   - 2 Demo Patients for guardians');
+  console.log('   - 2 Demo Patient user accounts');
   console.log(`   - 1 Patient: ${patient.name}`);
   console.log(`   - 1 Package: ${pkg.name}`);
   console.log(`   - 1 Job: Active`);
