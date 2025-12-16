@@ -32,8 +32,6 @@ export async function POST(request: NextRequest) {
       return authzResult;
     }
 
-    const user = (request as any).user;
-
     // Parse request body
     const body = await request.json();
     const validatedData = getMetricsSchema.parse(body);
