@@ -1,10 +1,65 @@
 import '@testing-library/jest-dom';
 import { configure } from '@testing-library/react';
-import { server } from './src/__tests__/mocks/server';
 import { toHaveNoViolations } from 'jest-axe';
 
 // Extend Jest matchers with jest-axe
 expect.extend(toHaveNoViolations);
+
+// Polyfills must be set up BEFORE importing MSW
+// TextEncoder/TextDecoder
+try {
+  const { TextEncoder, TextDecoder } = require('util');
+  if (typeof global.TextEncoder === 'undefined') global.TextEncoder = TextEncoder;
+  if (typeof global.TextDecoder === 'undefined') global.TextDecoder = TextDecoder;
+} catch (e) {
+  // ignore
+}
+
+// Response/Request/Headers must be defined BEFORE MSW server loads
+if (typeof global.Response === 'undefined') {
+  global.Response = class {
+    constructor(body = null, init = {}) {
+      this._body = body;
+      this.status = init.status || 200;
+      this.ok = this.status >= 200 && this.status < 300;
+    }
+    async json() {
+      if (typeof this._body === 'string') return JSON.parse(this._body);
+      return this._body;
+    }
+    async text() {
+      if (typeof this._body === 'string') return this._body;
+      return JSON.stringify(this._body);
+    }
+  };
+}
+
+if (typeof global.Request === 'undefined') {
+  global.Request = class Request {
+    constructor(input, init) {
+      this.input = input;
+      this.init = init || {};
+    }
+  };
+}
+
+if (typeof global.Headers === 'undefined') {
+  global.Headers = class Headers extends Map {
+    constructor(init = {}) {
+      super(Object.entries(init || {}));
+    }
+    append(key, value) {
+      this.set(key, value);
+    }
+    get(key) {
+      return super.get(key);
+    }
+  };
+}
+
+// NOW import MSW server after all polyfills are in place
+const { server: mswServer } = require('./src/__tests__/mocks/server');
+global.server = mswServer;
 
 // Polyfills for test environment (jsdom)
 try {
@@ -63,63 +118,6 @@ jest.mock('@/hooks/useTheme', () => ({
   }),
 }));
 
-// TextEncoder/TextDecoder polyfill for older jsdom/node environments
-try {
-  const { TextEncoder, TextDecoder } = require('util');
-  if (typeof global.TextEncoder === 'undefined') global.TextEncoder = TextEncoder;
-  if (typeof global.TextDecoder === 'undefined') global.TextDecoder = TextDecoder;
-} catch (e) {
-  // ignore
-}
-
-// Minimal Response/Request/Headers shims if not present (keeps tests running)
-if (typeof global.Response === 'undefined') {
-  global.Response = class {
-    constructor(body = null, init = {}) {
-      this._body = body;
-      this.status = init.status || 200;
-      this.ok = this.status >= 200 && this.status < 300;
-    }
-    async json() {
-      if (typeof this._body === 'string') return JSON.parse(this._body);
-      return this._body;
-    }
-    async text() {
-      if (typeof this._body === 'string') return this._body;
-      return JSON.stringify(this._body);
-    }
-  };
-}
-
-if (typeof global.Request === 'undefined') {
-  global.Request = class Request {
-    constructor(input, init) {
-      this.input = input;
-      this.init = init || {};
-    }
-  };
-}
-
-if (typeof global.Headers === 'undefined') {
-  global.Headers = class Headers extends Map {
-    constructor(init = {}) {
-      super(Object.entries(init || {}));
-    }
-    append(key, value) {
-      this.set(key, value);
-    }
-    get(key) {
-      return super.get(key);
-    }
-  };
-}
-
-// Minimal NextResponse.json shim for Next.js API route helpers used in tests
-if (typeof global.NextResponse === 'undefined') {
-  global.NextResponse = {
-    json: (payload = {}, init = {}) => new global.Response(JSON.stringify(payload), init),
-  };
-}
 
 // Configure React Testing Library
 configure({ testIdAttribute: 'data-testid' });
