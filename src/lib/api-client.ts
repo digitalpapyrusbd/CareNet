@@ -37,18 +37,55 @@ export async function apiCall(endpoint: string, options?: ApiCallOptions) {
     headers['Content-Type'] = 'application/json';
   }
   
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  // Ensure endpoint starts with /api if it doesn't already
+  // Handle cases: '/auth/login', 'auth/login', '/api/auth/login'
+  let apiEndpoint: string;
+  if (endpoint.startsWith('/api/')) {
+    // Already has /api/ prefix, use as-is
+    apiEndpoint = endpoint;
+  } else {
+    // Remove leading slash if present, then add /api prefix
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+    apiEndpoint = `/api/${cleanEndpoint}`;
+  }
+  
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api-client.ts:45',message:'API call initiated',data:{endpoint:apiEndpoint,baseUrl:API_BASE_URL,hasToken:!!token},timestamp:Date.now(),sessionId:'debug-session',runId:'api-call',hypothesisId:'FRONTEND_BACKEND_CONNECTION'})}).catch(()=>{});
+  // #endregion
+  
+  const response = await fetch(`${API_BASE_URL}${apiEndpoint}`, {
     ...fetchOptions,
     headers,
     body: isFormData ? (body as FormData) : (body ? JSON.stringify(body) : undefined),
   });
   
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api-client.ts:52',message:'API call response',data:{endpoint:apiEndpoint,status:response.status,ok:response.ok},timestamp:Date.now(),sessionId:'debug-session',runId:'api-call',hypothesisId:'FRONTEND_BACKEND_CONNECTION'})}).catch(()=>{});
+  // #endregion
+  
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-    throw new APIError(errorData);
+    let errorData: any;
+    try {
+      const text = await response.text();
+      errorData = text ? JSON.parse(text) : { message: `HTTP ${response.status}: ${response.statusText}` };
+    } catch {
+      errorData = { message: `HTTP ${response.status}: ${response.statusText}` };
+    }
+    
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api-client.ts:66',message:'API call error',data:{endpoint:apiEndpoint,status:response.status,error:errorData,url:`${API_BASE_URL}${apiEndpoint}`},timestamp:Date.now(),sessionId:'debug-session',runId:'api-call',hypothesisId:'FRONTEND_BACKEND_CONNECTION'})}).catch(()=>{});
+    // #endregion
+    
+    const apiError = new APIError(errorData);
+    (apiError as any).status = response.status;
+    throw apiError;
   }
   
-  return response.json();
+  const data = await response.json();
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api-client.ts:64',message:'API call success',data:{endpoint:apiEndpoint,status:response.status},timestamp:Date.now(),sessionId:'debug-session',runId:'api-call',hypothesisId:'FRONTEND_BACKEND_CONNECTION'})}).catch(()=>{});
+  // #endregion
+  return data;
 }
 
 export async function apiCallNoAuth(endpoint: string, options?: ApiCallOptions) {
@@ -63,7 +100,19 @@ export async function apiCallNoAuth(endpoint: string, options?: ApiCallOptions) 
     headers['Content-Type'] = 'application/json';
   }
   
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  // Ensure endpoint starts with /api if it doesn't already
+  // Handle cases: '/auth/login', 'auth/login', '/api/auth/login'
+  let apiEndpoint: string;
+  if (endpoint.startsWith('/api/')) {
+    // Already has /api/ prefix, use as-is
+    apiEndpoint = endpoint;
+  } else {
+    // Remove leading slash if present, then add /api prefix
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+    apiEndpoint = `/api/${cleanEndpoint}`;
+  }
+  
+  const response = await fetch(`${API_BASE_URL}${apiEndpoint}`, {
     ...fetchOptions,
     headers,
     body: isFormData ? (body as FormData) : (body ? JSON.stringify(body) : undefined),

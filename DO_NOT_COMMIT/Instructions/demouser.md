@@ -17,44 +17,44 @@
 ## Super Admin
 | Phone Number | Email | Name |
 |--------------|-------|------|
-| +88017123456700 | admin@carenet.com | Super Admin |
-| +88017123456701 | demosuperadmin1@carenet.com | Demo Super Admin 1 |
-| +88017123456702 | demosuperadmin2@carenet.com | Demo Super Admin 2 |
+| +8801712345101 | admin@carenet.com | Super Admin |
+| +8801712345102 | demosuperadmin1@carenet.com | Demo Super Admin 1 |
+| +8801712345103 | demosuperadmin2@carenet.com | Demo Super Admin 2 |
 
 ## Moderator
 | Phone Number | Email | Name |
 |--------------|-------|------|
-| +88017123456703 | moderator@carenet.com | Platform Moderator |
-| +88017123456704 | demomoderator1@carenet.com | Demo Moderator 1 |
-| +88017123456705 | demomoderator2@carenet.com | Demo Moderator 2 |
+| +8801712345201 | moderator@carenet.com | Platform Moderator |
+| +8801712345202 | demomoderator1@carenet.com | Demo Moderator 1 |
+| +8801712345203 | demomoderator2@carenet.com | Demo Moderator 2 |
 
 ## Company / Agency
 | Phone Number | Email | Name |
 |--------------|-------|------|
-| +88017123456706 | company@carenet.com | Care Services Ltd |
-| +88017123456707 | democompany1@carenet.com | Demo Company 1 |
-| +88017123456708 | democompany2@carenet.com | Demo Company 2 |
+| +8801712345301 | company@carenet.com | Care Services Ltd |
+| +8801712345302 | democompany1@carenet.com | Demo Company 1 |
+| +8801712345303 | democompany2@carenet.com | Demo Company 2 |
 
 ## Caregiver
 | Phone Number | Email | Name |
 |--------------|-------|------|
-| +88017123456709 | caregiver1@carenet.com | Fatima Akter |
-| +88017123456710 | caregiver2@carenet.com | Rahman Khan |
-| +88017123456711 | democaregiver1@carenet.com | Demo Caregiver 1 |
-| +88017123456712 | democaregiver2@carenet.com | Demo Caregiver 2 |
+| +8801712345401 | caregiver1@carenet.com | Fatima Akter |
+| +8801712345402 | caregiver2@carenet.com | Rahman Khan |
+| +8801712345403 | democaregiver1@carenet.com | Demo Caregiver 1 |
+| +8801712345404 | democaregiver2@carenet.com | Demo Caregiver 2 |
 
 ## Guardian
 | Phone Number | Email | Name |
 |--------------|-------|------|
-| +88017123456713 | guardian@carenet.com | Ahmed Hassan |
-| +88017123456714 | demoguardian1@carenet.com | Demo Guardian 1 |
-| +88017123456715 | demoguardian2@carenet.com | Demo Guardian 2 |
+| +8801712345501 | guardian@carenet.com | Ahmed Hassan |
+| +8801712345502 | demoguardian1@carenet.com | Demo Guardian 1 |
+| +8801712345503 | demoguardian2@carenet.com | Demo Guardian 2 |
 
 ## Patient User Accounts
 | Phone Number | Email | Name |
 |--------------|-------|------|
-| +88017123456716 | demopatient1@carenet.com | Demo Patient User 1 |
-| +88017123456717 | demopatient2@carenet.com | Demo Patient User 2 |
+| +8801712345601 | demopatient1@carenet.com | Demo Patient User 1 |
+| +8801712345602 | demopatient2@carenet.com | Demo Patient User 2 |
 
 ---
 
@@ -66,8 +66,8 @@ The system uses **phone numbers** as the primary authentication identifier:
 Login form accepts: **Phone number + Password**
 
 **Quick Test Logins:**
-- Super Admin: `+88017123456701` / `Demo@123`
-- Moderator: `+88017123456704` / `Demo@123`
-- Company: `+88017123456707` / `Demo@123`
-- Caregiver: `+88017123456711` / `Demo@123`
-- Guardian: `+88017123456714` / `Demo@123`
+- Super Admin: `+8801712345102` / `Demo@123`
+- Moderator: `+8801712345202` / `Demo@123`
+- Company: `+8801712345302` / `Demo@123`
+- Caregiver: `+8801712345403` / `Demo@123`
+- Guardian: `+8801712345502` / `Demo@123`

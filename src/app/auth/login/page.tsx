@@ -6,13 +6,15 @@ import { Eye, EyeOff, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { apiCallNoAuth } from '@/lib/api-client';
 
 export default function LoginPage() {
   const router = useRouter();
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<{ phone?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ phone?: string; password?: string; general?: string }>({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const validatePhone = (value: string) => {
     const phoneRegex = /^(\+8801|01)[3-9]\d{8}$/;
@@ -43,7 +45,7 @@ export default function LoginPage() {
     return '';
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const phoneError = validatePhone(phone);
@@ -54,15 +56,87 @@ export default function LoginPage() {
       return;
     }
 
-    // Mock login - redirect based on phone number pattern
-    if (phone.includes('017')) {
-      router.push('/guardian/dashboard');
-    } else if (phone.includes('018')) {
-      router.push('/caregiver/dashboard');
-    } else if (phone.includes('019')) {
-      router.push('/agency/dashboard');
-    } else {
-      router.push('/');
+    setIsLoading(true);
+    setErrors({});
+
+    try {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'login/page.tsx:58',message:'Login attempt started',data:{phone},timestamp:Date.now(),sessionId:'debug-session',runId:'login-test',hypothesisId:'AUTH_CONNECTION'})}).catch(()=>{});
+      // #endregion
+      
+      const response = await apiCallNoAuth('/auth/login', {
+        method: 'POST',
+        body: { phone, password },
+      });
+
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'login/page.tsx:66',message:'Login successful',data:{userId:response.user?.id,role:response.user?.role},timestamp:Date.now(),sessionId:'debug-session',runId:'login-test',hypothesisId:'AUTH_CONNECTION'})}).catch(()=>{});
+      // #endregion
+
+      // Store tokens (backend returns access_token and refresh_token in snake_case)
+      if (response.access_token) {
+        localStorage.setItem('authToken', response.access_token);
+        if (response.refresh_token) {
+          localStorage.setItem('refreshToken', response.refresh_token);
+        }
+      }
+
+      // Store user info
+      if (response.user) {
+        localStorage.setItem('user', JSON.stringify(response.user));
+      }
+
+      // Redirect based on role
+      const role = response.user?.role?.toLowerCase() || '';
+      if (role.includes('super') || role.includes('admin')) {
+        router.push('/admin/dashboard');
+      } else if (role.includes('moderator')) {
+        router.push('/moderator/dashboard');
+      } else if (role.includes('company') || role.includes('agency')) {
+        router.push('/agency/dashboard');
+      } else if (role.includes('caregiver')) {
+        router.push('/caregiver/dashboard');
+      } else if (role.includes('guardian')) {
+        router.push('/guardian/dashboard');
+      } else if (role.includes('patient')) {
+        router.push('/patient/dashboard');
+      } else {
+        router.push('/');
+      }
+    } catch (error: any) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'login/page.tsx:106',message:'Login failed',data:{error:error.message,status:error.status,errorData:error.data},timestamp:Date.now(),sessionId:'debug-session',runId:'login-test',hypothesisId:'AUTH_CONNECTION'})}).catch(()=>{});
+      // #endregion
+      
+      let errorMessage = 'Login failed. Please check your credentials.';
+      
+      if (error.status === 0) {
+        errorMessage = 'Cannot connect to server. Please ensure the backend is running.';
+      } else if (error.status === 400) {
+        // Validation error
+        const validationErrors = error.data?.message || error.data?.details;
+        if (Array.isArray(validationErrors)) {
+          errorMessage = validationErrors.map((e: any) => e.message || e).join(', ');
+        } else if (typeof validationErrors === 'string') {
+          errorMessage = validationErrors;
+        } else {
+          errorMessage = error.data?.message || 'Invalid input. Please check your phone number and password format.';
+        }
+      } else if (error.status === 401) {
+        errorMessage = error.data?.message || 'Invalid phone number or password.';
+      } else if (error.status === 403) {
+        errorMessage = 'Access denied. Your account may be deactivated.';
+      } else if (error.status >= 500) {
+        errorMessage = 'Server error. Please try again later.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      setErrors({
+        general: errorMessage,
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -88,6 +162,12 @@ export default function LoginPage() {
       {/* Login Form Card */}
       <div className="w-full max-w-md finance-card p-8">
         <h2 className="mb-6 text-center" style={{ color: '#535353' }}>Welcome Back</h2>
+        
+        {errors.general && (
+          <div className="mb-4 p-3 rounded bg-red-50 border border-red-200">
+            <p className="text-sm text-red-600">{errors.general}</p>
+          </div>
+        )}
         
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Phone Input */}
@@ -159,6 +239,7 @@ export default function LoginPage() {
             type="submit"
             className="w-full"
             size="lg"
+            disabled={isLoading}
             style={{
               background: 'radial-gradient(118.75% 157.07% at 34.74% -18.75%, #DB869A 0%, #8082ED 100%)',
               boxShadow: '-4px 30px 30px rgba(219, 134, 154, 0.25)',
@@ -166,7 +247,7 @@ export default function LoginPage() {
               border: 'none'
             }}
           >
-            Login
+            {isLoading ? 'Logging in...' : 'Login'}
           </Button>
         </form>
 
