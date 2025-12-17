@@ -110,30 +110,8 @@ export function UniversalNav({ userRole, showBack = true }: UniversalNavProps) {
 
   return (
     <>
-      {/* Desktop Navigation - Top */}
-      <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur border-b border-white/50">
-        <div className="max-w-7xl mx-auto px-6 py-3 w-full">
-          <div className="flex items-center justify-center gap-2">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <button
-                  key={item.id}
-                  onClick={item.action}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-white/50 transition-all"
-                  style={{ color: '#535353' }}
-                >
-                  <Icon className="w-5 h-5" />
-                  <span className="text-sm font-medium">{item.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </nav>
-
-      {/* Mobile Navigation - Bottom */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur border-t border-white/50 safe-area-inset-bottom">
+      {/* Bottom navigation (mobile-first, shown on all breakpoints) */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur border-t border-white/50 safe-area-inset-bottom">
         <div className="grid grid-cols-5 h-16">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -236,7 +214,7 @@ export function UniversalNav({ userRole, showBack = true }: UniversalNavProps) {
       )}
 
       {/* Spacer for fixed navigation */}
-      <div className="h-16 md:h-14" />
+      <div className="h-16" />
     </>
   );
 }

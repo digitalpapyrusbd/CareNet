@@ -119,13 +119,13 @@ async function main() {
   console.log('🧹 Cleaned existing data');
 
   // Shared password hash for demo accounts
-  const demoPasswordHash = await hashPassword('1234');
+  const demoPasswordHash = await hashPassword('Demo@123');
 
   // Create Super Admin
   const superAdmin = await prisma.users.create({
     data: {
       role: UserRole.SUPER_ADMIN,
-      phone: '+8801712345678',
+      phone: '+88017123456700',
       email: 'admin@carenet.com',
       password_hash: await hashPassword('admin123'),
       name: 'Super Admin',
@@ -139,7 +139,7 @@ async function main() {
   const moderator = await prisma.users.create({
     data: {
       role: UserRole.MODERATOR,
-      phone: '+8801712345679',
+      phone: '+88017123456703',
       email: 'moderator@carenet.com',
       password_hash: await hashPassword('moderator123'),
       name: 'Platform Moderator',
@@ -153,12 +153,12 @@ async function main() {
   const demoSuperAdmins = await Promise.all([
     {
       email: 'demosuperadmin1@carenet.com',
-      phone: '+8801711111101',
+      phone: '+88017123456701',
       name: 'Demo Super Admin 1',
     },
     {
       email: 'demosuperadmin2@carenet.com',
-      phone: '+8801711111102',
+      phone: '+88017123456702',
       name: 'Demo Super Admin 2',
     },
   ].map((u) =>
@@ -180,12 +180,12 @@ async function main() {
   const demoModerators = await Promise.all([
     {
       email: 'demomoderator1@carenet.com',
-      phone: '+8801711111201',
+      phone: '+88017123456704',
       name: 'Demo Moderator 1',
     },
     {
       email: 'demomoderator2@carenet.com',
-      phone: '+8801711111202',
+      phone: '+88017123456705',
       name: 'Demo Moderator 2',
     },
   ].map((u) =>
@@ -207,7 +207,7 @@ async function main() {
   const companyUser = await prisma.users.create({
     data: {
       role: UserRole.COMPANY,
-      phone: '+8801712345680',
+      phone: '+88017123456706',
       email: 'company@carenet.com',
       password_hash: await hashPassword('company123'),
       name: 'Care Services Ltd',
@@ -225,7 +225,7 @@ async function main() {
       trade_license_url: 'https://example.com/trade-license.pdf',
       tin: '123456789012',
       contact_person: 'John Doe',
-      contact_phone: '+8801712345681',
+      contact_phone: '+88017123456750',
       contact_email: 'contact@careservices.com',
       address: '123 Gulshan Avenue, Dhaka 1212, Bangladesh',
       description: 'Professional caregiver services for elderly and patients',
@@ -245,7 +245,7 @@ async function main() {
     const user = await prisma.users.create({
       data: {
         role: UserRole.COMPANY,
-        phone: `+88017120000${i}`,
+        phone: `+8801712345${706 + i}`,
         email: `democompany${i}@carenet.com`,
         password_hash: demoPasswordHash,
         name: `Demo Company ${i}`,
@@ -261,7 +261,7 @@ async function main() {
         company_name: `Demo Agency ${i}`,
         trade_license: `TRD-DEMO-${i}`,
         contact_person: `Demo Contact ${i}`,
-        contact_phone: `+88017120010${i}`,
+        contact_phone: `+8801712345${750 + i}`,
         address: `Demo Agency Address ${i}, Dhaka`,
         payout_method: 'BANK_TRANSFER',
         payout_account: `0000${i}123456`,
@@ -279,7 +279,7 @@ async function main() {
   const caregiver1User = await prisma.users.create({
     data: {
       role: UserRole.CAREGIVER,
-      phone: '+8801712345682',
+      phone: '+88017123456709',
       email: 'caregiver1@carenet.com',
       password_hash: await hashPassword('caregiver123'),
       name: 'Fatima Akter',
@@ -315,7 +315,7 @@ async function main() {
   const caregiver2User = await prisma.users.create({
     data: {
       role: UserRole.CAREGIVER,
-      phone: '+8801712345683',
+      phone: '+88017123456710',
       email: 'caregiver2@carenet.com',
       password_hash: await hashPassword('caregiver123'),
       name: 'Rahman Khan',
@@ -357,7 +357,7 @@ async function main() {
     const user = await prisma.users.create({
       data: {
         role: UserRole.CAREGIVER,
-        phone: `+88017130000${i}`,
+        phone: `+8801712345${710 + i}`,
         email: `democaregiver${i}@carenet.com`,
         password_hash: demoPasswordHash,
         name: `Demo Caregiver ${i}`,
@@ -397,7 +397,7 @@ async function main() {
   const guardianUser = await prisma.users.create({
     data: {
       role: UserRole.GUARDIAN,
-      phone: '+8801712345684',
+      phone: '+88017123456713',
       email: 'guardian@carenet.com',
       password_hash: await hashPassword('guardian123'),
       name: 'Ahmed Hassan',
@@ -412,7 +412,7 @@ async function main() {
     const guardian = await prisma.users.create({
       data: {
         role: UserRole.GUARDIAN,
-        phone: `+88017140000${i}`,
+        phone: `+8801712345${713 + i}`,
         email: `demoguardian${i}@carenet.com`,
         password_hash: demoPasswordHash,
         name: `Demo Guardian ${i}`,
@@ -447,12 +447,12 @@ async function main() {
   await Promise.all([
     {
       email: 'demopatient1@carenet.com',
-      phone: '+880171500001',
+      phone: '+88017123456716',
       name: 'Demo Patient User 1',
     },
     {
       email: 'demopatient2@carenet.com',
-      phone: '+880171500002',
+      phone: '+88017123456717',
       name: 'Demo Patient User 2',
     },
   ].map((u) =>
@@ -480,7 +480,7 @@ async function main() {
       blood_group: 'O+',
       address: '123 Gulshan Avenue, Dhaka 1212, Bangladesh',
       emergency_contact_name: 'Ahmed Hassan',
-      emergency_contact_phone: '+8801712345684',
+      emergency_contact_phone: '+88017123456713',
       primaryConditions: ['diabetes', 'hypertension', 'arthritis'],
       allergies: 'Penicillin, Peanuts',
       mobility_level: MobilityLevel.ASSISTED,

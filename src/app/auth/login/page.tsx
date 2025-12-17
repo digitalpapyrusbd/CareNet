@@ -33,11 +33,21 @@ export default function LoginPage() {
     }
   };
 
+  const getPasswordError = (pwd: string): string => {
+    if (pwd.length < 8) return 'Password must be at least 8 characters';
+    if (pwd.length > 128) return 'Password must not exceed 128 characters';
+    if (!/[A-Z]/.test(pwd)) return 'Password must contain at least one uppercase letter';
+    if (!/[a-z]/.test(pwd)) return 'Password must contain at least one lowercase letter';
+    if (!/\d/.test(pwd)) return 'Password must contain at least one number';
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pwd)) return 'Password must contain at least one special character';
+    return '';
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     const phoneError = validatePhone(phone);
-    const passwordError = password.length < 6 ? 'Password must be at least 6 characters' : '';
+    const passwordError = getPasswordError(password);
 
     if (phoneError || passwordError) {
       setErrors({ phone: phoneError, password: passwordError });
