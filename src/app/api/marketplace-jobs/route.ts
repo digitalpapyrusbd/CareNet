@@ -32,8 +32,8 @@ export async function GET(request: NextRequest) {
     
     // Companies can only see their own marketplace jobs
     if (user.role === UserRole.COMPANY) {
-      const company = await prisma.company.findUnique({
-        where: { userId: user.id },
+      const company = await prisma.companies.findUnique({
+        where: { user_id: user.id },
       });
       
       if (company) {
@@ -66,17 +66,16 @@ export async function GET(request: NextRequest) {
 
     // Get marketplace jobs and total count
     const [marketplaceJobs, total] = await Promise.all([
-      prisma.marketplaceJob.findMany({
+      prisma.marketplace_jobs.findMany({
         where,
         skip,
         take: limit,
-        include: {
-          company: {
+        include: { companies: {
             select: {
               id: true,
-              companyName: true,
-              isVerified: true,
-              ratingAvg: true,
+              company_name: true,
+              is_verified: true,
+              rating_avg: true,
             },
           },
           postedByUser: {
@@ -101,8 +100,7 @@ export async function GET(request: NextRequest) {
             },
           },
           applications: {
-            include: {
-              caregiver: {
+            include: { caregivers: {
                 select: {
                   id: true,
                   user: {
@@ -124,9 +122,9 @@ export async function GET(request: NextRequest) {
             },
           },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { created_at: 'desc' },
       }),
-      prisma.marketplaceJob.count({ where }),
+      prisma.marketplace_jobs.count({ where }),
     ]);
 
     const totalPages = Math.ceil(total / limit);
@@ -190,8 +188,8 @@ export async function POST(request: NextRequest) {
     let jobCompanyId = companyId;
     
     if (user.role === UserRole.COMPANY) {
-      const company = await prisma.company.findUnique({
-        where: { userId: user.id },
+      const company = await prisma.companies.findUnique({
+        where: { user_id: user.id },
       });
       
       if (!company) {
@@ -210,26 +208,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Create marketplace job
-    const marketplaceJob = await prisma.marketplaceJob.create({
+    const marketplaceJob = await prisma.marketplace_jobs.create({
       data: {
-        companyId: jobCompanyId,
+        company_id: jobCompanyId,
         title,
         description,
         location,
         requiredSkills,
-        startDate: new Date(startDate),
-        durationDays: parseInt(durationDays),
-        hoursPerDay: parseInt(hoursPerDay),
+        start_date: new Date(startDate),
+        duration_days: parseInt(durationDays),
+        hours_per_day: parseInt(hoursPerDay),
         offeredRate: parseFloat(offeredRate),
         status: 'OPEN',
-        applicationsCount: 0,
+        applications_count: 0,
       },
-      include: {
-        company: {
+      include: { companies: {
           select: {
             id: true,
-            companyName: true,
-            isVerified: true,
+            company_name: true,
+            is_verified: true,
           },
         },
         postedByUser: {
@@ -283,7 +280,7 @@ export async function PUT(request: NextRequest) {
     const { coverLetter } = body;
 
     // Check if marketplace job exists and is open
-    const marketplaceJob = await prisma.marketplaceJob.findUnique({
+    const marketplaceJob = await prisma.marketplace_jobs.findUnique({
       where: { id: jobId },
     });
 
@@ -302,8 +299,8 @@ export async function PUT(request: NextRequest) {
     }
 
     // Get caregiver profile
-    const caregiver = await prisma.caregiver.findUnique({
-      where: { userId: user.id },
+    const caregiver = await prisma.caregivers.findUnique({
+      where: { user_id: user.id },
     });
 
     if (!caregiver) {
@@ -314,11 +311,11 @@ export async function PUT(request: NextRequest) {
     }
 
     // Check if already applied
-    const existingApplication = await prisma.jobApplication.findUnique({
+    const existingApplication = await prisma.job_applications.findUnique({
       where: {
         marketplaceJobId_caregiverId: {
-          marketplaceJobId: jobId,
-          caregiverId: caregiver.id,
+          marketplace_job_id: jobId,
+          caregiver_id: caregiver.id,
         },
       },
     });
@@ -331,15 +328,14 @@ export async function PUT(request: NextRequest) {
     }
 
     // Create application
-    const application = await prisma.jobApplication.create({
+    const application = await prisma.job_applications.create({
       data: {
-        marketplaceJobId: jobId,
-        caregiverId: caregiver.id,
+        marketplace_job_id: jobId,
+        caregiver_id: caregiver.id,
         coverLetter,
         status: 'PENDING',
       },
-      include: {
-        caregiver: {
+      include: { caregivers: {
           select: {
             id: true,
             user: {
@@ -362,7 +358,7 @@ export async function PUT(request: NextRequest) {
             company: {
               select: {
                 id: true,
-                companyName: true,
+                company_name: true,
               },
             },
           },
@@ -371,10 +367,10 @@ export async function PUT(request: NextRequest) {
     });
 
     // Update applications count
-    await prisma.marketplaceJob.update({
+    await prisma.marketplace_jobs.update({
       where: { id: jobId },
       data: {
-        applicationsCount: {
+        applications_count: {
           increment: 1,
         },
       },

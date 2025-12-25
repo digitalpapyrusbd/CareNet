@@ -155,7 +155,7 @@ export default function AgenciesManagementPage() {
             <>
               <div className="space-y-3 mb-6">
                 {agencies.map((agency) => {
-                  const subscriptionStyle = getSubscriptionColor(agency.subscriptionTier);
+                  const subscriptionStyle = getSubscriptionColor(agency.subscription_tier);
                   return (
                     <div key={agency.id} className="finance-card p-4">
                       <div className="flex items-start gap-3 mb-3">

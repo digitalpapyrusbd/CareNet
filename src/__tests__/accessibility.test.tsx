@@ -69,7 +69,7 @@ describe('Component Accessibility Tests (WCAG 2.1 AA)', () => {
     it('should have no violations with different variants', async () => {
       const { container } = render(
         <div>
-          <Button variant="primary">Primary</Button>
+          <Button variant="default">Primary</Button>
           <Button variant="secondary">Secondary</Button>
           <Button variant="outline">Outline</Button>
         </div>
@@ -381,7 +381,7 @@ describe('Component Accessibility Tests (WCAG 2.1 AA)', () => {
       // jest-axe automatically checks color contrast
       const { container } = render(
         <div>
-          <Button variant="primary">Primary Button</Button>
+          <Button variant="default">Primary Button</Button>
           <Button variant="secondary">Secondary Button</Button>
           <p>Regular text content</p>
           <h1>Heading text</h1>

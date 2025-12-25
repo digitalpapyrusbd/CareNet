@@ -60,44 +60,44 @@ export async function GET(request: NextRequest) {
           completedJobsThisPeriod,
         ] = await Promise.all([
           // Total counts
-          prisma.user.count({ where: { deletedAt: null } }),
-          prisma.company.count(),
-          prisma.caregiver.count(),
-          prisma.patient.count(),
-          prisma.job.count(),
-          prisma.job.count({ where: { status: 'ACTIVE' } }),
-          prisma.job.count({ where: { status: 'COMPLETED' } }),
+          prisma.users.count({ where: { deleted_at: null } }),
+          prisma.companies.count(),
+          prisma.caregivers.count(),
+          prisma.patients.count(),
+          prisma.jobs.count(),
+          prisma.jobs.count({ where: { status: 'ACTIVE' } }),
+          prisma.jobs.count({ where: { status: 'COMPLETED' } }),
           
           // Revenue
-          prisma.payment.aggregate({
+          prisma.payments.aggregate({
             where: {
               status: 'COMPLETED',
-              paidAt: { gte: startDate },
+              paid_at: { gte: startDate },
             },
             _sum: { amount: true },
           }),
           
           // Disputes
-          prisma.dispute.count({ where: { createdAt: { gte: startDate } } }),
-          prisma.dispute.count({ where: { status: 'OPEN', createdAt: { gte: startDate } } }),
-          prisma.dispute.count({ where: { status: 'RESOLVED', createdAt: { gte: startDate } } }),
+          prisma.disputes.count({ where: { createdAt: { gte: startDate } } }),
+          prisma.disputes.count({ where: { status: 'OPEN', createdAt: { gte: startDate } } }),
+          prisma.disputes.count({ where: { status: 'RESOLVED', createdAt: { gte: startDate } } }),
           
           // Period-specific metrics
-          prisma.user.count({
+          prisma.users.count({
             where: {
-              deletedAt: null,
-              createdAt: { gte: startDate },
+              deleted_at: null,
+              created_at: { gte: startDate },
             },
           }),
-          prisma.job.count({
+          prisma.jobs.count({
             where: {
-              createdAt: { gte: startDate },
+              created_at: { gte: startDate },
             },
           }),
-          prisma.job.count({
+          prisma.jobs.count({
             where: {
               status: 'COMPLETED',
-              updatedAt: { gte: startDate },
+              updated_at: { gte: startDate },
             },
           }),
         ]);
@@ -140,22 +140,22 @@ export async function GET(request: NextRequest) {
           userRegistrationsByDay,
         ] = await Promise.all([
           // User growth over time
-          prisma.user.groupBy({
+          prisma.users.groupBy({
             by: ['createdAt'],
             where: {
-              createdAt: { gte: startDate },
+              created_at: { gte: startDate },
             },
             _count: { id: true },
           }),
           
           // Users by role
-          prisma.user.groupBy({
+          prisma.users.groupBy({
             by: ['role'],
             _count: { id: true },
           }),
           
           // Users by KYC status
-          prisma.user.groupBy({
+          prisma.users.groupBy({
             by: ['kycStatus'],
             _count: { id: true },
           }),
@@ -192,19 +192,19 @@ export async function GET(request: NextRequest) {
           topPackages,
         ] = await Promise.all([
           // Jobs by status
-          prisma.job.groupBy({
+          prisma.jobs.groupBy({
             by: ['status'],
             where: {
-              createdAt: { gte: startDate },
+              created_at: { gte: startDate },
             },
             _count: { id: true },
           }),
           
           // Jobs by company (top 10)
-          prisma.job.groupBy({
+          prisma.jobs.groupBy({
             by: ['companyId'],
             where: {
-              createdAt: { gte: startDate },
+              created_at: { gte: startDate },
             },
             _count: { id: true },
             orderBy: {
@@ -214,9 +214,9 @@ export async function GET(request: NextRequest) {
           }),
           
           // Job completion rate
-          prisma.job.aggregate({
+          prisma.jobs.aggregate({
             where: {
-              createdAt: { gte: startDate },
+              created_at: { gte: startDate },
             },
             _count: { id: true },
           }),
@@ -234,10 +234,10 @@ export async function GET(request: NextRequest) {
           `,
           
           // Top packages
-          prisma.job.groupBy({
+          prisma.jobs.groupBy({
             by: ['packageId'],
             where: {
-              createdAt: { gte: startDate },
+              created_at: { gte: startDate },
             },
             _count: { id: true },
             orderBy: {
@@ -249,14 +249,14 @@ export async function GET(request: NextRequest) {
 
         // Get company details for jobs by company
         const companyIds = jobsByCompany.map((item: any) => item.companyId);
-        const companies = await prisma.company.findMany({
+        const companies = await prisma.companies.findMany({
           where: { id: { in: companyIds } },
-          select: { id: true, companyName: true },
+          select: { id: true, company_name: true },
         });
 
         // Get package details for top packages
         const packageIds = topPackages.map((item: any) => item.packageId);
-        const packages = await prisma.package.findMany({
+        const packages = await prisma.packages.findMany({
           where: { id: { in: packageIds } },
           select: { id: true, name: true },
         });
@@ -293,20 +293,20 @@ export async function GET(request: NextRequest) {
           paymentVolume,
         ] = await Promise.all([
           // Payments by method
-          prisma.payment.groupBy({
+          prisma.payments.groupBy({
             by: ['method'],
             where: {
-              createdAt: { gte: startDate },
+              created_at: { gte: startDate },
             },
             _count: { id: true },
             _sum: { amount: true },
           }),
           
           // Payments by status
-          prisma.payment.groupBy({
+          prisma.payments.groupBy({
             by: ['status'],
             where: {
-              createdAt: { gte: startDate },
+              created_at: { gte: startDate },
             },
             _count: { id: true },
             _sum: { amount: true },
@@ -326,9 +326,9 @@ export async function GET(request: NextRequest) {
           `,
           
           // Payment volume metrics
-          prisma.payment.aggregate({
+          prisma.payments.aggregate({
             where: {
-              createdAt: { gte: startDate },
+              created_at: { gte: startDate },
             },
             _count: { id: true },
             _sum: { amount: true },
@@ -354,8 +354,8 @@ export async function GET(request: NextRequest) {
           disputesByDay,
         ] = await Promise.all([
           // Disputes by type
-          prisma.dispute.groupBy({
-            by: ['disputeType'],
+          prisma.disputes.groupBy({
+            by: ['dispute_type'],
             where: {
               createdAt: { gte: startDate },
             },
@@ -363,7 +363,7 @@ export async function GET(request: NextRequest) {
           }),
           
           // Disputes by status
-          prisma.dispute.groupBy({
+          prisma.disputes.groupBy({
             by: ['status'],
             where: {
               createdAt: { gte: startDate },
@@ -372,13 +372,13 @@ export async function GET(request: NextRequest) {
           }),
           
           // Average resolution time
-          prisma.dispute.aggregate({
+          prisma.disputes.aggregate({
             where: {
               status: 'RESOLVED',
               createdAt: { gte: startDate },
             },
             _avg: {
-              resolvedAt: true,
+              resolved_at: true,
               createdAt: true,
             },
           }),
@@ -397,7 +397,9 @@ export async function GET(request: NextRequest) {
         ]);
 
         // Calculate average resolution time in days
-        const avgResolutionTimeInMs = disputeResolutionTime._avg.resolvedAt - disputeResolutionTime._avg.createdAt;
+        // Note: _avg on DateTime fields may not be supported, using type assertion
+        const avgResolutionTime = disputeResolutionTime as any;
+        const avgResolutionTimeInMs = (avgResolutionTime._avg?.resolved_at?.getTime() || 0) - (avgResolutionTime._avg?.createdAt?.getTime() || 0);
         const avgResolutionTimeInDays = avgResolutionTimeInMs / (1000 * 60 * 60 * 24);
 
         data = {

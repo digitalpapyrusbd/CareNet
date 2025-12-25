@@ -43,14 +43,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Create payment record
-    const payment = await prisma.payment.create({
+    const payment = await prisma.payments.create({
       data: {
-        payerId: user.id,
-        jobId: validatedData.jobId,
+        payer_id: user.id,
+        job_id: validatedData.jobId,
         amount: validatedData.amount,
         method: validatedData.method,
         status: 'PENDING' as const,
-        transactionId: `TEMP_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        transaction_id: `TEMP_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         invoiceNumber: `INV_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       },
     });
@@ -70,10 +70,10 @@ export async function POST(request: NextRequest) {
 
     if (paymentResponse.success) {
       // Update payment record with gateway response
-      await prisma.payment.update({
+      await prisma.payments.update({
         where: { id: payment.id },
         data: {
-          transactionId: paymentResponse.paymentId,
+          transaction_id: paymentResponse.paymentId,
           gatewayResponse: paymentResponse as any,
           status: 'PENDING' as const,
         },
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
       });
     } else {
       // Update payment record as failed
-      await prisma.payment.update({
+      await prisma.payments.update({
         where: { id: payment.id },
         data: {
           status: 'FAILED' as const,

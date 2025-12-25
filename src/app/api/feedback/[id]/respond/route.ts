@@ -27,7 +27,7 @@ export async function POST(
     }
 
     // Get feedback and verify company can respond
-    const feedback = await prisma.feedback.findUnique({
+    const feedback = await prisma.feedbacks.findUnique({
       where: { id },
       include: {
         toUser: {
@@ -47,7 +47,7 @@ export async function POST(
     }
 
     // Check if feedback is already responded to
-    if (feedback.companyResponse) {
+    if (feedback.company_response) {
       return NextResponse.json(
         { error: 'Feedback already has a response' },
         { status: 400 }
@@ -55,7 +55,7 @@ export async function POST(
     }
 
     // Verify feedback is about the company
-    if (feedback.revieweeType !== 'COMPANY' || feedback.toUserId !== user.id) {
+    if (feedback.reviewee_type !== 'COMPANY' || feedback.toUserId !== user.id) {
       return NextResponse.json(
         { error: 'You can only respond to feedback about your company' },
         { status: 403 }
@@ -63,10 +63,10 @@ export async function POST(
     }
 
     // Update feedback with response
-    const updatedFeedback = await prisma.feedback.update({
+    const updatedFeedback = await prisma.feedbacks.update({
       where: { id },
       data: {
-        companyResponse: response.trim(),
+        company_response: response.trim(),
         respondedAt: new Date(),
       },
       include: {
@@ -96,7 +96,7 @@ export async function POST(
             company: {
               select: {
                 id: true,
-                companyName: true,
+                company_name: true,
               },
             },
             startDate: true,

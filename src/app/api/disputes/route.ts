@@ -42,8 +42,8 @@ export async function GET(request: NextRequest) {
         
       case UserRole.COMPANY:
         // Companies can see disputes for their jobs
-        const company = await prisma.company.findUnique({
-          where: { userId: user.id },
+        const company = await prisma.companies.findUnique({
+          where: { user_id: user.id },
         });
         
         if (company) {
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
 
     // Get disputes and total count
     const [disputes, total] = await Promise.all([
-      prisma.dispute.findMany({
+      prisma.disputes.findMany({
         where,
         skip,
         take: limit,
@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
               company: {
                 select: {
                   id: true,
-                  companyName: true,
+                  company_name: true,
                 },
               },
               package: {
@@ -118,9 +118,9 @@ export async function GET(request: NextRequest) {
             },
           },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { created_at: 'desc' },
       }),
-      prisma.dispute.count({ where }),
+      prisma.disputes.count({ where }),
     ]);
 
     const totalPages = Math.ceil(total / limit);
@@ -178,7 +178,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify job exists and user has access
-    const job = await prisma.job.findUnique({
+    const job = await prisma.jobs.findUnique({
       where: { id: jobId },
       include: {
         guardian: {
@@ -187,10 +187,9 @@ export async function POST(request: NextRequest) {
           },
         },
         assignments: {
-          include: {
-            caregiver: {
+          include: { caregivers: {
               select: {
-                userId: true,
+                user_id: true,
               },
             },
           },
@@ -224,10 +223,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if dispute already exists for this job and user
-    const existingDispute = await prisma.dispute.findFirst({
+    const existingDispute = await prisma.disputes.findFirst({
       where: {
         jobId,
-        raisedBy: user.id,
+        raised_by: user.id,
         against,
         status: {
           notIn: ['RESOLVED', 'CLOSED'],
@@ -243,10 +242,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Create dispute
-    const dispute = await prisma.dispute.create({
+    const dispute = await prisma.disputes.create({
       data: {
         jobId,
-        raisedBy: user.id,
+        raised_by: user.id,
         against,
         disputeType,
         description,
@@ -282,7 +281,7 @@ export async function POST(request: NextRequest) {
             company: {
               select: {
                 id: true,
-                companyName: true,
+                company_name: true,
               },
             },
             package: {

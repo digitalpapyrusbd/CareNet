@@ -40,8 +40,8 @@ export async function GET(request: NextRequest) {
         
       case UserRole.COMPANY:
         // Companies can see payments for their jobs
-        const company = await prisma.company.findUnique({
-          where: { userId: user.id },
+        const company = await prisma.companies.findUnique({
+          where: { user_id: user.id },
         });
         
         if (company) {
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
 
     // Get payments and total count
     const [payments, total] = await Promise.all([
-      prisma.payment.findMany({
+      prisma.payments.findMany({
         where,
         skip,
         take: limit,
@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
               company: {
                 select: {
                   id: true,
-                  companyName: true,
+                  company_name: true,
                 },
               },
               package: {
@@ -108,9 +108,9 @@ export async function GET(request: NextRequest) {
             },
           },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { created_at: 'desc' },
       }),
-      prisma.payment.count({ where }),
+      prisma.payments.count({ where }),
     ]);
 
     const totalPages = Math.ceil(total / limit);
@@ -169,7 +169,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify job exists and belongs to guardian
-    const job = await prisma.job.findUnique({
+    const job = await prisma.jobs.findUnique({
       where: { id: jobId },
       include: {
         guardian: {
@@ -196,7 +196,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if payment already exists for this transaction
-    const existingPayment = await prisma.payment.findUnique({
+    const existingPayment = await prisma.payments.findUnique({
       where: { transactionId },
     });
 
@@ -208,10 +208,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Create payment
-    const payment = await prisma.payment.create({
+    const payment = await prisma.payments.create({
       data: {
         jobId,
-        payerId: user.id,
+        payer_id: user.id,
         amount: parseFloat(amount),
         method,
         transactionId,
@@ -239,7 +239,7 @@ export async function POST(request: NextRequest) {
             company: {
               select: {
                 id: true,
-                companyName: true,
+                company_name: true,
               },
             },
             package: {

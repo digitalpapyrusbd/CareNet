@@ -346,7 +346,7 @@ export function MobileCareLog() {
             </div>
           </button>
 
-          <Button size="lg" variant="danger" className="w-full">
+          <Button size="lg" variant="destructive" className="w-full">
             Submit Incident Report
           </Button>
         </div>

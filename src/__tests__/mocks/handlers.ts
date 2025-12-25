@@ -1,21 +1,25 @@
-import { rest } from 'msw';
+import { http, HttpResponse } from 'msw';
 
 const DEFAULT_BASES = ['http://localhost:4000', 'http://localhost:3000/api', 'http://localhost/api'];
 const apiBases = Array.from(new Set([process.env.NEXT_PUBLIC_API_URL, ...DEFAULT_BASES])).filter(Boolean) as string[];
 
-const createPostHandlers = (path: string, resolver: Parameters<typeof rest.post>[1]) =>
-  apiBases.map((base) => rest.post(`${base}${path}`, resolver));
+import type { HttpResponseResolver, PathParams } from 'msw';
 
-const createGetHandlers = (path: string, resolver: Parameters<typeof rest.get>[1]) =>
-  apiBases.map((base) => rest.get(`${base}${path}`, resolver));
+type Handler = HttpResponseResolver<PathParams>;
 
-const createPutHandlers = (path: string, resolver: Parameters<typeof rest.put>[1]) =>
-  apiBases.map((base) => rest.put(`${base}${path}`, resolver));
+const createPostHandlers = (path: string, resolver: Handler) =>
+  apiBases.map((base) => http.post(`${base}${path}`, resolver));
 
-const createDeleteHandlers = (path: string, resolver: Parameters<typeof rest.delete>[1]) =>
-  apiBases.map((base) => rest.delete(`${base}${path}`, resolver));
+const createGetHandlers = (path: string, resolver: Handler) =>
+  apiBases.map((base) => http.get(`${base}${path}`, resolver));
 
-const createHandlers = (method: 'get' | 'post' | 'put' | 'delete', path: string, resolver: any) => {
+const createPutHandlers = (path: string, resolver: Handler) =>
+  apiBases.map((base) => http.put(`${base}${path}`, resolver));
+
+const createDeleteHandlers = (path: string, resolver: Handler) =>
+  apiBases.map((base) => http.delete(`${base}${path}`, resolver));
+
+const createHandlers = (method: 'get' | 'post' | 'put' | 'delete', path: string, resolver: Handler) => {
   switch (method) {
     case 'post': return createPostHandlers(path, resolver);
     case 'get': return createGetHandlers(path, resolver);
@@ -26,83 +30,70 @@ const createHandlers = (method: 'get' | 'post' | 'put' | 'delete', path: string,
 
 export const handlers = [
   // Auth - Login
-  ...createPostHandlers('/auth/login', async (req, res, ctx) => {
-    const body = await req.json() as { phone: string; password: string };
+  ...createPostHandlers('/auth/login', async ({ request, params }) => {
+    const body = await request.json() as { phone: string; password: string };
     
     if (body.phone === '+8801700000000' && body.password === 'password123') {
-      return res(
-        ctx.json({
-          success: true,
-          user: {
-            id: 'user-123',
-            phone: '+8801700000000',
-            role: 'GUARDIAN',
-            name: 'Test Guardian',
-            email: 'test@example.com',
-          },
-          tokens: {
-            accessToken: 'mock-access-token',
-            refreshToken: 'mock-refresh-token',
-          },
-        })
-      );
+      return HttpResponse.json({
+        success: true,
+        user: {
+          id: 'user-123',
+          phone: '+8801700000000',
+          role: 'GUARDIAN',
+          name: 'Test Guardian',
+          email: 'test@example.com',
+        },
+        tokens: {
+          accessToken: 'mock-access-token',
+          refreshToken: 'mock-refresh-token',
+        },
+      });
     }
 
-    return res(
-      ctx.status(401),
-      ctx.json({
-        success: false,
-        message: 'Invalid credentials',
-      })
-    );
+    return HttpResponse.json({
+      success: false,
+      message: 'Invalid credentials',
+    }, { status: 401 });
   }),
 
   // Auth - Logout (DELETE /auth/login)
-  ...createDeleteHandlers('/auth/login', (req, res, ctx) => {
-    return res(
-      ctx.json({
-        success: true,
-        message: 'Logged out successfully',
-      })
-    );
+  ...createDeleteHandlers('/auth/login', () => {
+    return HttpResponse.json({
+      success: true,
+      message: 'Logged out successfully',
+    });
   }),
 
   // Auth - Get Current User
-  ...createGetHandlers('/auth/me', (req, res, ctx) => {
-    const authHeader = req.headers.get('Authorization');
+  ...createGetHandlers('/auth/me', ({ request, params }) => {
+    const authHeader = request.headers.get('Authorization');
     
     if (authHeader && authHeader.startsWith('Bearer ')) {
-      return res(
-        ctx.json({
-          success: true,
-          user: {
-            id: 'user-123',
-            phone: '+8801700000000',
-            role: 'GUARDIAN',
-            name: 'Test Guardian',
-            email: 'test@example.com',
-          },
-        })
-      );
+      return HttpResponse.json({
+        success: true,
+        user: {
+          id: 'user-123',
+          phone: '+8801700000000',
+          role: 'GUARDIAN',
+          name: 'Test Guardian',
+          email: 'test@example.com',
+        },
+      });
     }
 
-    return res(
-      ctx.status(401),
-      ctx.json({
-        success: false,
-        error: 'Unauthorized',
-      })
-    );
+    return HttpResponse.json({
+      success: false,
+      error: 'Unauthorized',
+    }, { status: 401 });
   }),
 
   // Auth - Update Profile (PUT /auth/me)
-  ...createHandlers('put', '/auth/me', async (req, res, ctx) => {
-    const authHeader = req.headers.get('Authorization');
-    const body = await req.json() as Partial<{ name: string; email: string }>;
+  ...createHandlers('put', '/auth/me', async ({ request, params }) => {
+    const authHeader = request.headers.get('Authorization');
+    const body = await request.json() as Partial<{ name: string; email: string }>;
     
     if (authHeader && authHeader.startsWith('Bearer ')) {
-      return res(
-        ctx.json({
+      return HttpResponse.json({
           success: true,
           user: {
             id: 'user-123',
@@ -111,66 +102,54 @@ export const handlers = [
             name: body.name || 'Test Guardian',
             email: body.email || 'test@example.com',
           },
-        })
-      );
+        });
     }
 
-    return res(
-      ctx.status(401),
-      ctx.json({
+    return HttpResponse.json({
         success: false,
         error: 'Unauthorized',
-      })
-    );
+      }, { status: 401 });
   }),
 
   // Auth - Refresh Token (PUT /auth/login)
-  ...createHandlers('put', '/auth/login', async (req, res, ctx) => {
-    const body = await req.json() as { refreshToken: string };
+  ...createHandlers('put', '/auth/login', async ({ request, params }) => {
+    const body = await request.json() as { refreshToken: string };
     
     if (body.refreshToken) {
-      return res(
-        ctx.json({
+      return HttpResponse.json({
           success: true,
           tokens: {
             accessToken: 'new-access-token',
             refreshToken: body.refreshToken,
           },
-        })
-      );
+        });
     }
 
-    return res(
-      ctx.status(401),
-      ctx.json({
+    return HttpResponse.json({
         success: false,
         error: 'Invalid refresh token',
-      })
-    );
+      }, { status: 401 });
   }),
 
   // Patients - Create
-  ...createPostHandlers('/patients', async (req, res, ctx) => {
-    const body = await req.json() as { name: string; phone: string; email?: string };
+  ...createPostHandlers('/patients', async ({ request, params }) => {
+    const body = await request.json() as { name: string; phone: string; email?: string };
     
-    return res(
-      ctx.json({
+    return HttpResponse.json({
         success: true,
         data: {
           id: 'patient-' + Date.now(),
           ...body,
-          guardianId: 'user-123',
+          guardian_id: 'user-123',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
-      })
-    );
+      });
   }),
 
   // Patients - List
-  ...createGetHandlers('/patients', (req, res, ctx) => {
-    return res(
-      ctx.json({
+  ...createGetHandlers('/patients', ({ request, params }) => {
+    return HttpResponse.json({
         success: true,
         data: [
           {
@@ -183,14 +162,12 @@ export const handlers = [
             updatedAt: '2025-11-20T10:00:00Z',
           },
         ],
-      })
-    );
+      });
   }),
 
   // Packages - List
-  ...createGetHandlers('/packages', (req, res, ctx) => {
-    return res(
-      ctx.json({
+  ...createGetHandlers('/packages', ({ request, params }) => {
+    return HttpResponse.json({
         success: true,
         data: [
           {
@@ -222,16 +199,14 @@ export const handlers = [
             createdAt: '2025-11-01T00:00:00Z',
           },
         ],
-      })
-    );
+      });
   }),
 
   // Packages - Get Single
-  ...createGetHandlers('/packages/:id', (req, res, ctx) => {
-    const { id } = req.params;
+  ...createGetHandlers('/packages/:id', ({ request, params }) => {
+    const { id } = params || {};
     
-    return res(
-      ctx.json({
+    return HttpResponse.json({
         success: true,
         data: {
           id,
@@ -240,23 +215,21 @@ export const handlers = [
           price: 5000,
           duration: 30,
           services: ['Daily check-ins', 'Medication reminders', 'Emergency support'],
-          companyId: 'company-1',
+          company_id: 'company-1',
           company: {
-            companyName: 'CareGiver Solutions',
+            company_name: 'CareGiver Solutions',
           },
           isActive: true,
           createdAt: '2025-11-01T00:00:00Z',
         },
-      })
-    );
+      });
   }),
 
   // Jobs - Create (Package Purchase)
-  ...createPostHandlers('/jobs', async (req, res, ctx) => {
-    const body = await req.json() as { packageId: string; patientId: string; startDate: string };
+  ...createPostHandlers('/jobs', async ({ request, params }) => {
+    const body = await request.json() as { packageId: string; patientId: string; startDate: string };
     
-    return res(
-      ctx.json({
+    return HttpResponse.json({
         success: true,
         data: {
           id: 'job-' + Date.now(),
@@ -266,52 +239,46 @@ export const handlers = [
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
-      })
-    );
+      });
   }),
 
   // Payments - Create Payment Intent
-  ...createPostHandlers('/payments/create-intent', async (req, res, ctx) => {
-    const body = await req.json() as { amount: number; jobId: string };
+  ...createPostHandlers('/payments/create-intent', async ({ request, params }) => {
+    const body = await request.json() as { amount: number; jobId: string };
     
-    return res(
-      ctx.json({
+    return HttpResponse.json({
         success: true,
         data: {
           clientSecret: 'mock-payment-intent-secret',
           paymentIntentId: 'pi-mock-' + Date.now(),
           amount: body.amount,
         },
-      })
-    );
+      });
   }),
 
   // Payments - Confirm Payment
-  ...createPostHandlers('/payments/confirm', async (req, res, ctx) => {
-    const body = await req.json() as { paymentIntentId: string; jobId: string };
+  ...createPostHandlers('/payments/confirm', async ({ request, params }) => {
+    const body = await request.json() as { paymentIntentId: string; jobId: string };
     
-    return res(
-      ctx.json({
+    return HttpResponse.json({
         success: true,
         data: {
           id: 'payment-' + Date.now(),
-          jobId: body.jobId,
+          job_id: body.jobId,
           amount: 5000,
           status: 'COMPLETED',
           method: 'CARD',
-          transactionId: 'txn-mock-' + Date.now(),
+          transaction_id: 'txn-mock-' + Date.now(),
           createdAt: new Date().toISOString(),
         },
-      })
-    );
+      });
   }),
 
   // Auth - Register
-  ...createPostHandlers('/auth/register', async (req, res, ctx) => {
-    const body = await req.json() as { phone: string; password: string; name: string; role?: string };
+  ...createPostHandlers('/auth/register', async ({ request, params }) => {
+    const body = await request.json() as { phone: string; password: string; name: string; role?: string };
     
-    return res(
-      ctx.json({
+    return HttpResponse.json({
         success: true,
         data: {
           id: 'user-' + Date.now(),
@@ -321,14 +288,12 @@ export const handlers = [
           email: null,
           createdAt: new Date().toISOString(),
         },
-      })
-    );
+      });
   }),
 
   // Dashboard Stats
-  ...createGetHandlers('/dashboard/stats', (req, res, ctx) => {
-    return res(
-      ctx.json({
+  ...createGetHandlers('/dashboard/stats', ({ request, params }) => {
+    return HttpResponse.json({
         success: true,
         data: {
           totalPatients: 3,
@@ -338,14 +303,12 @@ export const handlers = [
           totalSpent: 15000,
           upcomingAppointments: 2,
         },
-      })
-    );
+      });
   }),
 
   // Users - List (for admin/testing)
-  ...createGetHandlers('/users', (req, res, ctx) => {
-    return res(
-      ctx.json({
+  ...createGetHandlers('/users', ({ request, params }) => {
+    return HttpResponse.json({
         success: true,
         data: [
           {
@@ -366,24 +329,22 @@ export const handlers = [
         total: 2,
         page: 1,
         limit: 10,
-      })
-    );
+      });
   }),
 
   // Jobs - Get with details (for verification after purchase)
-  ...createGetHandlers('/jobs/:id', (req, res, ctx) => {
-    const { id } = req.params;
+  ...createGetHandlers('/jobs/:id', ({ request, params }) => {
+    const { id } = params || {};
     
-    return res(
-      ctx.json({
+    return HttpResponse.json({
         success: true,
         data: {
           id,
-          packageId: 'package-1',
-          patientId: 'patient-1',
+          package_id: 'package-1',
+          patient_id: 'patient-1',
           status: 'ACTIVE',
           totalPrice: 5000,
-          startDate: new Date().toISOString(),
+          start_date: new Date().toISOString(),
           package: {
             name: 'Basic Care Package',
             description: '24/7 basic care and monitoring',
@@ -397,14 +358,12 @@ export const handlers = [
           },
           createdAt: new Date().toISOString(),
         },
-      })
-    );
+      });
   }),
 
   // Notifications - List
-  ...createGetHandlers('/notifications', (req, res, ctx) => {
-    return res(
-      ctx.json({
+  ...createGetHandlers('/notifications', ({ request, params }) => {
+    return HttpResponse.json({
         success: true,
         data: [
           {
@@ -426,81 +385,71 @@ export const handlers = [
         ],
         total: 2,
         unread: 1,
-      })
-    );
+      });
   }),
 
   // Notifications - Mark as Read
-  ...createPostHandlers('/notifications/:id/read', async (req, res, ctx) => {
-    const { id } = req.params;
+  ...createPostHandlers('/notifications/:id/read', async ({ request, params }) => {
+    const { id } = params || {};
     
-    return res(
-      ctx.json({
+    return HttpResponse.json({
         success: true,
         data: {
           id,
           isRead: true,
         },
-      })
-    );
+      });
   }),
 
   // Escrow - Create Hold
-  ...createPostHandlers('/escrow/hold', async (req, res, ctx) => {
-    const body = await req.json() as { jobId: string; amount: number };
+  ...createPostHandlers('/escrow/hold', async ({ request, params }) => {
+    const body = await request.json() as { jobId: string; amount: number };
     
-    return res(
-      ctx.json({
+    return HttpResponse.json({
         success: true,
         data: {
           id: 'escrow-' + Date.now(),
-          jobId: body.jobId,
+          job_id: body.jobId,
           amount: body.amount,
           status: 'HELD',
           createdAt: new Date().toISOString(),
         },
-      })
-    );
+      });
   }),
 
   // Escrow - Release Payment
-  ...createPostHandlers('/escrow/:id/release', async (req, res, ctx) => {
-    const { id } = req.params;
+  ...createPostHandlers('/escrow/:id/release', async ({ request, params }) => {
+    const { id } = params || {};
     
-    return res(
-      ctx.json({
+    return HttpResponse.json({
         success: true,
         data: {
           id,
           status: 'RELEASED',
           releasedAt: new Date().toISOString(),
         },
-      })
-    );
+      });
   }),
 
   // Feedback - Submit
-  ...createPostHandlers('/feedback', async (req, res, ctx) => {
-    const body = await req.json() as { jobId: string; rating: number; comment: string };
+  ...createPostHandlers('/feedback', async ({ request, params }) => {
+    const body = await request.json() as { jobId: string; rating: number; comment: string };
     
-    return res(
-      ctx.json({
+    return HttpResponse.json({
         success: true,
         data: {
           id: 'feedback-' + Date.now(),
           ...body,
           createdAt: new Date().toISOString(),
         },
-      })
-    );
+      });
   }),
 
   // Care Logs - List
-  ...createGetHandlers('/care-logs', (req, res, ctx) => {
-    const jobId = req.url.searchParams.get('jobId');
+  ...createGetHandlers('/care-logs', ({ request, params }) => {
+    const jobId = new URL(request.url).searchParams.get('jobId');
     
-    return res(
-      ctx.json({
+    return HttpResponse.json({
         success: true,
         data: [
           {
@@ -520,33 +469,29 @@ export const handlers = [
             caregiverId: 'caregiver-1',
           },
         ],
-      })
-    );
+      });
   }),
 
   // Care Logs - Create
-  ...createPostHandlers('/care-logs', async (req, res, ctx) => {
-    const body = await req.json() as { jobId: string; type: string; notes: string };
+  ...createPostHandlers('/care-logs', async ({ request, params }) => {
+    const body = await request.json() as { jobId: string; type: string; notes: string };
     
-    return res(
-      ctx.json({
+    return HttpResponse.json({
         success: true,
         data: {
           id: 'log-' + Date.now(),
           ...body,
           timestamp: new Date().toISOString(),
-          caregiverId: 'caregiver-1',
+          caregiver_id: 'caregiver-1',
         },
-      })
-    );
+      });
   }),
 
   // Disputes - Create
-  ...createPostHandlers('/disputes', async (req, res, ctx) => {
-    const body = await req.json() as { jobId: string; reason: string; description: string };
+  ...createPostHandlers('/disputes', async ({ request, params }) => {
+    const body = await request.json() as { jobId: string; reason: string; description: string };
     
-    return res(
-      ctx.json({
+    return HttpResponse.json({
         success: true,
         data: {
           id: 'dispute-' + Date.now(),
@@ -554,14 +499,12 @@ export const handlers = [
           status: 'PENDING',
           createdAt: new Date().toISOString(),
         },
-      })
-    );
+      });
   }),
 
   // Disputes - List
-  ...createGetHandlers('/disputes', (req, res, ctx) => {
-    return res(
-      ctx.json({
+  ...createGetHandlers('/disputes', ({ request, params }) => {
+    return HttpResponse.json({
         success: true,
         data: [
           {
@@ -573,14 +516,12 @@ export const handlers = [
             createdAt: new Date().toISOString(),
           },
         ],
-      })
-    );
+      });
   }),
 
   // Files - Upload
-  ...createPostHandlers('/files/upload', async (req, res, ctx) => {
-    return res(
-      ctx.json({
+  ...createPostHandlers('/files/upload', async ({ request, params }) => {
+    return HttpResponse.json({
         success: true,
         data: {
           id: 'file-' + Date.now(),
@@ -590,16 +531,14 @@ export const handlers = [
           mimeType: 'application/pdf',
           createdAt: new Date().toISOString(),
         },
-      })
-    );
+      });
   }),
 
   // Verification - Submit Documents
-  ...createPostHandlers('/verification/submit', async (req, res, ctx) => {
-    const body = await req.json() as { type: string; documentUrls: string[] };
+  ...createPostHandlers('/verification/submit', async ({ request, params }) => {
+    const body = await request.json() as { type: string; documentUrls: string[] };
     
-    return res(
-      ctx.json({
+    return HttpResponse.json({
         success: true,
         data: {
           id: 'verification-' + Date.now(),
@@ -607,14 +546,12 @@ export const handlers = [
           status: 'PENDING',
           submittedAt: new Date().toISOString(),
         },
-      })
-    );
+      });
   }),
 
   // Profile - Get
-  ...createGetHandlers('/profile', (req, res, ctx) => {
-    return res(
-      ctx.json({
+  ...createGetHandlers('/profile', ({ request, params }) => {
+    return HttpResponse.json({
         success: true,
         data: {
           id: 'user-123',
@@ -627,23 +564,20 @@ export const handlers = [
           emergencyContact: '+8801800000000',
           createdAt: '2025-01-01T00:00:00Z',
         },
-      })
-    );
+      });
   }),
 
   // Profile - Update
-  ...createPostHandlers('/profile', async (req, res, ctx) => {
-    const body = await req.json();
+  ...createPostHandlers('/profile', async ({ request, params }) => {
+    const body = await request.json();
     
-    return res(
-      ctx.json({
+    return HttpResponse.json({
         success: true,
         data: {
           id: 'user-123',
           ...body,
           updatedAt: new Date().toISOString(),
         },
-      })
-    );
+      });
   }),
 ].flat();

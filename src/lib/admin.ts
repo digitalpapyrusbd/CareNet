@@ -17,9 +17,9 @@ export async function changeUserRole(actor: any, targetUserId: string, newRole: 
 
   // Update user role (uses Prisma mock in tests)
   try {
-    const updated = await prisma.user.update({ where: { id: targetUserId }, data: { role: newRole } });
+    const updated = await prisma.users.update({ where: { id: targetUserId }, data: { role: newRole } });
     // Create an audit log entry
-    await prisma.auditLog.createMany({ data: [{ actorId: actor?.id || null, action: 'change_role', meta: JSON.stringify({ targetUserId, newRole }) }] });
+    await prisma.audit_logs.createMany({ data: [{ actor_id: actor?.id || null, action: 'change_role', meta: JSON.stringify({ targetUserId, newRole }) }] });
     return { status: 200, data: updated };
   } catch (err: any) {
     return { status: 500, error: 'server_error', details: err?.message };
@@ -34,7 +34,7 @@ export async function moderateContent(actor: any, contentId: string, action: 're
 
   try {
     // For simplicity, record moderation action in audit log and update a content table if present
-    await prisma.auditLog.createMany({ data: [{ actorId: actor?.id || null, action: `moderate_${action}`, meta: JSON.stringify({ contentId, reason }) }] });
+    await prisma.audit_logs.createMany({ data: [{ actor_id: actor?.id || null, action: `moderate_${action}`, meta: JSON.stringify({ contentId, reason }) }] });
     // If content model exists, attempt a soft-update (best-effort)
     if ((prisma as any).content && typeof (prisma as any).content.update === 'function') {
       const updateData: any = { status: action === 'approve' ? 'APPROVED' : 'REMOVED' };
@@ -48,7 +48,7 @@ export async function moderateContent(actor: any, contentId: string, action: 're
 
 export async function listAuditLogs(limit = 50) {
   try {
-    const logs = await prisma.auditLog.findMany({ take: limit, orderBy: { createdAt: 'desc' } } as any);
+    const logs = await prisma.audit_logs.findMany({ take: limit, orderBy: { created_at: 'desc' } } as any);
     return { status: 200, data: logs };
   } catch (err: any) {
     return { status: 500, error: 'server_error', details: err?.message };

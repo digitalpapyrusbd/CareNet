@@ -78,7 +78,7 @@ describe('Performance Tests', () => {
     it('should fetch users within 100ms', async () => {
       const result = await DatabaseOptimizer.timedQuery(
         'fetch-users',
-        () => prisma.user.findMany({
+        () => prisma.users.findMany({
           take: 10,
           select: {
             id: true,
@@ -96,17 +96,14 @@ describe('Performance Tests', () => {
     it('should handle complex joins efficiently', async () => {
       const result = await DatabaseOptimizer.timedQuery(
         'complex-join-query',
-        () => prisma.job.findMany({
-          include: {
-            patient: true,
+        () => prisma.jobs.findMany({
+          include: { patients: true,
             company: {
-              include: {
-                user: true,
+              include: { users: true,
               },
             },
             caregiver: {
-              include: {
-                user: true,
+              include: { users: true,
               },
             },
             package: true,
@@ -134,7 +131,7 @@ describe('Performance Tests', () => {
         testUsers,
         10, // Batch size of 10
         async (batch) => {
-          return prisma.user.createMany({
+          return prisma.users.createMany({
             data: batch,
             skipDuplicates: true,
           });
@@ -204,7 +201,7 @@ describe('Performance Tests', () => {
       for (let i = 0; i < 100; i++) {
         await DatabaseOptimizer.timedQuery(
           `repeated-query-${i}`,
-          () => prisma.user.findMany({ take: 10 })
+          () => prisma.users.findMany({ take: 10 })
         );
       }
       

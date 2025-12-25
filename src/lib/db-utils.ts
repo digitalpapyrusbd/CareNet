@@ -6,16 +6,16 @@ export async function createUser(data: {
   role: UserRole;
   phone: string;
   email?: string;
-  passwordHash: string;
+  password_hash: string;
   name?: string;
   language?: string;
 }) {
-  return await prisma.user.create({
+  return await prisma.users.create({
     data: {
       ...data,
       language: data.language || 'en',
-      kycStatus: KyCStatus.PENDING,
-      isActive: true,
+      kyc_status: KyCStatus.PENDING,
+      is_active: true,
     },
   });
 }
@@ -34,14 +34,14 @@ export async function getUserById(id: string) {
 
 export async function updateUserLastLogin(userId: string) {
   return await prisma.users.update({
-    where: { id: userId },
-    data: { lastLoginAt: new Date() },
+    where: { id: user_id },
+    data: { last_login_at: new Date() },
   });
 }
 
 export async function updateUserVerification(userId: string, isPhoneVerified: boolean) {
   return await prisma.users.update({
-    where: { id: userId },
+    where: { id: user_id },
     data: { isPhoneVerified },
   });
 }
@@ -49,8 +49,8 @@ export async function updateUserVerification(userId: string, isPhoneVerified: bo
 // Company utilities
 export async function createCompany(data: {
   userId: string;
-  companyName: string;
-  tradeLicense: string;
+  company_name: string;
+  trade_license: string;
   contactPerson: string;
   contactPhone: string;
   address: string;
@@ -58,63 +58,63 @@ export async function createCompany(data: {
   payoutAccount: string;
   commissionRate?: number;
 }) {
-  return await prisma.company.create({
+  return await prisma.companies.create({
     data: {
       ...data,
-      commissionRate: data.commissionRate || 12.00,
-      subscriptionTier: 'STARTER',
-      ratingAvg: 0.0,
-      ratingCount: 0,
-      isVerified: false,
+      commission_rate: data.commissionRate || 12.00,
+      subscription_tier: 'STARTER',
+      rating_avg: 0.0,
+      rating_count: 0,
+      is_verified: false,
     },
   });
 }
 
 export async function getCompanyByUserId(userId: string) {
-  return await prisma.company.findUnique({
-    where: { userId },
+  return await prisma.companies.findUnique({
+    where: { user_id },
   });
 }
 
 // Caregiver utilities
 export async function createCaregiver(data: {
   userId: string;
-  companyId?: string;
+  company_id?: string;
   nid: string;
   nidUrl: string;
   photoUrl: string;
-  dateOfBirth: Date;
+  date_of_birth: Date;
   gender: string;
   address: string;
   skills: any;
   experienceYears?: number;
 }) {
-  return await prisma.caregiver.create({
+  return await prisma.caregivers.create({
     data: {
       ...data,
-      experienceYears: data.experienceYears || 0,
+      experience_years: data.experienceYears || 0,
       languages: ['bn'], // Default Bengali
-      backgroundCheckStatus: 'PENDING',
-      ratingAvg: 0.0,
-      ratingCount: 0,
-      totalJobsCompleted: 0,
-      isAvailable: true,
-      isVerified: false,
+      background_check_status: 'PENDING',
+      rating_avg: 0.0,
+      rating_count: 0,
+      total_jobs_completed: 0,
+      is_available: true,
+      is_verified: false,
     },
   });
 }
 
 export async function getCaregiverByUserId(userId: string) {
-  return await prisma.caregiver.findUnique({
-    where: { userId },
+  return await prisma.caregivers.findUnique({
+    where: { user_id },
   });
 }
 
 // Patient utilities
 export async function createPatient(data: {
-  guardianId: string;
+  guardian_id: string;
   name: string;
-  dateOfBirth: Date;
+  date_of_birth: Date;
   gender: string;
   address: string;
   emergencyContactName: string;
@@ -122,38 +122,38 @@ export async function createPatient(data: {
   primaryConditions?: any;
   allergies?: string;
 }) {
-  return await prisma.patient.create({
+  return await prisma.patients.create({
     data: {
       ...data,
-      mobilityLevel: 'INDEPENDENT',
-      cognitiveStatus: 'NORMAL',
-      consentDataSharing: false,
-      consentMarketing: false,
+      mobility_level: 'INDEPENDENT',
+      cognitive_status: 'NORMAL',
+      consent_data_sharing: false,
+      consent_marketing: false,
     },
   });
 }
 
 export async function getPatientsByGuardian(guardianId: string) {
-  return await prisma.patient.findMany({
-    where: { guardianId },
-    orderBy: { createdAt: 'desc' },
+  return await prisma.patients.findMany({
+    where: { guardian_id },
+    orderBy: { created_at: 'desc' },
   });
 }
 
 // Job utilities
 export async function createJob(data: {
-  packageId: string;
-  patientId: string;
-  companyId: string;
-  guardianId: string;
-  startDate: Date;
+  package_id: string;
+  patient_id: string;
+  company_id: string;
+  guardian_id: string;
+  start_date: Date;
   endDate: Date;
   totalPrice: number;
   commissionAmount: number;
   payoutAmount: number;
   specialInstructions?: string;
 }) {
-  return await prisma.job.create({
+  return await prisma.jobs.create({
     data: {
       ...data,
       status: JobStatus.PENDING_ASSIGNMENT,
@@ -162,36 +162,33 @@ export async function createJob(data: {
 }
 
 export async function getJobsByGuardian(guardianId: string) {
-  return await prisma.job.findMany({
-    where: { guardianId },
-    include: {
-      patient: true,
+  return await prisma.jobs.findMany({
+    where: { guardian_id },
+    include: { patients: true,
       company: true,
       package: true,
       assignments: {
-        include: {
-          caregiver: {
-            include: {
-              user: true,
+        include: { caregivers: {
+            include: { users: true,
             },
           },
         },
       },
     },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { created_at: 'desc' },
   });
 }
 
 // Payment utilities
 export async function createPayment(data: {
-  jobId: string;
-  payerId: string;
+  job_id: string;
+  payer_id: string;
   amount: number;
   method: string;
-  transactionId: string;
-  invoiceNumber: string;
+  transaction_id: string;
+  invoice_number: string;
 }) {
-  return await prisma.payment.create({
+  return await prisma.payments.create({
     data: {
       ...data,
       status: PaymentStatus.PENDING,
@@ -200,26 +197,24 @@ export async function createPayment(data: {
 }
 
 export async function getPaymentsByPayer(payerId: string) {
-  return await prisma.payment.findMany({
-    where: { payerId },
-    include: {
-      job: {
-        include: {
-          patient: true,
+  return await prisma.payments.findMany({
+    where: { payer_id },
+    include: { jobs: {
+        include: { patients: true,
         },
       },
     },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { created_at: 'desc' },
   });
 }
 
 // Audit logging
 export async function createAuditLog(data: {
-  userId?: string;
+  user_id?: string;
   action: string;
   metadata?: any;
 }) {
-  return await prisma.auditLog.create({
+  return await prisma.audit_logs.create({
     data,
   });
 }

@@ -34,12 +34,12 @@ export async function POST(request: NextRequest) {
     
     // If verification code is provided, enable MFA
     if (validatedData.verifyCode) {
-      const updatedUser = await prisma.user.findUnique({
+      const updatedUser = await prisma.users.findUnique({
         where: { id: user.id },
-        select: { mfaSecret: true }
+        select: { mfa_secret: true }
       });
       
-      if (!updatedUser?.mfaSecret) {
+      if (!updatedUser?.mfa_secret) {
         return NextResponse.json(
           { error: 'MFA setup not initiated' },
           { status: 400 }
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       
       // Verify the TOTP code
       const verified = speakeasy.totp.verify({
-        secret: updatedUser.mfaSecret,
+        secret: updatedUser.mfa_secret,
         encoding: 'base32',
         token: validatedData.verifyCode,
         window: 2, // Allow 2 time windows for clock drift
@@ -62,9 +62,9 @@ export async function POST(request: NextRequest) {
       }
       
       // Enable MFA for the user
-      await prisma.user.update({
+      await prisma.users.update({
         where: { id: user.id },
-        data: { mfaEnabled: true }
+        data: { mfa_enabled: true }
       });
       
       return NextResponse.json({
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
       );
       
       // Generate TOTP URI
-      const totpUri = speakeasy.otpauthURL({
+      const totpUri = (speakeasy as any).otpauthURL({
         secret,
         label,
         issuer,
@@ -93,9 +93,9 @@ export async function POST(request: NextRequest) {
       const qrCodeDataUrl = await QRCode.toDataURL(totpUri);
       
       // Store the secret temporarily (not enabled yet)
-      await prisma.user.update({
+      await prisma.users.update({
         where: { id: user.id },
-        data: { mfaSecret: secret }
+        data: { mfa_secret: secret }
       });
       
       return NextResponse.json({
@@ -141,11 +141,11 @@ export async function DELETE(request: NextRequest) {
   
   try {
     // Disable MFA for the user
-    await prisma.user.update({
+    await prisma.users.update({
       where: { id: user.id },
       data: { 
-        mfaEnabled: false,
-        mfaSecret: null
+        mfa_enabled: false,
+        mfa_secret: null
       }
     });
     

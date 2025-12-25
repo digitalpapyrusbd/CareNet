@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { useRouter } from 'next/navigation';
 import { server } from './mocks/server';
-import { rest } from 'msw';
+import { http, HttpResponse } from 'msw';
 
 type MockPackage = {
   id: string;
@@ -298,26 +298,24 @@ describe('User Flow Integration Tests', () => {
       // Step 5: Verify patient appears in list (simulate viewing patient list)
       // Mock the GET /patients endpoint to include our new patient
       server.use(
-        rest.get('http://localhost:4000/patients', (req, res, ctx) => {
-          return res(
-            ctx.json({
-              success: true,
-              data: [
-                {
-                  id: 'patient-1',
-                  name: 'John Doe',
-                  phone: '+8801712345678',
-                  email: 'john@example.com',
-                },
-                {
-                  id: 'patient-new',
-                  name: 'Jane Smith',
-                  phone: '+8801798765432',
-                  email: 'jane@example.com',
-                },
-              ],
-            })
-          );
+        http.get('http://localhost:4000/patients', () => {
+          return HttpResponse.json({
+            success: true,
+            data: [
+              {
+                id: 'patient-1',
+                name: 'John Doe',
+                phone: '+8801712345678',
+                email: 'john@example.com',
+              },
+              {
+                id: 'patient-new',
+                name: 'Jane Smith',
+                phone: '+8801798765432',
+                email: 'jane@example.com',
+              },
+            ],
+          });
         })
       );
 
@@ -344,14 +342,11 @@ describe('User Flow Integration Tests', () => {
       // Mock failed patient creation
       const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
       server.use(
-        rest.post(`${apiBase}/patients`, (req, res, ctx) => {
-          return res(
-            ctx.status(400),
-            ctx.json({
-              success: false,
-              message: 'Patient with this phone already exists',
-            })
-          );
+        http.post(`${apiBase}/patients`, () => {
+          return HttpResponse.json({
+            success: false,
+            message: 'Patient with this phone already exists',
+          }, { status: 400 });
         })
       );
 
@@ -554,14 +549,11 @@ describe('User Flow Integration Tests', () => {
     it('should handle payment failure gracefully', async () => {
       // Mock payment confirmation failure
       server.use(
-        rest.post('http://localhost:4000/payments/confirm', (req, res, ctx) => {
-          return res(
-            ctx.status(400),
-            ctx.json({
-              success: false,
-              message: 'Payment failed',
-            })
-          );
+        http.post('http://localhost:4000/payments/confirm', () => {
+          return HttpResponse.json({
+            success: false,
+            message: 'Payment failed',
+          }, { status: 400 });
         })
       );
 

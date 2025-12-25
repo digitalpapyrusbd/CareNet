@@ -7,7 +7,7 @@ import { existsSync } from 'fs';
 
 const LOCALES_DIR = join(process.cwd(), 'src/lib/locales');
 
-export const GET = withRoles([UserRole.SUPER_ADMIN, UserRole.PLATFORM_ADMIN])(async (
+export const GET = withRoles([UserRole.SUPER_ADMIN, UserRole.SUPER_ADMIN])(async (
   request: NextRequest,
   { params }: { params: Promise<{ code: string }> }
 ) => {

@@ -37,7 +37,7 @@ export async function authenticate(request: NextRequest): Promise<NextResponse |
     // Get user from database to ensure they still exist and are active
     const user = await getUserById(payload.userId);
     
-    if (!user || !user.isActive) {
+    if (!user || !user.is_active) {
       return NextResponse.json(
         { error: 'Invalid or expired token' },
         { status: 401 }

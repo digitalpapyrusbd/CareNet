@@ -30,7 +30,7 @@ export async function authenticateRequest(req: Request): Promise<AuthResult | Ne
     }
 
     const user = await getUserById(payload.userId)
-    if (!user || !user.isActive) return errorResponse('Invalid user', 'AUTH_INVALID_USER', 401)
+    if (!user || !user.is_active) return errorResponse('Invalid user', 'AUTH_INVALID_USER', 401)
 
     return { user: { id: user.id, role: user.role as any, phone: user.phone, email: user.email || undefined, name: user.name } }
   } catch (err: any) {

@@ -179,7 +179,7 @@ export function withRateLimit(maxRequests: number = 100, windowMs: number = 6000
   
   return function(handler: (request: NextRequest, context?: any) => Promise<NextResponse>) {
     return async (request: NextRequest, context?: any): Promise<NextResponse> => {
-      const clientIp = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+      const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown';
       const now = Date.now();
       
       // Clean up expired entries

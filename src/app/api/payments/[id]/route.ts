@@ -35,8 +35,8 @@ export async function GET(
         
       case UserRole.COMPANY:
         // Companies can see payments for their jobs
-        const company = await prisma.company.findUnique({
-          where: { userId: user.id },
+        const company = await prisma.companies.findUnique({
+          where: { user_id: user.id },
         });
         
         if (company) {
@@ -48,7 +48,7 @@ export async function GET(
     }
 
     // Get payment with related data
-    const payment = await prisma.payment.findFirst({
+    const payment = await prisma.payments.findFirst({
       where,
       include: {
         payer: {
@@ -71,7 +71,7 @@ export async function GET(
             company: {
               select: {
                 id: true,
-                companyName: true,
+                company_name: true,
               },
             },
             package: {
@@ -136,7 +136,7 @@ export async function POST(
     }
 
     // Get the payment
-    const payment = await prisma.payment.findUnique({
+    const payment = await prisma.payments.findUnique({
       where: { id },
     });
 
@@ -155,11 +155,11 @@ export async function POST(
     }
 
     // Update payment status based on action
-    const updatedPayment = await prisma.payment.update({
+    const updatedPayment = await prisma.payments.update({
       where: { id },
       data: {
         status: action === 'approve' ? 'COMPLETED' : 'FAILED',
-        paidAt: action === 'approve' ? new Date() : null,
+        paid_at: action === 'approve' ? new Date() : null,
       },
       include: {
         payer: {
@@ -182,7 +182,7 @@ export async function POST(
             company: {
               select: {
                 id: true,
-                companyName: true,
+                company_name: true,
               },
             },
             package: {
@@ -201,7 +201,7 @@ export async function POST(
 
     // If payment is approved, update job status to ACTIVE
     if (action === 'approve') {
-      await prisma.job.update({
+      await prisma.jobs.update({
         where: { id: payment.jobId },
         data: { status: 'ACTIVE' },
       });

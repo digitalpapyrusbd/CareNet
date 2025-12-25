@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 export async function GET() {
   try {
-    const patients = await prisma.patient.findMany();
+    const patients = await prisma.patients.findMany();
     return NextResponse.json({ success: true, data: patients });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: 'server_error', details: err?.message }, { status: 500 });
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     if (!name || !phone) {
       return NextResponse.json({ success: false, error: 'missing_fields' }, { status: 400 });
     }
-    const created = await prisma.patient.create({ data: { name, phone, email: email || null, dob: dob || null } });
+    const created = await prisma.patients.create({ data: { name, phone, email: email || null, dob: dob || null } });
     return NextResponse.json({ success: true, data: created }, { status: 201 });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: 'server_error', details: err?.message }, { status: 500 });
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
 
     // Get patients and total count
     const [patients, total] = await Promise.all([
-      prisma.patient.findMany({
+      prisma.patients.findMany({
         where,
         skip,
         take: limit,
@@ -89,14 +89,14 @@ export async function GET(request: NextRequest) {
           },
           _count: {
             select: {
-              healthRecords: true,
+              health_records: true,
               jobs: true,
             },
           },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { created_at: 'desc' },
       }),
-      prisma.patient.count({ where }),
+      prisma.patients.count({ where }),
     ]);
 
     const totalPages = Math.ceil(total / limit);
@@ -173,12 +173,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Create patient
-    const patient = await prisma.patient.create({
+    const patient = await prisma.patients.create({
       data: {
         userId,
-        guardianId: patientGuardianId!,
+        guardian_id: patientGuardianId!,
         name,
-        dateOfBirth: new Date(dateOfBirth),
+        date_of_birth: new Date(dateOfBirth),
         gender,
         bloodGroup,
         address,
@@ -189,8 +189,8 @@ export async function POST(request: NextRequest) {
         mobilityLevel,
         cognitiveStatus,
         photoUrl,
-        consentDataSharing: false,
-        consentMarketing: false,
+        consent_data_sharing: false,
+        consent_marketing: false,
       },
       include: {
         guardian: {

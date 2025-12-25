@@ -59,7 +59,7 @@ export async function createCheckout({ amount, currency = 'BDT', reference }: Na
 }
 
 export async function verifyPayment(transactionId: string) {
-  const prov = await prisma.provider_transactions.findUnique({ where: { provider_tx_id: transactionId } })
+  const prov = await prisma.provider_transactions.findUnique({ where: { provider_tx_id: transaction_id } })
   if (!prov) return { transactionId, status: 'NOT_FOUND' }
 
   const updated = await prisma.provider_transactions.update({ where: { id: prov.id }, data: { status: 'SUCCESS' } })
@@ -83,7 +83,7 @@ export async function verifyPayment(transactionId: string) {
 }
 
 export async function getTransaction(transactionId: string) {
-  return prisma.provider_transactions.findUnique({ where: { provider_tx_id: transactionId }, include: { logs: true } })
+  return prisma.provider_transactions.findUnique({ where: { provider_tx_id: transaction_id }, include: { logs: true } })
 }
 
 export async function listTransactions() {

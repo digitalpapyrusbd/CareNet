@@ -44,11 +44,11 @@ export async function POST(request: NextRequest) {
     // Find user by email if userId is not provided
     let user;
     if (validatedData.userId) {
-      user = await prisma.user.findUnique({
+      user = await prisma.users.findUnique({
         where: { id: validatedData.userId },
       });
     } else {
-      user = await prisma.user.findUnique({
+      user = await prisma.users.findUnique({
         where: { email: validatedData.email },
       });
     }
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
       attempts: 0,
     };
     
-    await kv.setex(existingKey, 24 * 60 * 60, JSON.stringify(verificationData));
+    await kv.set(existingKey, JSON.stringify(verificationData), { ex: 24 * 60 * 60  });
     
     // Send verification email (in production, use email service)
     const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/verify-email?token=${token}&email=${encodeURIComponent(validatedData.email)}`;
@@ -135,7 +135,7 @@ export async function PUT(request: NextRequest) {
       
       if (verificationData.attempts >= 5) {
         // Block further attempts for this email
-        await kv.setex(`email_blocked:${validatedData.email}`, 3600, JSON.stringify({
+        await kv.set(`email_blocked:${validatedData.email}`, JSON.stringify({
           reason: 'TOO_MANY_ATTEMPTS',
           until: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
         }));
@@ -148,7 +148,7 @@ export async function PUT(request: NextRequest) {
         );
       }
       
-      await kv.setex(verificationKey, 24 * 60 * 60, JSON.stringify(verificationData));
+      await kv.set(verificationKey, JSON.stringify(verificationData), { ex: 24 * 60 * 60  });
       
       return NextResponse.json(
         { error: 'Invalid verification token', attemptsRemaining: 5 - verificationData.attempts },
@@ -188,11 +188,11 @@ export async function PUT(request: NextRequest) {
     // Find user and update email verification status
     let user;
     if (verificationData.userId) {
-      user = await prisma.user.findUnique({
+      user = await prisma.users.findUnique({
         where: { id: verificationData.userId },
       });
     } else {
-      user = await prisma.user.findUnique({
+      user = await prisma.users.findUnique({
         where: { email: validatedData.email },
       });
     }
@@ -214,7 +214,7 @@ export async function PUT(request: NextRequest) {
       updateData.email = validatedData.email;
     }
     
-    await prisma.user.update({
+    await prisma.users.update({
       where: { id: user.id },
       data: updateData,
     });

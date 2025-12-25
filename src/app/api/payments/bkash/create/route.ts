@@ -52,18 +52,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Create payment record in database
-    const payment = await prisma.payment.create({
+    const payment = await prisma.payments.create({
       data: {
         amount: validatedData.amount,
         currency: validatedData.currency,
         method: 'BKASH',
         status: 'PENDING',
         userId: user.id,
-        jobId: validatedData.jobId,
-        transactionId: '', // Will be filled after bKash response
+        job_id: validatedData.jobId,
+        transaction_id: '', // Will be filled after bKash response
         gatewayResponse: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        created_at: new Date(),
+        updated_at: new Date(),
       },
     });
 
@@ -77,10 +77,10 @@ export async function POST(request: NextRequest) {
     });
 
     // Update payment record with bKash payment ID
-    await prisma.payment.update({
+    await prisma.payments.update({
       where: { id: payment.id },
       data: {
-        transactionId: bkashPayment.paymentID,
+        transaction_id: bkashPayment.paymentID,
         gatewayResponse: JSON.stringify(bkashPayment),
       },
     });
@@ -151,10 +151,9 @@ export async function GET(request: NextRequest) {
     const paymentStatus = await bkashGateway.queryPayment(paymentId);
 
     // Get payment from our database
-    const payment = await prisma.payment.findUnique({
-      where: { transactionId: paymentId },
-      include: {
-        user: {
+    const payment = await prisma.payments.findUnique({
+      where: { transaction_id: paymentId },
+      include: { users: {
           select: {
             id: true,
             name: true,

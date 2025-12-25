@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
     
     // Check if user exists
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { phone },
     });
     
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Store OTP in database
-    await prisma.verificationCode.create({
+    await prisma.verification_codes.create({
       data: {
         userId: user.id,
         code: otp,

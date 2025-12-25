@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     const { phone, otp } = verifyOTPSchema.parse(body);
     
     // Find valid OTP code
-    const verificationCode = await prisma.verificationCode.findFirst({
+    const verificationCode = await prisma.verification_codes.findFirst({
       where: {
         code: otp,
         type: 'PHONE_VERIFICATION',
@@ -23,8 +23,7 @@ export async function POST(request: NextRequest) {
         },
         isUsed: false,
       },
-      include: {
-        user: true,
+      include: { users: true,
       },
     });
     
@@ -36,7 +35,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Mark OTP as used
-    await prisma.verificationCode.update({
+    await prisma.verification_codes.update({
       where: { id: verificationCode.id },
       data: {
         isUsed: true,
@@ -45,12 +44,10 @@ export async function POST(request: NextRequest) {
     });
     
     // Activate user account
-    await prisma.user.update({
+    await prisma.users.update({
       where: { id: verificationCode.userId },
       data: {
-        isActive: true,
-        emailVerified: new Date(),
-        phoneVerified: new Date(),
+        is_active: true,
       },
     });
     
@@ -58,11 +55,11 @@ export async function POST(request: NextRequest) {
     await prisma.audit_logs.create({
       data: {
         actor_id: verificationCode.userId,
-        actor_role: verificationCode.user.role,
+        actor_role: verificationCode.users.role,
         action_type: 'PHONE_VERIFIED',
         entity_type: 'USER',
         entity_id: verificationCode.userId,
-        ip_address: request.ip || request.headers.get('x-forwarded-for') || 'Unknown',
+        ip_address: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown" || request.headers.get('x-forwarded-for') || 'Unknown',
         user_agent: request.headers.get('user-agent') || 'Unknown',
       },
     });

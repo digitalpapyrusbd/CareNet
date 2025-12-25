@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const id = (await params).id;
-    const patient = await prisma.patient.findUnique({ where: { id } });
+    const patient = await prisma.patients.findUnique({ where: { id } });
     if (!patient) return NextResponse.json({ success: false, error: 'not_found' }, { status: 404 });
     return NextResponse.json({ success: true, data: patient });
   } catch (err: any) {
@@ -17,7 +17,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   try {
     const id = (await params).id;
     const body = await req.json();
-    const updated = await prisma.patient.update({ where: { id }, data: body });
+    const updated = await prisma.patients.update({ where: { id }, data: body });
     return NextResponse.json({ success: true, data: updated });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: 'server_error', details: err?.message }, { status: 500 });
@@ -27,7 +27,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const id = (await params).id;
-    await prisma.patient.delete({ where: { id } });
+    await prisma.patients.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: 'server_error', details: err?.message }, { status: 500 });

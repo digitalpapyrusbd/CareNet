@@ -46,8 +46,8 @@ export async function GET(request: NextRequest) {
         
       case UserRole.COMPANY:
         // Companies can see their own jobs
-        const company = await prisma.company.findUnique({
-          where: { userId: user.id },
+        const company = await prisma.companies.findUnique({
+          where: { user_id: user.id },
         });
         
         if (company) {
@@ -69,16 +69,15 @@ export async function GET(request: NextRequest) {
 
     // Get jobs and total count
     const [jobs, total] = await Promise.all([
-      prisma.job.findMany({
+      prisma.jobs.findMany({
         where,
         skip,
         take: limit,
-        include: {
-          patient: {
+        include: { patients: {
             select: {
               id: true,
               name: true,
-              dateOfBirth: true,
+              date_of_birth: true,
               gender: true,
               primaryConditions: true,
             },
@@ -94,8 +93,8 @@ export async function GET(request: NextRequest) {
           company: {
             select: {
               id: true,
-              companyName: true,
-              isVerified: true,
+              company_name: true,
+              is_verified: true,
             },
           },
           package: {
@@ -104,13 +103,12 @@ export async function GET(request: NextRequest) {
               name: true,
               category: true,
               price: true,
-              durationDays: true,
-              hoursPerDay: true,
+              duration_days: true,
+              hours_per_day: true,
             },
           },
           assignments: {
-            include: {
-              caregiver: {
+            include: { caregivers: {
                 select: {
                   id: true,
                   user: {
@@ -131,13 +129,13 @@ export async function GET(request: NextRequest) {
               id: true,
               amount: true,
               status: true,
-              paidAt: true,
+              paid_at: true,
             },
           },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { created_at: 'desc' },
       }),
-      prisma.job.count({ where }),
+      prisma.jobs.count({ where }),
     ]);
 
     const totalPages = Math.ceil(total / limit);
@@ -195,7 +193,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify package exists and get price
-    const packageData = await prisma.package.findUnique({
+    const packageData = await prisma.packages.findUnique({
       where: { id: packageId },
     });
 
@@ -207,7 +205,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify patient exists and belongs to guardian
-    const patient = await prisma.patient.findUnique({
+    const patient = await prisma.patients.findUnique({
       where: { id: patientId },
     });
 
@@ -227,7 +225,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify company exists
-    const company = await prisma.company.findUnique({
+    const company = await prisma.companies.findUnique({
       where: { id: companyId },
     });
 
@@ -244,13 +242,13 @@ export async function POST(request: NextRequest) {
     const payoutAmount = totalPrice - commissionAmount;
 
     // Create job
-    const job = await prisma.job.create({
+    const job = await prisma.jobs.create({
       data: {
         packageId,
         patientId,
         companyId,
-        guardianId: user.id,
-        startDate: new Date(startDate),
+        guardian_id: user.id,
+        start_date: new Date(startDate),
         endDate: new Date(endDate),
         totalPrice,
         commissionAmount,
@@ -258,12 +256,11 @@ export async function POST(request: NextRequest) {
         specialInstructions,
         status: 'PENDING_ASSIGNMENT',
       },
-      include: {
-        patient: {
+      include: { patients: {
           select: {
             id: true,
             name: true,
-            dateOfBirth: true,
+            date_of_birth: true,
             gender: true,
           },
         },
@@ -278,8 +275,8 @@ export async function POST(request: NextRequest) {
         company: {
           select: {
             id: true,
-            companyName: true,
-            isVerified: true,
+            company_name: true,
+            is_verified: true,
           },
         },
         package: {
@@ -288,8 +285,8 @@ export async function POST(request: NextRequest) {
             name: true,
             category: true,
             price: true,
-            durationDays: true,
-            hoursPerDay: true,
+            duration_days: true,
+            hours_per_day: true,
           },
         },
       },

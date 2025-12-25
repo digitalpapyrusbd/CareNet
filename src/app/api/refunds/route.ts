@@ -383,10 +383,9 @@ async function checkCreateRefundPermission(userId: string, userRole: string, pay
   const prisma = new PrismaClient();
 
   try {
-    const payment = await prisma.payment.findUnique({
+    const payment = await prisma.payments.findUnique({
       where: { id: paymentId },
-      include: {
-        job: {
+      include: { jobs: {
           include: {
             guardian: true,
             caregiver: true,

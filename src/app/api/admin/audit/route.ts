@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     // write directly using Prisma to avoid creating another helper here
     const { PrismaClient } = require('@prisma/client');
     const prisma = new PrismaClient();
-    await prisma.auditLog.createMany({ data: [{ actorId: actorId || null, action: action || 'custom', meta: JSON.stringify(meta || {}) }] });
+    await prisma.audit_logs.createMany({ data: [{ actor_id: actorId || null, action: action || 'custom', meta: JSON.stringify(meta || {}) }] });
     return NextResponse.json({ success: true });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: 'server_error', details: err?.message }, { status: 500 });

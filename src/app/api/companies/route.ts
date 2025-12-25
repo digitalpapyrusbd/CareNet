@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (subscriptionTier) {
-      where.subscriptionTier = subscriptionTier;
+      where.subscription_tier = subscriptionTier;
     }
 
     if (region) {
@@ -140,12 +140,11 @@ export async function GET(request: NextRequest) {
 
     // Get companies and total count
     const [companies, total] = await Promise.all([
-      prisma.company.findMany({
+      prisma.companies.findMany({
         where,
         skip,
         take: limit,
-        include: {
-          user: {
+        include: { users: {
             select: {
               id: true,
               name: true,
@@ -157,9 +156,9 @@ export async function GET(request: NextRequest) {
             select: {
               id: true,
               name: true,
-              isVerified: true,
-              ratingAvg: true,
-              totalJobsCompleted: true,
+              is_verified: true,
+              rating_avg: true,
+              total_jobs_completed: true,
               isAvailable: true,
             },
           },
@@ -176,9 +175,9 @@ export async function GET(request: NextRequest) {
           service_zones: {
             select: {
               id: true,
-              zoneName: true,
+              zone_name: true,
               regionCode: true,
-              isActive: true,
+              is_active: true,
             },
           },
           _count: {
@@ -187,7 +186,7 @@ export async function GET(request: NextRequest) {
         },
         orderBy,
       }),
-      prisma.company.count({ where }),
+      prisma.companies.count({ where }),
     ]);
 
     const totalPages = Math.ceil(total / limit);
@@ -248,8 +247,8 @@ export async function POST(request: NextRequest) {
 
     // Check if user already has a company
     if (currentUser.role === UserRole.COMPANY) {
-      const existingCompany = await prisma.company.findUnique({
-        where: { userId: currentUser.id },
+      const existingCompany = await prisma.companies.findUnique({
+        where: { user_id: currentUser.id },
       });
 
       if (existingCompany) {
@@ -261,8 +260,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if trade license already exists
-    const existingTradeLicense = await prisma.company.findFirst({
-      where: { tradeLicense: validatedData.tradeLicense },
+    const existingTradeLicense = await prisma.companies.findFirst({
+      where: { trade_license: validatedData.trade_license },
     });
 
     if (existingTradeLicense) {
@@ -273,11 +272,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Create company
-    const company = await prisma.company.create({
+    const company = await prisma.companies.create({
       data: {
         userId: currentUser.id,
-        companyName: validatedData.companyName,
-        tradeLicense: validatedData.tradeLicense,
+        company_name: validatedData.companyName,
+        trade_license: validatedData.trade_license,
         tin: validatedData.tin,
         contactPerson: validatedData.contactPerson,
         contactEmail: validatedData.contactEmail,
@@ -288,17 +287,17 @@ export async function POST(request: NextRequest) {
         specializations: validatedData.specializations,
         payoutMethod: validatedData.payoutMethod,
         payoutAccount: validatedData.payoutAccount,
-        commissionRate: validatedData.commissionRate || 12.0,
-        subscriptionTier: validatedData.subscriptionTier || "STARTER",
-        ratingAvg: 0.0,
-        ratingCount: 0,
-        isVerified: false,
+        commission_rate: validatedData.commissionRate || 12.0,
+        subscription_tier: validatedData.subscription_tier || "STARTER",
+        rating_avg: 0.0,
+        rating_count: 0,
+        is_verified: false,
       },
     });
 
     // Update user role to COMPANY if not already
     if (currentUser.role !== UserRole.COMPANY) {
-      await prisma.user.update({
+      await prisma.users.update({
         where: { id: currentUser.id },
         data: { role: UserRole.COMPANY },
       });
@@ -350,10 +349,9 @@ export async function PUT(request: NextRequest) {
     }
 
     // Find company
-    const company = await prisma.company.findUnique({
+    const company = await prisma.companies.findUnique({
       where: { id: companyId },
-      include: {
-        user: {
+      include: { users: {
           select: {
             id: true,
             name: true,
@@ -385,12 +383,12 @@ export async function PUT(request: NextRequest) {
 
     // Check if trade license is being changed to an existing one
     if (
-      validatedData.tradeLicense &&
-      validatedData.tradeLicense !== company.tradeLicense
+      validatedData.trade_license &&
+      validatedData.trade_license !== company.trade_license
     ) {
-      const existingTradeLicense = await prisma.company.findFirst({
+      const existingTradeLicense = await prisma.companies.findFirst({
         where: {
-          tradeLicense: validatedData.tradeLicense,
+          trade_license: validatedData.trade_license,
           id: { not: companyId },
         },
       });
@@ -404,11 +402,11 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update company
-    const updatedCompany = await prisma.company.update({
+    const updatedCompany = await prisma.companies.update({
       where: { id: companyId },
       data: {
-        companyName: validatedData.companyName,
-        tradeLicense: validatedData.tradeLicense,
+        company_name: validatedData.companyName,
+        trade_license: validatedData.trade_license,
         tin: validatedData.tin,
         contactPerson: validatedData.contactPerson,
         contactEmail: validatedData.contactEmail,
@@ -419,9 +417,9 @@ export async function PUT(request: NextRequest) {
         specializations: validatedData.specializations,
         payoutMethod: validatedData.payoutMethod,
         payoutAccount: validatedData.payoutAccount,
-        commissionRate: validatedData.commissionRate,
-        subscriptionTier: validatedData.subscriptionTier,
-        updatedAt: new Date(),
+        commission_rate: validatedData.commissionRate,
+        subscription_tier: validatedData.subscription_tier,
+        updated_at: new Date(),
       },
     });
 
@@ -465,7 +463,7 @@ export async function PATCH(
     const validatedData = verificationSchema.parse(body);
 
     // Find company
-    const company = await prisma.company.findUnique({
+    const company = await prisma.companies.findUnique({
       where: { id: companyId },
     });
 
@@ -486,7 +484,7 @@ export async function PATCH(
       );
     }
 
-    const updatedCompany = await prisma.company.update({
+    const updatedCompany = await prisma.companies.update({
       where: { id: companyId },
       data: updateData,
     });
@@ -528,9 +526,9 @@ export async function PATCH(
     const validatedData = packageSchema.parse(body);
 
     // Find company to verify ownership
-    const company = await prisma.company.findUnique({
+    const company = await prisma.companies.findUnique({
       where: { id: companyId },
-      select: { userId: true },
+      select: { user_id: true },
     });
 
     if (!company) {
@@ -559,13 +557,13 @@ export async function PATCH(
         description: validatedData.description,
         category: validatedData.category,
         price: validatedData.price,
-        durationDays: validatedData.durationDays,
-        hoursPerDay: validatedData.hoursPerDay,
+        duration_days: validatedData.durationDays,
+        hours_per_day: validatedData.hoursPerDay,
         inclusions: validatedData.inclusions,
         exclusions: validatedData.exclusions,
-        caregiverCount: validatedData.caregiverCount,
-        isActive: validatedData.isActive,
-        minAdvanceDays: validatedData.minAdvanceDays,
+        caregiver_count: validatedData.caregiverCount,
+        is_active: validatedData.is_active,
+        min_advance_days: validatedData.minAdvanceDays,
       },
     });
 
@@ -623,7 +621,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     if (isActive !== null) {
-      where.isActive = isActive === 'true';
+      where.is_active = isActive === 'true';
     }
 
     // Get packages and total count
@@ -632,7 +630,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { created_at: 'desc' },
       }),
       prisma.packages.count({ where }),
     ]);
@@ -675,9 +673,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const validatedData = serviceZoneSchema.parse(body);
 
     // Find company to verify ownership
-    const company = await prisma.company.findUnique({
+    const company = await prisma.companies.findUnique({
       where: { id: companyId },
-      select: { userId: true },
+      select: { user_id: true },
     });
 
     if (!company) {
@@ -702,10 +700,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const serviceZone = await prisma.service_zones.create({
       data: {
         companyId,
-        zoneName: validatedData.zoneName,
+        zone_name: validatedData.zoneName,
         regionCode: validatedData.regionCode,
         boundaryGeojson: validatedData.boundaryGeojson,
-        isActive: validatedData.isActive,
+        is_active: validatedData.is_active,
       },
     });
 
@@ -758,7 +756,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     if (isActive !== null) {
-      where.isActive = isActive === 'true';
+      where.is_active = isActive === 'true';
     }
 
     // Get service zones and total count
@@ -767,7 +765,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { created_at: 'desc' },
       }),
       prisma.service_zones.count({ where }),
     ]);
@@ -805,7 +803,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     const companyId = (await params).id;
 
     // Find company
-    const company = await prisma.company.findUnique({
+    const company = await prisma.companies.findUnique({
       where: { id: companyId },
     });
 
@@ -817,11 +815,11 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     }
 
     // Soft delete company
-    const deletedCompany = await prisma.company.update({
+    const deletedCompany = await prisma.companies.update({
       where: { id: companyId },
       data: {
-        deletedAt: new Date(),
-        updatedAt: new Date(),
+        deleted_at: new Date(),
+        updated_at: new Date(),
       },
     });
 

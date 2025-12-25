@@ -51,12 +51,11 @@ export async function GET(request: NextRequest) {
     // Get companies and caregivers pending verification
     const [companies, caregivers, companyTotal, caregiverTotal] = await Promise.all([
       // Companies
-      type !== 'caregiver' ? prisma.company.findMany({
+      type !== 'caregiver' ? prisma.companies.findMany({
         where: type === 'company' ? where.company : {},
         skip: type === 'company' ? skip : 0,
         take: type === 'company' ? limit : 0,
-        include: {
-          user: {
+        include: { users: {
             select: {
               id: true,
               name: true,
@@ -65,16 +64,15 @@ export async function GET(request: NextRequest) {
             },
           },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { created_at: 'desc' },
       }) : [],
       
       // Caregivers
-      type !== 'company' ? prisma.caregiver.findMany({
+      type !== 'company' ? prisma.caregivers.findMany({
         where: type === 'caregiver' ? where.caregiver : {},
         skip: type === 'caregiver' ? skip : 0,
         take: type === 'caregiver' ? limit : 0,
-        include: {
-          user: {
+        include: { users: {
             select: {
               id: true,
               name: true,
@@ -85,16 +83,16 @@ export async function GET(request: NextRequest) {
           company: {
             select: {
               id: true,
-              companyName: true,
+              company_name: true,
             },
           },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { created_at: 'desc' },
       }) : [],
       
       // Counts
-      type !== 'caregiver' ? prisma.company.count({ where: type === 'company' ? where.company : {} }) : 0,
-      type !== 'company' ? prisma.caregiver.count({ where: type === 'caregiver' ? where.caregiver : {} }) : 0,
+      type !== 'caregiver' ? prisma.companies.count({ where: type === 'company' ? where.company : {} }) : 0,
+      type !== 'company' ? prisma.caregivers.count({ where: type === 'caregiver' ? where.caregiver : {} }) : 0,
     ]);
 
     const data = type === 'company' ? companies : caregivers;
@@ -144,14 +142,13 @@ export async function POST(request: NextRequest) {
       validatedData = verifyCompanySchema.parse(body);
       
       // Update company verification status
-      result = await prisma.company.update({
+      result = await prisma.companies.update({
         where: { id: validatedData.companyId },
         data: {
-          isVerified: validatedData.isVerified,
-          verificationNotes: validatedData.verificationNotes,
+          is_verified: validatedData.isVerified,
+          verification_notes: validatedData.verificationNotes,
         },
-        include: {
-          user: {
+        include: { users: {
             select: {
               id: true,
               name: true,
@@ -165,16 +162,15 @@ export async function POST(request: NextRequest) {
       validatedData = verifyCaregiverSchema.parse(body);
       
       // Update caregiver verification status
-      result = await prisma.caregiver.update({
+      result = await prisma.caregivers.update({
         where: { id: validatedData.caregiverId },
         data: {
-          isVerified: validatedData.isVerified,
-          verificationNotes: validatedData.verificationNotes,
+          is_verified: validatedData.isVerified,
+          verification_notes: validatedData.verificationNotes,
           backgroundCheckDate: validatedData.isVerified ? new Date() : null,
-          backgroundCheckStatus: validatedData.isVerified ? 'CLEARED' : 'FLAGGED',
+          background_check_status: validatedData.isVerified ? 'CLEARED' : 'FLAGGED',
         },
-        include: {
-          user: {
+        include: { users: {
             select: {
               id: true,
               name: true,
@@ -185,7 +181,7 @@ export async function POST(request: NextRequest) {
           company: {
             select: {
               id: true,
-              companyName: true,
+              company_name: true,
             },
           },
         },
@@ -198,18 +194,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Create audit log
-    await prisma.auditLog.create({
+    await prisma.audit_logs.create({
       data: {
-        actorId: user.id,
-        actorRole: user.role,
-        actionType: validatedData.isVerified ? 'VERIFY' : 'REJECT',
-        entityType: type.toUpperCase(),
-        entityId: type === 'company'
-          ? (validatedData as any).companyId
+        actor_id: user.id,
+        actor_role: user.role,
+        action_type: validatedData.isVerified ? 'VERIFY' : 'REJECT',
+        entity_type: type.toUpperCase(),
+        entity_id: type === 'company'
+          ? (validatedData as any).company_id
           : (validatedData as any).caregiverId,
         changes: {
-          isVerified: validatedData.isVerified,
-          verificationNotes: validatedData.verificationNotes,
+          is_verified: validatedData.isVerified,
+          verification_notes: validatedData.verificationNotes,
         },
         ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
         userAgent: request.headers.get('user-agent') || 'unknown',

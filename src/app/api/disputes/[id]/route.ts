@@ -48,8 +48,8 @@ export async function GET(
         
       case UserRole.COMPANY:
         // Companies can see disputes for their jobs
-        const company = await prisma.company.findUnique({
-          where: { userId: user.id },
+        const company = await prisma.companies.findUnique({
+          where: { user_id: user.id },
         });
         
         if (company) {
@@ -61,7 +61,7 @@ export async function GET(
     }
 
     // Get dispute with related data
-    const dispute = await prisma.dispute.findFirst({
+    const dispute = await prisma.disputes.findFirst({
       where,
       include: {
         raisedByUser: {
@@ -99,7 +99,7 @@ export async function GET(
             company: {
               select: {
                 id: true,
-                companyName: true,
+                company_name: true,
               },
             },
             package: {
@@ -158,7 +158,7 @@ export async function POST(
       const validatedData = assignModeratorSchema.parse(body);
       
       // Get dispute
-      const dispute = await prisma.dispute.findUnique({
+      const dispute = await prisma.disputes.findUnique({
         where: { id },
       });
 
@@ -170,7 +170,7 @@ export async function POST(
       }
 
       // Verify moderator exists
-      const moderator = await prisma.user.findUnique({
+      const moderator = await prisma.users.findUnique({
         where: { id: validatedData.moderatorId, role: 'MODERATOR' },
       });
 
@@ -182,10 +182,10 @@ export async function POST(
       }
 
       // Update dispute with assigned moderator
-      const updatedDispute = await prisma.dispute.update({
+      const updatedDispute = await prisma.disputes.update({
         where: { id },
         data: {
-          assignedModerator: validatedData.moderatorId,
+          assigned_moderator: validatedData.moderatorId,
           status: 'UNDER_REVIEW',
         },
         include: {
@@ -224,7 +224,7 @@ export async function POST(
               company: {
                 select: {
                   id: true,
-                  companyName: true,
+                  company_name: true,
                 },
               },
               package: {
@@ -241,15 +241,15 @@ export async function POST(
       });
 
       // Create audit log
-      await prisma.auditLog.create({
+      await prisma.audit_logs.create({
         data: {
-          actorId: user.id,
-          actorRole: user.role,
-          actionType: 'ASSIGN',
-          entityType: 'DISPUTE',
-          entityId: id,
+          actor_id: user.id,
+          actor_role: user.role,
+          action_type: 'ASSIGN',
+          entity_type: 'DISPUTE',
+          entity_id: id,
           changes: {
-            assignedModerator: validatedData.moderatorId,
+            assigned_moderator: validatedData.moderatorId,
           },
           ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
           userAgent: request.headers.get('user-agent') || 'unknown',
@@ -269,7 +269,7 @@ export async function POST(
       const validatedData = resolveDisputeSchema.parse(body);
       
       // Get dispute
-      const dispute = await prisma.dispute.findUnique({
+      const dispute = await prisma.disputes.findUnique({
         where: { id },
       });
 
@@ -281,12 +281,12 @@ export async function POST(
       }
 
       // Update dispute with resolution
-      const updatedDispute = await prisma.dispute.update({
+      const updatedDispute = await prisma.disputes.update({
         where: { id },
         data: {
           status: 'RESOLVED',
           resolution: validatedData.resolution,
-          resolutionAction: validatedData.resolutionAction,
+          resolution_action: validatedData.resolutionAction,
           resolvedAt: new Date(),
         },
         include: {
@@ -325,7 +325,7 @@ export async function POST(
               company: {
                 select: {
                   id: true,
-                  companyName: true,
+                  company_name: true,
                 },
               },
               package: {
@@ -342,16 +342,16 @@ export async function POST(
       });
 
       // Create audit log
-      await prisma.auditLog.create({
+      await prisma.audit_logs.create({
         data: {
-          actorId: user.id,
-          actorRole: user.role,
-          actionType: 'RESOLVE',
-          entityType: 'DISPUTE',
-          entityId: id,
+          actor_id: user.id,
+          actor_role: user.role,
+          action_type: 'RESOLVE',
+          entity_type: 'DISPUTE',
+          entity_id: id,
           changes: {
             resolution: validatedData.resolution,
-            resolutionAction: validatedData.resolutionAction,
+            resolution_action: validatedData.resolutionAction,
           },
           ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
           userAgent: request.headers.get('user-agent') || 'unknown',

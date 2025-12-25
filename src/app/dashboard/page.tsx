@@ -32,7 +32,7 @@ export default function DashboardPage() {
           return '/guardian/dashboard';
         case UserRole.CAREGIVER:
           return '/caregiver/dashboard';
-        case UserRole.AGENCY:
+        case UserRole.COMPANY:
           return '/agency/dashboard';
         case UserRole.MODERATOR:
           return '/moderator/dashboard';

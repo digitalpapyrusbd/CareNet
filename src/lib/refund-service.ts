@@ -66,7 +66,7 @@ export class RefundService {
   async createRefundRequest(request: RefundRequest): Promise<RefundResponse> {
     try {
       // Validate payment exists and is eligible for refund
-      const payment = await prisma.payment.findUnique({
+      const payment = await prisma.payments.findUnique({
         where: { id: request.paymentId },
         include: {
           escrowTransaction: true,
@@ -95,7 +95,7 @@ export class RefundService {
       const refundAmount = request.amount || payment.amount;
 
       // Create refund record
-      const refund = await prisma.refund.create({
+      const refund = await prisma.refunds.create({
         data: {
           paymentId: request.paymentId,
           amount: refundAmount,
@@ -132,7 +132,7 @@ export class RefundService {
    */
   async processRefund(refundId: string, processedBy: string): Promise<RefundResponse> {
     try {
-      const refund = await prisma.refund.findUnique({
+      const refund = await prisma.refunds.findUnique({
         where: { id: refundId },
         include: {
           payment: true,
@@ -148,7 +148,7 @@ export class RefundService {
       }
 
       // Update refund status to processing
-      await prisma.refund.update({
+      await prisma.refunds.update({
         where: { id: refundId },
         data: {
           status: 'PROCESSING',
@@ -165,7 +165,7 @@ export class RefundService {
       );
 
       // Update refund with gateway result
-      const updatedRefund = await prisma.refund.update({
+      const updatedRefund = await prisma.refunds.update({
         where: { id: refundId },
         data: {
           status: gatewayResult.success ? 'COMPLETED' : 'FAILED',
@@ -177,14 +177,14 @@ export class RefundService {
 
       // Update payment status if refund was successful
       if (gatewayResult.success) {
-        await prisma.payment.update({
+        await prisma.payments.update({
           where: { id: refund.paymentId },
           data: { status: 'REFUNDED' },
         });
 
         // Update escrow if exists
         if (refund.payment.escrowTransactionId) {
-          await prisma.escrowTransaction.update({
+          await prisma.escrow_transactions.update({
             where: { id: refund.payment.escrowTransactionId },
             data: {
               status: 'REFUNDED',
@@ -208,7 +208,7 @@ export class RefundService {
       console.error('Refund processing error:', error);
       
       // Update refund status to failed
-      await prisma.refund.update({
+      await prisma.refunds.update({
         where: { id: refundId },
         data: {
           status: 'FAILED',
@@ -226,7 +226,7 @@ export class RefundService {
    */
   async rejectRefund(refundId: string, reason: string, rejectedBy: string): Promise<RefundResponse> {
     try {
-      const refund = await prisma.refund.findUnique({
+      const refund = await prisma.refunds.findUnique({
         where: { id: refundId },
       });
 
@@ -238,7 +238,7 @@ export class RefundService {
         throw new Error('Only pending refunds can be rejected');
       }
 
-      const updatedRefund = await prisma.refund.update({
+      const updatedRefund = await prisma.refunds.update({
         where: { id: refundId },
         data: {
           status: 'REJECTED',
@@ -265,12 +265,11 @@ export class RefundService {
    */
   async getRefund(refundId: string): Promise<RefundResponse | null> {
     try {
-      return await prisma.refund.findUnique({
+      return await prisma.refunds.findUnique({
         where: { id: refundId },
         include: {
           payment: {
-            include: {
-              job: {
+            include: { jobs: {
                 include: {
                   guardian: true,
                   caregiver: true,
@@ -306,29 +305,28 @@ export class RefundService {
       if (userRole === 'GUARDIAN') {
         whereClause.payment = {
           job: {
-            guardianId: userId,
+            guardianId: user_id,
           },
         };
       } else if (userRole === 'CAREGIVER') {
         whereClause.payment = {
           job: {
-            caregiverId: userId,
+            caregiverId: user_id,
           },
         };
       } else if (userRole === 'COMPANY') {
         whereClause.payment = {
           job: {
-            companyId: userId,
+            companyId: user_id,
           },
         };
       }
 
-      return await prisma.refund.findMany({
+      return await prisma.refunds.findMany({
         where: whereClause,
         include: {
           payment: {
-            include: {
-              job: {
+            include: { jobs: {
                 include: {
                   guardian: true,
                   caregiver: true,
@@ -339,7 +337,7 @@ export class RefundService {
           },
         },
         orderBy: {
-          createdAt: 'desc',
+          created_at: 'desc',
         },
       });
     } catch (error) {
@@ -360,7 +358,7 @@ export class RefundService {
     autoApprove?: boolean;
   }> {
     try {
-      const payment = await prisma.payment.findUnique({
+      const payment = await prisma.payments.findUnique({
         where: { id: paymentId },
         include: {
           escrowTransaction: true,
@@ -406,7 +404,7 @@ export class RefundService {
       }
 
       // Check if there's already a pending refund
-      const existingRefund = await prisma.refund.findFirst({
+      const existingRefund = await prisma.refunds.findFirst({
         where: {
           paymentId,
           status: 'PENDING',
@@ -482,10 +480,10 @@ export class RefundService {
     metadata?: Record<string, any>
   ): Promise<void> {
     try {
-      await prisma.auditLog.create({
+      await prisma.audit_logs.create({
         data: {
-          entityType: 'REFUND',
-          entityId: refundId,
+          entity_type: 'REFUND',
+          entity_id: refundId,
           action,
           description,
           metadata: metadata || {},
@@ -521,19 +519,19 @@ export class RefundService {
         if (userRole === 'GUARDIAN') {
           whereClause.payment = {
             job: {
-              guardianId: userId,
+              guardianId: user_id,
             },
           };
         } else if (userRole === 'CAREGIVER') {
           whereClause.payment = {
             job: {
-              caregiverId: userId,
+              caregiverId: user_id,
             },
           };
         } else if (userRole === 'COMPANY') {
           whereClause.payment = {
             job: {
-              companyId: userId,
+              companyId: user_id,
             },
           };
         }
@@ -545,7 +543,7 @@ export class RefundService {
         if (endDate) whereClause.createdAt.lte = endDate;
       }
 
-      const refunds = await prisma.refund.findMany({
+      const refunds = await prisma.refunds.findMany({
         where: whereClause,
       });
 

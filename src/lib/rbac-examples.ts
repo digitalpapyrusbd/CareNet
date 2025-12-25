@@ -199,7 +199,7 @@ export async function exampleDatabaseFiltering(user: { role: UserRole; id: strin
   }
   
   // This whereClause would be used in Prisma queries
-  // const jobs = await prisma.job.findMany({ where: whereClause });
+  // const jobs = await prisma.jobs.findMany({ where: whereClause });
   
   return whereClause;
 }

@@ -27,17 +27,17 @@ export async function GET(request: NextRequest) {
           totalRevenueData,
           pendingDisputesCount,
         ] = await Promise.all([
-          prisma.user.count({ where: { deletedAt: null } }),
-          prisma.company.count(),
-          prisma.caregiver.count(),
-          prisma.patient.count(),
-          prisma.job.count(),
-          prisma.job.count({ where: { status: 'ACTIVE' } }),
-          prisma.payment.aggregate({
+          prisma.users.count({ where: { deleted_at: null } }),
+          prisma.companies.count(),
+          prisma.caregivers.count(),
+          prisma.patients.count(),
+          prisma.jobs.count(),
+          prisma.jobs.count({ where: { status: 'ACTIVE' } }),
+          prisma.payments.aggregate({
             where: { status: 'COMPLETED' },
             _sum: { amount: true },
           }),
-          prisma.dispute.count({ where: { status: 'OPEN' } }),
+          prisma.disputes.count({ where: { status: 'OPEN' } }),
         ]);
 
         stats = {
@@ -55,8 +55,8 @@ export async function GET(request: NextRequest) {
 
       case UserRole.COMPANY:
         // Company stats
-        const company = await prisma.company.findUnique({
-          where: { userId: user.id },
+        const company = await prisma.companies.findUnique({
+          where: { user_id: user.id },
         });
 
         if (company) {
@@ -66,16 +66,16 @@ export async function GET(request: NextRequest) {
             monthlyRevenueData,
             totalJobsCount,
           ] = await Promise.all([
-            prisma.caregiver.count({ where: { companyId: company.id } }),
-            prisma.job.count({
+            prisma.caregivers.count({ where: { company_id: company.id } }),
+            prisma.jobs.count({
               where: {
-                companyId: company.id,
+                company_id: company.id,
                 status: 'ACTIVE',
               },
             }),
-            prisma.payment.aggregate({
+            prisma.payments.aggregate({
               where: {
-                job: { companyId: company.id },
+                job: { company_id: company.id },
                 status: 'COMPLETED',
                 paidAt: {
                   gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
               },
               _sum: { amount: true },
             }),
-            prisma.job.count({ where: { companyId: company.id } }),
+            prisma.jobs.count({ where: { company_id: company.id } }),
           ]);
 
           stats = {
@@ -98,8 +98,8 @@ export async function GET(request: NextRequest) {
 
       case UserRole.CAREGIVER:
         // Caregiver stats
-        const caregiver = await prisma.caregiver.findUnique({
-          where: { userId: user.id },
+        const caregiver = await prisma.caregivers.findUnique({
+          where: { user_id: user.id },
         });
 
         if (caregiver) {
@@ -109,26 +109,26 @@ export async function GET(request: NextRequest) {
             monthlyEarningsData,
             currentAssignmentsCount,
           ] = await Promise.all([
-            prisma.job.count({
+            prisma.jobs.count({
               where: {
                 assignments: {
                   some: {
-                    caregiverId: caregiver.id,
+                    caregiver_id: caregiver.id,
                   },
                 },
                 status: 'COMPLETED',
               },
             }),
-            prisma.caregiver.findUnique({
+            prisma.caregivers.findUnique({
               where: { id: caregiver.id },
-              select: { ratingAvg: true },
+              select: { rating_avg: true },
             }),
-            prisma.payment.aggregate({
+            prisma.payments.aggregate({
               where: {
                 job: {
                   assignments: {
                     some: {
-                      caregiverId: caregiver.id,
+                      caregiver_id: caregiver.id,
                     },
                   },
                 },
@@ -139,9 +139,9 @@ export async function GET(request: NextRequest) {
               },
               _sum: { amount: true },
             }),
-            prisma.assignment.count({
+            prisma.assignments.count({
               where: {
-                caregiverId: caregiver.id,
+                caregiver_id: caregiver.id,
                 status: 'ACTIVE',
               },
             }),
@@ -149,7 +149,7 @@ export async function GET(request: NextRequest) {
 
           stats = {
             completedJobs: completedJobsCount,
-            averageRating: averageRatingData?.ratingAvg || 0,
+            averageRating: averageRatingData?.rating_avg || 0,
             monthlyEarnings: monthlyEarningsData._sum.amount || 0,
             currentAssignments: currentAssignmentsCount,
             recentActivity: await getRecentActivity('CAREGIVER', caregiver.id),
@@ -165,23 +165,23 @@ export async function GET(request: NextRequest) {
           totalSpentData,
           pendingPaymentsCount,
         ] = await Promise.all([
-          prisma.patient.count({ where: { guardianId: user.id } }),
-          prisma.job.count({
+          prisma.patients.count({ where: { guardian_id: user.id } }),
+          prisma.jobs.count({
             where: {
-              guardianId: user.id,
+              guardian_id: user.id,
               status: 'ACTIVE',
             },
           }),
-          prisma.payment.aggregate({
+          prisma.payments.aggregate({
             where: {
-              payerId: user.id,
+              payer_id: user.id,
               status: 'COMPLETED',
             },
             _sum: { amount: true },
           }),
-          prisma.payment.count({
+          prisma.payments.count({
             where: {
-              payerId: user.id,
+              payer_id: user.id,
               status: 'PENDING',
             },
           }),
@@ -222,28 +222,28 @@ async function getRecentActivity(role: string, entityId: string) {
         recentJobsData,
         recentDisputesData,
       ] = await Promise.all([
-        prisma.user.findMany({
+        prisma.users.findMany({
           take: 5,
-          orderBy: { createdAt: 'desc' },
+          orderBy: { created_at: 'desc' },
           select: {
             id: true,
             name: true,
             role: true,
-            createdAt: true,
+            created_at: true,
           },
         }),
-        prisma.job.findMany({
+        prisma.jobs.findMany({
           take: 5,
-          orderBy: { createdAt: 'desc' },
+          orderBy: { created_at: 'desc' },
           select: {
             id: true,
             patient: { select: { name: true } },
             createdAt: true,
           },
         }),
-        prisma.dispute.findMany({
+        prisma.disputes.findMany({
           take: 5,
-          orderBy: { createdAt: 'desc' },
+          orderBy: { created_at: 'desc' },
           select: {
             id: true,
             description: true,
@@ -284,10 +284,10 @@ async function getRecentActivity(role: string, entityId: string) {
         recentJobs,
         recentPayments,
       ] = await Promise.all([
-        prisma.job.findMany({
-          where: { companyId: entityId },
+        prisma.jobs.findMany({
+          where: { company_id: entityId },
           take: 5,
-          orderBy: { createdAt: 'desc' },
+          orderBy: { created_at: 'desc' },
           select: {
             id: true,
             patient: { select: { name: true } },
@@ -295,17 +295,17 @@ async function getRecentActivity(role: string, entityId: string) {
             createdAt: true,
           },
         }),
-        prisma.payment.findMany({
+        prisma.payments.findMany({
           where: {
-            job: { companyId: entityId },
+            job: { company_id: entityId },
             status: 'COMPLETED',
           },
           take: 5,
-          orderBy: { paidAt: 'desc' },
+          orderBy: { paid_at: 'desc' },
           select: {
             id: true,
             amount: true,
-            paidAt: true,
+            paid_at: true,
           },
         }),
       ]);
@@ -333,12 +333,11 @@ async function getRecentActivity(role: string, entityId: string) {
         recentAssignmentsData,
         recentCareLogsData,
       ] = await Promise.all([
-        prisma.assignment.findMany({
-          where: { caregiverId: entityId },
+        prisma.assignments.findMany({
+          where: { caregiver_id: entityId },
           take: 5,
-          orderBy: { createdAt: 'desc' },
-          include: {
-            job: {
+          orderBy: { created_at: 'desc' },
+          include: { jobs: {
               select: {
                 id: true,
                 patient: { select: { name: true } },
@@ -346,13 +345,13 @@ async function getRecentActivity(role: string, entityId: string) {
             },
           },
         }),
-        prisma.careLog.findMany({
-          where: { caregiverId: entityId },
+        prisma.care_logs.findMany({
+          where: { caregiver_id: entityId },
           take: 5,
           orderBy: { timestamp: 'desc' },
           select: {
             id: true,
-            logType: true,
+            log_type: true,
             timestamp: true,
           },
         }),
@@ -381,10 +380,10 @@ async function getRecentActivity(role: string, entityId: string) {
         guardianJobsData,
         guardianPaymentsData,
       ] = await Promise.all([
-        prisma.job.findMany({
-          where: { guardianId: entityId },
+        prisma.jobs.findMany({
+          where: { guardian_id: entityId },
           take: 5,
-          orderBy: { createdAt: 'desc' },
+          orderBy: { created_at: 'desc' },
           select: {
             id: true,
             patient: { select: { name: true } },
@@ -392,15 +391,15 @@ async function getRecentActivity(role: string, entityId: string) {
             createdAt: true,
           },
         }),
-        prisma.payment.findMany({
-          where: { payerId: entityId },
+        prisma.payments.findMany({
+          where: { payer_id: entityId },
           take: 5,
-          orderBy: { createdAt: 'desc' },
+          orderBy: { created_at: 'desc' },
           select: {
             id: true,
             amount: true,
             status: true,
-            createdAt: true,
+            created_at: true,
           },
         }),
       ]);

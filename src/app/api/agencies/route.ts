@@ -145,7 +145,7 @@ export async function GET(request: NextRequest) {
 
     // Get agencies and total count
     const [agencies, total] = await Promise.all([
-      prisma.agencies.findMany({
+      prisma.companies.findMany({
         where: {
           ...where,
           deleted_at: null,
@@ -184,7 +184,7 @@ export async function GET(request: NextRequest) {
         },
         orderBy,
       }),
-      prisma.agencies.count({ where: { ...where, deleted_at: null } }),
+      prisma.companies.count({ where: { ...where, deleted_at: null } }),
     ]);
 
     const totalPages = Math.ceil(total / limit);
@@ -244,9 +244,9 @@ export async function POST(request: NextRequest) {
     const validatedData = updateAgencySchema.parse(body);
 
     // Check if user already has an agency
-    if (currentUser.role === UserRole.AGENCY) {
-      const existingAgency = await prisma.agencies.findUnique({
-        where: { userId: currentUser.id },
+    if (currentUser.role === UserRole.COMPANY) {
+      const existingAgency = await prisma.companies.findUnique({
+        where: { user_id: currentUser.id },
       });
 
       if (existingAgency) {
@@ -258,7 +258,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if trade license already exists
-    const existingTradeLicense = await prisma.agencies.findFirst({
+    const existingTradeLicense = await prisma.companies.findFirst({
       where: { trade_license: validatedData.tradeLicense },
     });
 
@@ -270,10 +270,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Create agency
-    const agency = await prisma.agencies.create({
+    const agency = await prisma.companies.create({
       data: {
         userId: currentUser.id,
-        agency_name: validatedData.agencyName,
+        company_name: validatedData.agencyName,
         trade_license: validatedData.tradeLicense,
         tin: validatedData.tin,
         contact_person: validatedData.contactPerson,
@@ -294,10 +294,10 @@ export async function POST(request: NextRequest) {
     });
 
     // Update user role to AGENCY if not already
-    if (currentUser.role !== UserRole.AGENCY) {
+    if (currentUser.role !== UserRole.COMPANY) {
       await prisma.users.update({
         where: { id: currentUser.id },
-        data: { role: UserRole.AGENCY },
+        data: { role: UserRole.COMPANY },
       });
     }
 
@@ -347,7 +347,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Find agency
-    const agency = await prisma.agencies.findUnique({
+    const agency = await prisma.companies.findUnique({
       where: { id: agencyId },
       include: {
         users: {
@@ -367,7 +367,7 @@ export async function PUT(request: NextRequest) {
 
     // Check authorization - only admin, moderator, or agency owner can update
     const isOwner =
-      currentUser.role === UserRole.AGENCY && agency.userId === currentUser.id;
+      currentUser.role === UserRole.COMPANY && agency.userId === currentUser.id;
     const isAdmin =
       currentUser.role === UserRole.SUPER_ADMIN ||
       currentUser.role === UserRole.MODERATOR;
@@ -384,7 +384,7 @@ export async function PUT(request: NextRequest) {
       validatedData.tradeLicense &&
       validatedData.tradeLicense !== agency.trade_license
     ) {
-      const existingTradeLicense = await prisma.agencies.findFirst({
+      const existingTradeLicense = await prisma.companies.findFirst({
         where: {
           trade_license: validatedData.tradeLicense,
           id: { not: agencyId },
@@ -400,10 +400,10 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update agency
-    const updatedAgency = await prisma.agencies.update({
+    const updatedAgency = await prisma.companies.update({
       where: { id: agencyId },
       data: {
-        agency_name: validatedData.agencyName,
+        company_name: validatedData.agencyName,
         trade_license: validatedData.tradeLicense,
         tin: validatedData.tin,
         contact_person: validatedData.contactPerson,
@@ -461,7 +461,7 @@ export async function PATCH(
     const validatedData = verificationSchema.parse(body);
 
     // Find agency
-    const agency = await prisma.agencies.findUnique({
+    const agency = await prisma.companies.findUnique({
       where: { id: agencyId },
     });
 
@@ -482,7 +482,7 @@ export async function PATCH(
       );
     }
 
-    const updatedAgency = await prisma.agencies.update({
+    const updatedAgency = await prisma.companies.update({
       where: { id: agencyId },
       data: updateData,
     });
@@ -526,7 +526,7 @@ export async function PATCH(
     // Find agency to verify ownership
     const agency = await prisma.agency.findUnique({
       where: { id: agencyId },
-      select: { userId: true },
+      select: { user_id: true },
     });
 
     if (!agency) {
@@ -537,7 +537,7 @@ export async function PATCH(
     }
 
     // Check authorization - only admin, moderator, or agency owner can create packages
-    const isOwner = currentUser.role === UserRole.AGENCY && agency.userId === currentUser.id;
+    const isOwner = currentUser.role === UserRole.COMPANY && agency.userId === currentUser.id;
     const isAdmin = currentUser.role === UserRole.SUPER_ADMIN || currentUser.role === UserRole.MODERATOR;
 
     if (!isOwner && !isAdmin) {
@@ -555,13 +555,13 @@ export async function PATCH(
         description: validatedData.description,
         category: validatedData.category,
         price: validatedData.price,
-        durationDays: validatedData.durationDays,
-        hoursPerDay: validatedData.hoursPerDay,
+        duration_days: validatedData.durationDays,
+        hours_per_day: validatedData.hoursPerDay,
         inclusions: validatedData.inclusions,
         exclusions: validatedData.exclusions,
-        caregiverCount: validatedData.caregiverCount,
-        isActive: validatedData.isActive,
-        minAdvanceDays: validatedData.minAdvanceDays,
+        caregiver_count: validatedData.caregiverCount,
+        is_active: validatedData.is_active,
+        min_advance_days: validatedData.minAdvanceDays,
       },
     });
 
@@ -619,7 +619,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     if (isActive !== null) {
-      where.isActive = isActive === 'true';
+      where.is_active = isActive === 'true';
     }
 
     // Get packages and total count
@@ -628,7 +628,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { created_at: 'desc' },
       }),
       prisma.packages.count({ where }),
     ]);
@@ -673,7 +673,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     // Find agency to verify ownership
     const agency = await prisma.agency.findUnique({
       where: { id: agencyId },
-      select: { userId: true },
+      select: { user_id: true },
     });
 
     if (!agency) {
@@ -684,7 +684,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     // Check authorization - only admin, moderator, or agency owner can create service zones
-    const isOwner = currentUser.role === UserRole.AGENCY && agency.userId === currentUser.id;
+    const isOwner = currentUser.role === UserRole.COMPANY && agency.userId === currentUser.id;
     const isAdmin = currentUser.role === UserRole.SUPER_ADMIN || currentUser.role === UserRole.MODERATOR;
 
     if (!isOwner && !isAdmin) {
@@ -698,10 +698,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const serviceZone = await prisma.service_zones.create({
       data: {
         agencyId,
-        zoneName: validatedData.zoneName,
+        zone_name: validatedData.zoneName,
         regionCode: validatedData.regionCode,
         boundaryGeojson: validatedData.boundaryGeojson,
-        isActive: validatedData.isActive,
+        is_active: validatedData.is_active,
       },
     });
 
@@ -754,7 +754,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     if (isActive !== null) {
-      where.isActive = isActive === 'true';
+      where.is_active = isActive === 'true';
     }
 
     // Get service zones and total count
@@ -763,7 +763,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { created_at: 'desc' },
       }),
       prisma.service_zones.count({ where }),
     ]);
@@ -816,8 +816,8 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     const deletedAgency = await prisma.agency.update({
       where: { id: agencyId },
       data: {
-        deletedAt: new Date(),
-        updatedAt: new Date(),
+        deleted_at: new Date(),
+        updated_at: new Date(),
       },
     });
 

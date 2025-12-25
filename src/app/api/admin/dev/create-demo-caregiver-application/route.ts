@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
 
   try {
     // Pick first available agency
-    const agency = await prisma.agencies.findFirst({
+    const agency = await prisma.companies.findFirst({
       orderBy: { created_at: 'asc' },
     });
 

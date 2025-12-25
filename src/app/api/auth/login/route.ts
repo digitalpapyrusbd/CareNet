@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
         const tempSessionId = crypto.randomUUID();
         const tempSessionKey = `temp_session:${tempSessionId}`;
         
-        await kv.setex(tempSessionKey, 600, JSON.stringify({ // 10 minutes expiry
+        await kv.set(tempSessionKey, JSON.stringify({ // 10 minutes expiry
           userId: user.id,
           userRole: user.role,
           phone: user.phone,
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
           name: user.name,
           purpose: 'MFA_VERIFICATION',
           timestamp: new Date().toISOString(),
-        }));
+        }), { ex: 600 });
         
         return NextResponse.json({
           error: 'MFA code required',
@@ -156,7 +156,7 @@ export async function POST(request: NextRequest) {
     // Get device info
     const deviceInfo = validatedData.deviceInfo || {
       userAgent: request.headers.get('user-agent') || 'Unknown',
-      ip: request.ip || request.headers.get('x-forwarded-for') || 'Unknown',
+      ip: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown" || request.headers.get('x-forwarded-for') || 'Unknown',
       platform: request.headers.get('sec-ch-ua-platform') || 'Unknown',
       deviceId: crypto.randomUUID(),
     };
@@ -262,7 +262,7 @@ export async function PUT(request: NextRequest) {
     // Get user from database
     const user = await getUserById(payload.userId);
     
-    if (!user || !user.isActive) {
+    if (!user || !user.is_active) {
       return NextResponse.json(
         { error: 'Invalid refresh token' },
         { status: 401 }
@@ -279,10 +279,10 @@ export async function PUT(request: NextRequest) {
     });
     
     // Blacklist the old refresh token
-    await kv.setex(blacklistKey, 7 * 24 * 60 * 60, JSON.stringify({ // 7 days expiry
+    await kv.set(blacklistKey, JSON.stringify({ // 7 days expiry
       reason: 'REFRESH_USED',
       timestamp: new Date().toISOString(),
-    }));
+    }), { ex: 7 * 24 * 60 * 60 });
     
     // Log token refresh
     await prisma.audit_logs.create({
@@ -292,7 +292,7 @@ export async function PUT(request: NextRequest) {
         action_type: 'TOKEN_REFRESH',
         entity_type: 'USER',
         entity_id: user.id,
-        ip_address: request.ip || request.headers.get('x-forwarded-for') || 'Unknown',
+        ip_address: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown" || request.headers.get('x-forwarded-for') || 'Unknown',
         user_agent: request.headers.get('user-agent') || 'Unknown',
       },
     });
@@ -365,7 +365,7 @@ export async function DELETE(request: NextRequest) {
             action_type: 'LOGOUT_ALL',
             entity_type: 'USER',
             entity_id: user.id,
-            ip_address: request.ip || request.headers.get('x-forwarded-for') || 'Unknown',
+            ip_address: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown" || request.headers.get('x-forwarded-for') || 'Unknown',
             user_agent: request.headers.get('user-agent') || 'Unknown',
           },
         });
@@ -386,10 +386,10 @@ export async function DELETE(request: NextRequest) {
       
       // Blacklist current access token
       const blacklistKey = `blacklist:${token}`;
-      await kv.setex(blacklistKey, 15 * 60, JSON.stringify({ // 15 minutes expiry
+      await kv.set(blacklistKey, JSON.stringify({
         reason: 'LOGOUT',
         timestamp: new Date().toISOString(),
-      }));
+      }), { ex: 15 * 60 });
       
       if (user) {
         await prisma.audit_logs.create({
@@ -399,7 +399,7 @@ export async function DELETE(request: NextRequest) {
             action_type: 'LOGOUT',
             entity_type: 'USER',
             entity_id: user.id,
-            ip_address: request.ip || request.headers.get('x-forwarded-for') || 'Unknown',
+            ip_address: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown" || request.headers.get('x-forwarded-for') || 'Unknown',
             user_agent: request.headers.get('user-agent') || 'Unknown',
           },
         });
@@ -443,12 +443,12 @@ async function updateLoginAttempts(phone: string, success: boolean) {
       attemptData.count++;
       attemptData.lastAttempt = new Date().toISOString();
       
-      await kv.setex(rateLimitKey, 15 * 60, JSON.stringify(attemptData)); // 15 minutes
+      await kv.set(rateLimitKey, JSON.stringify(attemptData), { ex: 15 * 60 });
     } else {
-      await kv.setex(rateLimitKey, 15 * 60, JSON.stringify({
+      await kv.set(rateLimitKey, JSON.stringify({
         count: 1,
         lastAttempt: new Date().toISOString(),
-      }));
+      }), { ex: 15 * 60 });
     }
   }
 }

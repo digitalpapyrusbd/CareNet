@@ -17,8 +17,8 @@ export async function GET(request: NextRequest) {
     
     switch (user.role) {
       case 'COMPANY':
-        userData = await prisma.company.findUnique({
-          where: { userId: user.id },
+        userData = await prisma.companies.findUnique({
+          where: { user_id: user.id },
           include: {
             users: {
               select: {
@@ -27,8 +27,8 @@ export async function GET(request: NextRequest) {
                 email: true,
                 phone: true,
                 role: true,
-                isActive: true,
-                createdAt: true,
+                is_active: true,
+                created_at: true,
               },
             },
           },
@@ -36,24 +36,23 @@ export async function GET(request: NextRequest) {
         break;
         
       case 'CAREGIVER':
-        userData = await prisma.caregiver.findUnique({
-          where: { userId: user.id },
-          include: {
-            user: {
+        userData = await prisma.caregivers.findUnique({
+          where: { user_id: user.id },
+          include: { users: {
               select: {
                 id: true,
                 name: true,
                 email: true,
                 phone: true,
-                isActive: true,
-                createdAt: true,
+                is_active: true,
+                created_at: true,
               },
             },
             company: {
               select: {
                 id: true,
-                companyName: true,
-                isVerified: true,
+                company_name: true,
+                is_verified: true,
               },
             },
           },
@@ -61,19 +60,19 @@ export async function GET(request: NextRequest) {
         break;
         
       case 'GUARDIAN':
-        userData = await prisma.user.findUnique({
+        userData = await prisma.users.findUnique({
           where: { id: user.id },
           include: {
             patients: {
-              orderBy: { createdAt: 'desc' },
+              orderBy: { created_at: 'desc' },
             },
           },
         });
         break;
         
       case 'PATIENT':
-        userData = await prisma.patient.findFirst({
-          where: { userId: user.id },
+        userData = await prisma.patients.findFirst({
+          where: { user_id: user.id },
           include: {
             guardian: {
               select: {
@@ -87,7 +86,7 @@ export async function GET(request: NextRequest) {
         break;
         
       default:
-        userData = await prisma.user.findUnique({
+        userData = await prisma.users.findUnique({
           where: { id: user.id },
           select: {
             id: true,
@@ -95,10 +94,10 @@ export async function GET(request: NextRequest) {
             email: true,
             phone: true,
             role: true,
-            isActive: true,
-            kycStatus: true,
-            lastLoginAt: true,
-            createdAt: true,
+            is_active: true,
+            kyc_status: true,
+            last_login_at: true,
+            created_at: true,
           },
         });
     }
@@ -134,7 +133,7 @@ export async function PUT(request: NextRequest) {
     const { name, email, language } = body;
     
     // Update user basic info
-    const updatedUser = await prisma.user.update({
+    const updatedUser = await prisma.users.update({
       where: { id: user.id },
       data: {
         ...(name && { name }),
@@ -148,11 +147,11 @@ export async function PUT(request: NextRequest) {
         phone: true,
         role: true,
         language: true,
-        isActive: true,
-        kycStatus: true,
-        lastLoginAt: true,
-        createdAt: true,
-        updatedAt: true,
+        is_active: true,
+        kyc_status: true,
+        last_login_at: true,
+        created_at: true,
+        updated_at: true,
       },
     });
     

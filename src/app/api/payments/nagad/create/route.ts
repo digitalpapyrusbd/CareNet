@@ -48,18 +48,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Create payment record in database
-    const payment = await prisma.payment.create({
+    const payment = await prisma.payments.create({
       data: {
         amount: validatedData.amount,
         currency: validatedData.currency,
         method: 'NAGAD',
         status: 'PENDING',
         userId: user.id,
-        jobId: validatedData.jobId,
-        transactionId: '', // Will be filled after Nagad response
+        job_id: validatedData.jobId,
+        transaction_id: '', // Will be filled after Nagad response
         gatewayResponse: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        created_at: new Date(),
+        updated_at: new Date(),
       },
     });
 
@@ -78,10 +78,10 @@ export async function POST(request: NextRequest) {
     });
 
     // Update payment record with Nagad payment ID
-    await prisma.payment.update({
+    await prisma.payments.update({
       where: { id: payment.id },
       data: {
-        transactionId: nagadPayment.payment_ref_id,
+        transaction_id: nagadPayment.payment_ref_id,
         gatewayResponse: JSON.stringify(nagadPayment),
       },
     });
@@ -149,10 +149,9 @@ export async function GET(request: NextRequest) {
     const paymentStatus = await nagadGateway.queryTransaction(paymentId);
 
     // Get payment from our database
-    const payment = await prisma.payment.findUnique({
-      where: { transactionId: paymentId },
-      include: {
-        user: {
+    const payment = await prisma.payments.findUnique({
+      where: { transaction_id: paymentId },
+      include: { users: {
           select: {
             id: true,
             name: true,

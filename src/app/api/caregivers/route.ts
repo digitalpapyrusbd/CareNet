@@ -27,8 +27,8 @@ export async function GET(request: NextRequest) {
     
     // Companies can only see their own caregivers
     if (user.role === UserRole.COMPANY) {
-      const company = await prisma.company.findUnique({
-        where: { userId: user.id },
+      const company = await prisma.companies.findUnique({
+        where: { user_id: user.id },
       });
       
       if (company) {
@@ -62,26 +62,25 @@ export async function GET(request: NextRequest) {
 
     // Get caregivers and total count
     const [caregivers, total] = await Promise.all([
-      prisma.caregiver.findMany({
+      prisma.caregivers.findMany({
         where,
         skip,
         take: limit,
-        include: {
-          user: {
+        include: { users: {
             select: {
               id: true,
               name: true,
               email: true,
               phone: true,
-              isActive: true,
-              createdAt: true,
+              is_active: true,
+              created_at: true,
             },
           },
           company: {
             select: {
               id: true,
-              companyName: true,
-              isVerified: true,
+              company_name: true,
+              is_verified: true,
             },
           },
           _count: {
@@ -91,9 +90,9 @@ export async function GET(request: NextRequest) {
             },
           },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { created_at: 'desc' },
       }),
-      prisma.caregiver.count({ where }),
+      prisma.caregivers.count({ where }),
     ]);
 
     const totalPages = Math.ceil(total / limit);
@@ -154,8 +153,8 @@ export async function POST(request: NextRequest) {
 
     // Check if user already has a caregiver profile
     if (user.role === UserRole.CAREGIVER) {
-      const existingCaregiver = await prisma.caregiver.findUnique({
-        where: { userId: user.id },
+      const existingCaregiver = await prisma.caregivers.findUnique({
+        where: { user_id: user.id },
       });
 
       if (existingCaregiver) {
@@ -168,7 +167,7 @@ export async function POST(request: NextRequest) {
 
     // Verify company if provided
     if (companyId) {
-      const company = await prisma.company.findUnique({
+      const company = await prisma.companies.findUnique({
         where: { id: companyId },
       });
 
@@ -181,14 +180,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Create caregiver
-    const caregiver = await prisma.caregiver.create({
+    const caregiver = await prisma.caregivers.create({
       data: {
         userId: user.id,
         companyId,
         nid,
         nidUrl,
         photoUrl,
-        dateOfBirth: new Date(dateOfBirth),
+        date_of_birth: new Date(dateOfBirth),
         gender,
         address,
         skills,
@@ -196,15 +195,14 @@ export async function POST(request: NextRequest) {
         experienceYears,
         languages,
         hourlyRate,
-        backgroundCheckStatus: 'PENDING',
-        ratingAvg: 0.0,
-        ratingCount: 0,
-        totalJobsCompleted: 0,
-        isAvailable: true,
-        isVerified: false,
+        background_check_status: 'PENDING',
+        rating_avg: 0.0,
+        rating_count: 0,
+        total_jobs_completed: 0,
+        is_available: true,
+        is_verified: false,
       },
-      include: {
-        user: {
+      include: { users: {
           select: {
             id: true,
             name: true,
@@ -215,7 +213,7 @@ export async function POST(request: NextRequest) {
         company: {
           select: {
             id: true,
-            companyName: true,
+            company_name: true,
           },
         },
       },
@@ -223,7 +221,7 @@ export async function POST(request: NextRequest) {
 
     // Update user role to CAREGIVER if not already
     if (user.role !== UserRole.CAREGIVER) {
-      await prisma.user.update({
+      await prisma.users.update({
         where: { id: user.id },
         data: { role: UserRole.CAREGIVER },
       });

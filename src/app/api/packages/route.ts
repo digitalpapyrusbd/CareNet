@@ -31,8 +31,8 @@ export async function GET(request: NextRequest) {
     
     // Companies can only see their own packages
     if (user.role === UserRole.COMPANY) {
-      const company = await prisma.company.findUnique({
-        where: { userId: user.id },
+      const company = await prisma.companies.findUnique({
+        where: { user_id: user.id },
       });
       
       if (company) {
@@ -57,17 +57,16 @@ export async function GET(request: NextRequest) {
 
     // Get packages and total count
     const [packages, total] = await Promise.all([
-      prisma.package.findMany({
+      prisma.packages.findMany({
         where,
         skip,
         take: limit,
-        include: {
-          company: {
+        include: { companies: {
             select: {
               id: true,
-              companyName: true,
-              isVerified: true,
-              ratingAvg: true,
+              company_name: true,
+              is_verified: true,
+              rating_avg: true,
             },
           },
           _count: {
@@ -76,9 +75,9 @@ export async function GET(request: NextRequest) {
             },
           },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { created_at: 'desc' },
       }),
-      prisma.package.count({ where }),
+      prisma.packages.count({ where }),
     ]);
 
     const totalPages = Math.ceil(total / limit);
@@ -144,8 +143,8 @@ export async function POST(request: NextRequest) {
     let packageCompanyId = companyId;
     
     if (user.role === UserRole.COMPANY) {
-      const company = await prisma.company.findUnique({
-        where: { userId: user.id },
+      const company = await prisma.companies.findUnique({
+        where: { user_id: user.id },
       });
       
       if (!company) {
@@ -164,27 +163,26 @@ export async function POST(request: NextRequest) {
     }
 
     // Create package
-    const packageData = await prisma.package.create({
+    const packageData = await prisma.packages.create({
       data: {
-        companyId: packageCompanyId,
+        company_id: packageCompanyId,
         name,
         description,
         category,
         price: parseFloat(price),
-        durationDays: parseInt(durationDays),
-        hoursPerDay: parseInt(hoursPerDay),
+        duration_days: parseInt(durationDays),
+        hours_per_day: parseInt(hoursPerDay),
         inclusions,
         exclusions,
-        caregiverCount: parseInt(caregiverCount),
-        minAdvanceDays: parseInt(minAdvanceDays),
-        isActive: true,
+        caregiver_count: parseInt(caregiverCount),
+        min_advance_days: parseInt(minAdvanceDays),
+        is_active: true,
       },
-      include: {
-        company: {
+      include: { companies: {
           select: {
             id: true,
-            companyName: true,
-            isVerified: true,
+            company_name: true,
+            is_verified: true,
           },
         },
       },

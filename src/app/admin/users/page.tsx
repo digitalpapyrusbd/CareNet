@@ -67,7 +67,7 @@ export default function UsersManagementPage() {
       case UserRole.SUPER_ADMIN:
       case UserRole.MODERATOR:
         return <Shield className="w-5 h-5" />;
-      case UserRole.AGENCY:
+      case UserRole.COMPANY:
         return <Building2 className="w-5 h-5" />;
       case UserRole.CAREGIVER:
         return <UserCog className="w-5 h-5" />;
@@ -84,7 +84,7 @@ export default function UsersManagementPage() {
         return { bg: 'rgba(255, 107, 122, 0.2)', text: '#FF6B7A' };
       case UserRole.MODERATOR:
         return { bg: 'rgba(184, 167, 255, 0.2)', text: '#8B7AE8' };
-      case UserRole.AGENCY:
+      case UserRole.COMPANY:
         return { bg: 'rgba(142, 197, 252, 0.2)', text: '#5B9FFF' };
       case UserRole.CAREGIVER:
         return { bg: 'rgba(124, 229, 119, 0.2)', text: '#7CE577' };
@@ -103,7 +103,7 @@ export default function UsersManagementPage() {
 
   const getRoleDisplayName = (role: UserRole) => {
     switch (role) {
-      case UserRole.AGENCY:
+      case UserRole.COMPANY:
         return 'Agency';
       case UserRole.SUPER_ADMIN:
         return 'Super Admin';
@@ -142,7 +142,7 @@ export default function UsersManagementPage() {
 
           {/* Filters */}
           <div className="flex gap-2 mb-6 overflow-x-auto">
-            {['all', UserRole.SUPER_ADMIN, UserRole.MODERATOR, UserRole.AGENCY, UserRole.CAREGIVER, UserRole.GUARDIAN].map((f) => (
+            {['all', UserRole.SUPER_ADMIN, UserRole.MODERATOR, UserRole.COMPANY, UserRole.CAREGIVER, UserRole.GUARDIAN].map((f) => (
               <button
                 key={f}
                 onClick={() => {

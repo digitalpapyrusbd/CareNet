@@ -93,7 +93,7 @@ export async function PUT(request: NextRequest) {
         entity_type: 'SYSTEM_SETTINGS',
         entity_id: 'system',
         changes: JSON.stringify(body),
-        ip_address: request.ip || request.headers.get('x-forwarded-for') || 'Unknown',
+        ip_address: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown" || request.headers.get('x-forwarded-for') || 'Unknown',
         user_agent: request.headers.get('user-agent') || 'Unknown',
       },
     });

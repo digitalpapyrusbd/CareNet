@@ -316,7 +316,7 @@ export function JobDetailPanel({ jobId, onClose }: JobDetailPanelProps) {
         <Button variant="secondary" size="sm" onClick={handleAssignCaregiver}>
           Assign caregiver
         </Button>
-        <Button variant="danger" size="sm" onClick={handleCancelJob} loading={isCancelling}>
+        <Button variant="destructive" size="sm" onClick={handleCancelJob} loading={isCancelling}>
           Cancel job
         </Button>
       </div>

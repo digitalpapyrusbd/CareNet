@@ -65,7 +65,7 @@ export default function UserDetailPage() {
       case UserRole.SUPER_ADMIN:
       case UserRole.MODERATOR:
         return <Shield className="w-5 h-5" />;
-      case UserRole.AGENCY:
+      case UserRole.COMPANY:
         return <Building2 className="w-5 h-5" />;
       case UserRole.CAREGIVER:
         return <UserCog className="w-5 h-5" />;
@@ -82,7 +82,7 @@ export default function UserDetailPage() {
         return { bg: 'rgba(255, 107, 122, 0.2)', text: '#FF6B7A' };
       case UserRole.MODERATOR:
         return { bg: 'rgba(184, 167, 255, 0.2)', text: '#8B7AE8' };
-      case UserRole.AGENCY:
+      case UserRole.COMPANY:
         return { bg: 'rgba(142, 197, 252, 0.2)', text: '#5B9FFF' };
       case UserRole.CAREGIVER:
         return { bg: 'rgba(124, 229, 119, 0.2)', text: '#7CE577' };

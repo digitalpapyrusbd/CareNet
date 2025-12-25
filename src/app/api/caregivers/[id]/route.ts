@@ -9,11 +9,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api/caregivers/[id]/route.ts:7',message:'GET request received',data:{caregiverId:params.id,hasAuthHeader:!!request.headers.get('authorization')},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+  fetch('http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api/caregivers/[id]/route.ts:7',message:'GET request received',data:{caregiver_id:params.id,hasAuthHeader:!!request.headers.get('authorization')},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
   // #endregion
 
   // Check authentication and authorization
-  const authResult = await authorize([UserRole.SUPER_ADMIN, UserRole.MODERATOR, UserRole.AGENCY])(request);
+  const authResult = await authorize([UserRole.SUPER_ADMIN, UserRole.MODERATOR, UserRole.COMPANY])(request);
   if (authResult) {
     // #region agent log
     fetch('http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api/caregivers/[id]/route.ts:12',message:'Authorization failed',data:{status:authResult.status},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
@@ -43,9 +43,9 @@ export async function GET(
     };
 
     // Agencies can only see their own caregivers
-    if (user.role === UserRole.AGENCY) {
-      const agency = await prisma.agencies.findFirst({
-        where: { userId: user.id },
+    if (user.role === UserRole.COMPANY) {
+      const agency = await prisma.companies.findFirst({
+        where: { user_id: user.id },
       });
       
       if (agency) {
@@ -71,9 +71,9 @@ export async function GET(
       where: {
         id: caregiverId,
         deleted_at: null,
-        ...(user.role === UserRole.AGENCY ? {
-          agency_id: (await prisma.agencies.findFirst({
-            where: { userId: user.id },
+        ...(user.role === UserRole.COMPANY ? {
+          agency_id: (await prisma.companies.findFirst({
+            where: { user_id: user.id },
           }))?.id,
         } : {}),
       },
@@ -98,7 +98,7 @@ export async function GET(
     const userData = caregiver.users;
     
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api/caregivers/[id]/route.ts:99',message:'Transforming data',data:{hasUserData:!!userData,caregiverId:caregiver.id,userId:caregiver.user_id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F1'})}).catch(()=>{});
+    fetch('http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api/caregivers/[id]/route.ts:99',message:'Transforming data',data:{hasUserData:!!userData,caregiver_id:caregiver.id,userId:caregiver.userId},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F1'})}).catch(()=>{});
     // #endregion
     
     if (!userData) {
@@ -114,7 +114,7 @@ export async function GET(
     const nameParts = (userData.name || '').split(' ');
     const responseData = {
       id: caregiver.id,
-      userId: caregiver.user_id,
+      userId: caregiver.userId,
       firstName: nameParts[0] || '',
       lastName: nameParts.slice(1).join(' ') || '',
       email: userData.email || '',

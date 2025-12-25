@@ -386,7 +386,7 @@ class ChatAnalyticsService {
 // Add missing method
 public async getUserSessions(userId: string): Promise<ChatSession[]> {
   return this.db.chatSession.findMany({
-    where: { userId },
+    where: { user_id },
     orderBy: { startTime: 'desc' },
   });
 }

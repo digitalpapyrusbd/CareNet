@@ -24,7 +24,7 @@ export async function GET(
       );
     }
 
-    const userData = await prisma.user.findUnique({
+    const userData = await prisma.users.findUnique({
       where: { id },
       select: {
         id: true,
@@ -33,26 +33,26 @@ export async function GET(
         email: true,
         name: true,
         language: true,
-        kycStatus: true,
-        kycDocumentUrl: true,
-        mfaEnabled: true,
-        lastLoginAt: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
+        kyc_status: true,
+        kyc_document_url: true,
+        mfa_enabled: true,
+        last_login_at: true,
+        is_active: true,
+        created_at: true,
+        updated_at: true,
         // Include role-specific data based on user role
         ...(user.role === UserRole.SUPER_ADMIN || user.role === UserRole.MODERATOR ? {
           company: {
             select: {
               id: true,
-              companyName: true,
-              tradeLicense: true,
+              company_name: true,
+              trade_license: true,
               contactPerson: true,
               contactPhone: true,
               address: true,
-              isVerified: true,
-              ratingAvg: true,
-              ratingCount: true,
+              is_verified: true,
+              rating_avg: true,
+              rating_count: true,
             },
           },
           caregiver: {
@@ -60,16 +60,16 @@ export async function GET(
               id: true,
               nid: true,
               photoUrl: true,
-              dateOfBirth: true,
+              date_of_birth: true,
               gender: true,
               address: true,
               skills: true,
-              experienceYears: true,
-              ratingAvg: true,
-              ratingCount: true,
-              totalJobsCompleted: true,
+              experience_years: true,
+              rating_avg: true,
+              rating_count: true,
+              total_jobs_completed: true,
               isAvailable: true,
-              isVerified: true,
+              is_verified: true,
             },
           },
         } : {}),
@@ -136,12 +136,12 @@ export async function PUT(
     
     // Only admins can update these fields
     if (user.role === UserRole.SUPER_ADMIN || user.role === UserRole.MODERATOR) {
-      if (isActive !== undefined) updateData.isActive = isActive;
+      if (isActive !== undefined) updateData.is_active = isActive;
       if (kycStatus !== undefined) updateData.kycStatus = kycStatus;
     }
 
     // Update user
-    const updatedUser = await prisma.user.update({
+    const updatedUser = await prisma.users.update({
       where: { id },
       data: updateData,
       select: {
@@ -151,11 +151,11 @@ export async function PUT(
         email: true,
         name: true,
         language: true,
-        kycStatus: true,
-        isActive: true,
-        lastLoginAt: true,
-        createdAt: true,
-        updatedAt: true,
+        kyc_status: true,
+        is_active: true,
+        last_login_at: true,
+        created_at: true,
+        updated_at: true,
       },
     });
 
@@ -186,7 +186,7 @@ export async function DELETE(
 
   try {
     // Check if user exists
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.users.findUnique({
       where: { id },
     });
 
@@ -198,9 +198,9 @@ export async function DELETE(
     }
 
     // Soft delete by setting deletedAt
-    await prisma.user.update({
+    await prisma.users.update({
       where: { id },
-      data: { deletedAt: new Date() },
+      data: { deleted_at: new Date() },
     });
 
     return NextResponse.json({

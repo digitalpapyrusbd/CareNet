@@ -40,13 +40,13 @@ export async function GET(request: NextRequest) {
     }
     
     // Get total count
-    const total = await prisma.notification.count({ where });
+    const total = await prisma.notifications.count({ where });
     
     // Get notifications with pagination
-    const notifications = await prisma.notification.findMany({
+    const notifications = await prisma.notifications.findMany({
       where,
       orderBy: {
-        createdAt: 'desc',
+        created_at: 'desc',
       },
       skip: (page - 1) * limit,
       take: limit,
@@ -54,13 +54,13 @@ export async function GET(request: NextRequest) {
     
     // Mark notifications as read if requested
     if (searchParams.get('markAsRead') === 'true') {
-      await prisma.notification.updateMany({
+      await prisma.notifications.updateMany({
         where: {
           ...where,
-          readAt: null,
+          read_at: null,
         },
         data: {
-          readAt: new Date(),
+          read_at: new Date(),
         },
       });
     }
@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Create notification
-    const notification = await prisma.notification.create({
+    const notification = await prisma.notifications.create({
       data: {
         userId,
         type,

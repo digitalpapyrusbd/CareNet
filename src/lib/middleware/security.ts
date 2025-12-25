@@ -12,7 +12,7 @@ export async function securityMiddleware(
   requiredRole?: string[]
 ): Promise<NextResponse | null> {
   // 1. Rate limiting
-  const clientIp = request.ip || 'unknown';
+  const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown';
   const userAgent = request.headers.get('user-agent') || '';
   
   // Check rate limits

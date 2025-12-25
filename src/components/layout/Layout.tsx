@@ -87,7 +87,7 @@ const Layout: React.FC<LayoutProps> = ({
                     </Button>
                   </Link>
                   <Link href="/auth/register">
-                    <Button variant="primary" size="sm">
+                    <Button variant="default" size="sm">
                       Register
                     </Button>
                   </Link>

@@ -19,10 +19,10 @@ export async function GET(
   const notificationId = (await params).id;
 
   try {
-    const notification = await prisma.notification.findFirst({
+    const notification = await prisma.notifications.findFirst({
       where: {
         id: notificationId,
-        userId: currentUser.id,
+        user_id: currentUser.id,
       },
     });
 
@@ -70,10 +70,10 @@ export async function PATCH(
     const { read } = body;
 
     // Check if notification belongs to current user
-    const notification = await prisma.notification.findFirst({
+    const notification = await prisma.notifications.findFirst({
       where: {
         id: notificationId,
-        userId: currentUser.id,
+        user_id: currentUser.id,
       },
     });
 
@@ -86,10 +86,10 @@ export async function PATCH(
     }
 
     // Update notification
-    const updatedNotification = await prisma.notification.update({
+    const updatedNotification = await prisma.notifications.update({
       where: { id: notificationId },
       data: {
-        readAt: read === true ? new Date() : null,
+        read_at: read === true ? new Date() : null,
       },
     });
 
@@ -127,10 +127,10 @@ export async function DELETE(
 
   try {
     // Check if notification belongs to current user
-    const notification = await prisma.notification.findFirst({
+    const notification = await prisma.notifications.findFirst({
       where: {
         id: notificationId,
-        userId: currentUser.id,
+        user_id: currentUser.id,
       },
     });
 
@@ -143,7 +143,7 @@ export async function DELETE(
     }
 
     // Delete notification
-    await prisma.notification.delete({
+    await prisma.notifications.delete({
       where: { id: notificationId },
     });
 

@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
 
     // Get moderation items
     const [items, total] = await Promise.all([
-      prisma.auditLog.findMany({
+      prisma.audit_logs.findMany({
         where: {
           actionType: { in: ['FLAG', 'UNFLAG', 'HIDE', 'DELETE'] },
           ...where,
@@ -68,20 +68,20 @@ export async function GET(request: NextRequest) {
           },
         },
       }),
-      prisma.auditLog.count({ where }),
+      prisma.audit_logs.count({ where }),
     ]);
 
     // Get flagged feedback and disputes separately for more details
     let flaggedItems: any[] = [];
     
     if (!entityType || entityType === 'FEEDBACK') {
-      const flaggedFeedback = await prisma.feedback.findMany({
+      const flaggedFeedback = await prisma.feedbacks.findMany({
         where: {
-          flaggedInappropriate: true,
+          flagged_inappropriate: true,
         },
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { created_at: 'desc' },
         include: {
           fromUser: {
             select: {
@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
               company: {
                 select: {
                   id: true,
-                  companyName: true,
+                  company_name: true,
                 },
               },
             },
@@ -128,13 +128,13 @@ export async function GET(request: NextRequest) {
     }
     
     if (!entityType || entityType === 'DISPUTE') {
-      const flaggedDisputes = await prisma.dispute.findMany({
+      const flaggedDisputes = await prisma.disputes.findMany({
         where: {
           status: 'OPEN',
         },
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { created_at: 'desc' },
         include: {
           raisedByUser: {
             select: {
@@ -162,7 +162,7 @@ export async function GET(request: NextRequest) {
               company: {
                 select: {
                   id: true,
-                  companyName: true,
+                  company_name: true,
                 },
               },
             },
@@ -267,12 +267,12 @@ export async function POST(request: NextRequest) {
 // Handle flagging content
 async function handleFlag(user: any, entityType: string, entityId: string, reason: string, notes?: string) {
   // Create audit log entry
-  await prisma.auditLog.create({
+  await prisma.audit_logs.create({
     data: {
-      actorId: user.id,
-      actorRole: user.role,
-      actionType: 'FLAG',
-      entityType: entityType.toUpperCase(),
+      actor_id: user.id,
+      actor_role: user.role,
+      action_type: 'FLAG',
+      entity_type: entityType.toUpperCase(),
       entityId,
       changes: {
         reason,
@@ -287,9 +287,9 @@ async function handleFlag(user: any, entityType: string, entityId: string, reaso
   // Update the actual entity based on type
   switch (entityType) {
     case 'FEEDBACK':
-      await prisma.feedback.update({
+      await prisma.feedbacks.update({
         where: { id: entityId },
-        data: { flaggedInappropriate: true },
+        data: { flagged_inappropriate: true },
       });
       break;
     case 'DISPUTE':
@@ -306,14 +306,14 @@ async function handleFlag(user: any, entityType: string, entityId: string, reaso
 // Handle unflagging content
 async function handleUnflag(user: any, entityType: string, entityId: string) {
   // Create audit log entry
-  await prisma.auditLog.create({
+  await prisma.audit_logs.create({
     data: {
-      actorId: user.id,
-      actorRole: user.role,
-      actionType: 'UNFLAG',
-      entityType: entityType.toUpperCase(),
+      actor_id: user.id,
+      actor_role: user.role,
+      action_type: 'UNFLAG',
+      entity_type: entityType.toUpperCase(),
       entityId,
-      ipAddress: 'unknown',
+      ip_address: 'unknown',
       userAgent: 'unknown',
       timestamp: new Date(),
     },
@@ -322,9 +322,9 @@ async function handleUnflag(user: any, entityType: string, entityId: string) {
   // Update the actual entity based on type
   switch (entityType) {
     case 'FEEDBACK':
-      await prisma.feedback.update({
+      await prisma.feedbacks.update({
         where: { id: entityId },
-        data: { flaggedInappropriate: false },
+        data: { flagged_inappropriate: false },
       });
       break;
     default:
@@ -338,14 +338,14 @@ async function handleUnflag(user: any, entityType: string, entityId: string) {
 // Handle hiding content
 async function handleHide(user: any, entityType: string, entityId: string) {
   // Create audit log entry
-  await prisma.auditLog.create({
+  await prisma.audit_logs.create({
     data: {
-      actorId: user.id,
-      actorRole: user.role,
-      actionType: 'HIDE',
-      entityType: entityType.toUpperCase(),
+      actor_id: user.id,
+      actor_role: user.role,
+      action_type: 'HIDE',
+      entity_type: entityType.toUpperCase(),
       entityId,
-      ipAddress: 'unknown',
+      ip_address: 'unknown',
       userAgent: 'unknown',
       timestamp: new Date(),
     },
@@ -354,9 +354,9 @@ async function handleHide(user: any, entityType: string, entityId: string) {
   // Update the actual entity based on type
   switch (entityType) {
     case 'FEEDBACK':
-      await prisma.feedback.update({
+      await prisma.feedbacks.update({
         where: { id: entityId },
-        data: { isPublic: false },
+        data: { is_public: false },
       });
       break;
     default:
@@ -370,14 +370,14 @@ async function handleHide(user: any, entityType: string, entityId: string) {
 // Handle deleting content
 async function handleDelete(user: any, entityType: string, entityId: string) {
   // Create audit log entry
-  await prisma.auditLog.create({
+  await prisma.audit_logs.create({
     data: {
-      actorId: user.id,
-      actorRole: user.role,
-      actionType: 'DELETE',
-      entityType: entityType.toUpperCase(),
+      actor_id: user.id,
+      actor_role: user.role,
+      action_type: 'DELETE',
+      entity_type: entityType.toUpperCase(),
       entityId,
-      ipAddress: 'unknown',
+      ip_address: 'unknown',
       userAgent: 'unknown',
       timestamp: new Date(),
     },
@@ -386,7 +386,7 @@ async function handleDelete(user: any, entityType: string, entityId: string) {
   // Update the actual entity based on type
   switch (entityType) {
     case 'FEEDBACK':
-      await prisma.feedback.delete({
+      await prisma.feedbacks.delete({
         where: { id: entityId },
       });
       break;

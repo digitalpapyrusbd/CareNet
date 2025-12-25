@@ -37,8 +37,8 @@ export async function GET(
         
       case UserRole.COMPANY:
         // Companies can see feedback for their caregivers and themselves
-        const company = await prisma.company.findUnique({
-          where: { userId: user.id },
+        const company = await prisma.companies.findUnique({
+          where: { user_id: user.id },
         });
         
         if (company) {
@@ -57,7 +57,7 @@ export async function GET(
     }
 
     // Get feedback with related data
-    const feedback = await prisma.feedback.findFirst({
+    const feedback = await prisma.feedbacks.findFirst({
       where,
       include: {
         fromUser: {
@@ -86,7 +86,7 @@ export async function GET(
             company: {
               select: {
                 id: true,
-                companyName: true,
+                company_name: true,
               },
             },
             startDate: true,
@@ -132,7 +132,7 @@ export async function POST(
 
   try {
     // Get current feedback
-    const feedback = await prisma.feedback.findUnique({
+    const feedback = await prisma.feedbacks.findUnique({
       where: { id },
     });
 
@@ -144,10 +144,10 @@ export async function POST(
     }
 
     // Toggle flagged status
-    const updatedFeedback = await prisma.feedback.update({
+    const updatedFeedback = await prisma.feedbacks.update({
       where: { id },
       data: {
-        flaggedInappropriate: !feedback.flaggedInappropriate,
+        flagged_inappropriate: !feedback.flagged_inappropriate,
       },
       include: {
         fromUser: {
@@ -176,7 +176,7 @@ export async function POST(
             company: {
               select: {
                 id: true,
-                companyName: true,
+                company_name: true,
               },
             },
             startDate: true,
@@ -189,7 +189,7 @@ export async function POST(
     return NextResponse.json({
       success: true,
       data: updatedFeedback,
-      message: `Feedback ${updatedFeedback.flaggedInappropriate ? 'flagged' : 'unflagged'} as inappropriate`,
+      message: `Feedback ${updatedFeedback.flagged_inappropriate ? 'flagged' : 'unflagged'} as inappropriate`,
     });
   } catch (error) {
     console.error('Flag feedback error:', error);

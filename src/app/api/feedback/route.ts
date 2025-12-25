@@ -43,8 +43,8 @@ export async function GET(request: NextRequest) {
         
       case UserRole.COMPANY:
         // Companies can see feedback for their caregivers
-        const company = await prisma.company.findUnique({
-          where: { userId: user.id },
+        const company = await prisma.companies.findUnique({
+          where: { user_id: user.id },
         });
         
         if (company) {
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
 
     // Get feedback and total count
     const [feedback, total] = await Promise.all([
-      prisma.feedback.findMany({
+      prisma.feedbacks.findMany({
         where,
         skip,
         take: limit,
@@ -97,14 +97,14 @@ export async function GET(request: NextRequest) {
           job: {
             select: {
               id: true,
-              startDate: true,
+              start_date: true,
               endDate: true,
             },
           },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { created_at: 'desc' },
       }),
-      prisma.feedback.count({ where }),
+      prisma.feedbacks.count({ where }),
     ]);
 
     const totalPages = Math.ceil(total / limit);
@@ -167,16 +167,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify job exists and user is involved
-    const job = await prisma.job.findUnique({
+    const job = await prisma.jobs.findUnique({
       where: { id: jobId },
       include: {
         guardian: {
           select: { id: true },
         },
         assignments: {
-          include: {
-            caregiver: {
-              select: { userId: true },
+          include: { caregivers: {
+              select: { user_id: true },
             },
           },
         },
@@ -204,11 +203,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if feedback already exists for this job/user combination
-    const existingFeedback = await prisma.feedback.findUnique({
+    const existingFeedback = await prisma.feedbacks.findUnique({
       where: {
         jobId_fromUserId_toUserId: {
           jobId,
-          fromUserId: user.id,
+          from_user_id: user.id,
           toUserId,
         },
       },
@@ -222,10 +221,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Create feedback
-    const feedbackData = await prisma.feedback.create({
+    const feedbackData = await prisma.feedbacks.create({
       data: {
         jobId,
-        fromUserId: user.id,
+        from_user_id: user.id,
         toUserId,
         revieweeType,
         rating: parseInt(rating),
@@ -251,7 +250,7 @@ export async function POST(request: NextRequest) {
         job: {
           select: {
             id: true,
-            startDate: true,
+            start_date: true,
             endDate: true,
           },
         },
@@ -259,7 +258,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Update average rating for the reviewee
-    const allFeedback = await prisma.feedback.findMany({
+    const allFeedback = await prisma.feedbacks.findMany({
       where: { toUserId },
       select: { rating: true },
     });
@@ -269,19 +268,19 @@ export async function POST(request: NextRequest) {
 
     // Update caregiver or company rating based on reviewee type
     if (revieweeType === 'CAREGIVER') {
-      await prisma.caregiver.updateMany({
-        where: { userId: toUserId },
+      await prisma.caregivers.updateMany({
+        where: { user_id: toUserId },
         data: {
-          ratingAvg: avgRating,
-          ratingCount: allFeedback.length,
+          rating_avg: avgRating,
+          rating_count: allFeedback.length,
         },
       });
     } else if (revieweeType === 'COMPANY') {
-      await prisma.company.updateMany({
-        where: { userId: toUserId },
+      await prisma.companies.updateMany({
+        where: { user_id: toUserId },
         data: {
-          ratingAvg: avgRating,
-          ratingCount: allFeedback.length,
+          rating_avg: avgRating,
+          rating_count: allFeedback.length,
         },
       });
     }

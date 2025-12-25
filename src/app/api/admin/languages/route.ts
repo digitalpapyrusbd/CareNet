@@ -7,7 +7,7 @@ import { existsSync } from 'fs';
 
 const LOCALES_DIR = join(process.cwd(), 'src/lib/locales');
 
-export const GET = withRoles([UserRole.SUPER_ADMIN, UserRole.PLATFORM_ADMIN])(async (request: NextRequest) => {
+export const GET = withRoles([UserRole.SUPER_ADMIN, UserRole.SUPER_ADMIN])(async (request: NextRequest) => {
   // #region agent log
   const logEntry = {location:'api/admin/languages/route.ts:9',message:'GET request received',data:{hasAuthHeader:!!request.headers.get('authorization'),url:request.url},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'M'};
   await fetch('http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(logEntry)}).catch(()=>{});

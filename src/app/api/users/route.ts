@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
     }
     
     if (isActive !== null) {
-      where.isActive = isActive === 'true';
+      where.is_active = isActive === 'true';
     }
     
     if (kycStatus) {
@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
     
     // Get users and total count
     const [users, total] = await Promise.all([
-      prisma.user.findMany({
+      prisma.users.findMany({
         where,
         skip,
         take: limit,
@@ -103,22 +103,22 @@ export async function GET(request: NextRequest) {
           email: true,
           name: true,
           language: true,
-          kycStatus: true,
-          isActive: true,
-          lastLoginAt: true,
-          createdAt: true,
-          updatedAt: true,
+          kyc_status: true,
+          is_active: true,
+          last_login_at: true,
+          created_at: true,
+          updated_at: true,
           // Include role-specific data
           ...(role === 'COMPANY' && {
             company: {
               select: {
                 id: true,
-                companyName: true,
-                tradeLicense: true,
-                isVerified: true,
-                ratingAvg: true,
-                ratingCount: true,
-                subscriptionTier: true,
+                company_name: true,
+                trade_license: true,
+                is_verified: true,
+                rating_avg: true,
+                rating_count: true,
+                subscription_tier: true,
               },
             },
           }),
@@ -127,15 +127,15 @@ export async function GET(request: NextRequest) {
               select: {
                 id: true,
                 nid: true,
-                dateOfBirth: true,
+                date_of_birth: true,
                 gender: true,
                 skills: true,
-                experienceYears: true,
-                ratingAvg: true,
-                ratingCount: true,
-                isVerified: true,
+                experience_years: true,
+                rating_avg: true,
+                rating_count: true,
+                is_verified: true,
                 isAvailable: true,
-                totalJobsCompleted: true,
+                total_jobs_completed: true,
               },
             },
           }),
@@ -144,7 +144,7 @@ export async function GET(request: NextRequest) {
               select: {
                 id: true,
                 name: true,
-                dateOfBirth: true,
+                date_of_birth: true,
                 gender: true,
                 count: true,
               },
@@ -153,7 +153,7 @@ export async function GET(request: NextRequest) {
         },
         orderBy,
       }),
-      prisma.user.count({ where }),
+      prisma.users.count({ where }),
     ]);
     
     const totalPages = Math.ceil(total / limit);
@@ -222,7 +222,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Check if user already exists
-    const existingUser = await prisma.user.findFirst({
+    const existingUser = await prisma.users.findFirst({
       where: {
         OR: [
           { phone },
@@ -247,7 +247,7 @@ export async function POST(request: NextRequest) {
     
     if (role === UserRole.COMPANY) {
       // Additional company data would be handled separately
-      user = await prisma.user.create({
+      user = await prisma.users.create({
         data: {
           role,
           phone,
@@ -255,8 +255,8 @@ export async function POST(request: NextRequest) {
           passwordHash,
           name,
           language,
-          kycStatus: 'PENDING',
-          isActive: true,
+          kyc_status: 'PENDING',
+          is_active: true,
         },
         select: {
           id: true,
@@ -265,13 +265,13 @@ export async function POST(request: NextRequest) {
           email: true,
           name: true,
           language: true,
-          kycStatus: true,
-          isActive: true,
-          createdAt: true,
+          kyc_status: true,
+          is_active: true,
+          created_at: true,
         },
       });
     } else {
-      user = await prisma.user.create({
+      user = await prisma.users.create({
         data: {
           role,
           phone,
@@ -279,8 +279,8 @@ export async function POST(request: NextRequest) {
           passwordHash,
           name,
           language,
-          kycStatus: role === UserRole.CAREGIVER ? 'PENDING' : 'VERIFIED', // Caregivers need verification
-          isActive: true,
+          kyc_status: role === UserRole.CAREGIVER ? 'PENDING' : 'VERIFIED', // Caregivers need verification
+          is_active: true,
         },
         select: {
           id: true,
@@ -289,9 +289,9 @@ export async function POST(request: NextRequest) {
           email: true,
           name: true,
           language: true,
-          kycStatus: true,
-          isActive: true,
-          createdAt: true,
+          kyc_status: true,
+          is_active: true,
+          created_at: true,
         },
       });
     }
@@ -304,7 +304,7 @@ export async function POST(request: NextRequest) {
         action_type: 'USER_CREATED',
         entity_type: 'USER',
         entity_id: user.id,
-        ip_address: request.ip || request.headers.get('x-forwarded-for') || 'Unknown',
+        ip_address: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown" || request.headers.get('x-forwarded-for') || 'Unknown',
         user_agent: request.headers.get('user-agent') || 'Unknown',
       },
     });
@@ -350,7 +350,7 @@ export async function PUT(request: NextRequest) {
     const targetUserId = isOwnProfile ? currentUser.id : userId;
     
     // Find user to update
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: targetUserId },
     });
     
@@ -388,7 +388,7 @@ export async function PUT(request: NextRequest) {
     }
     
     // Update user
-    const updatedUser = await prisma.user.update({
+    const updatedUser = await prisma.users.update({
       where: { id: targetUserId },
       data: updateData,
       select: {
@@ -398,11 +398,11 @@ export async function PUT(request: NextRequest) {
         email: true,
         name: true,
         language: true,
-        kycStatus: true,
-        isActive: true,
-        lastLoginAt: true,
-        createdAt: true,
-        updatedAt: true,
+        kyc_status: true,
+        is_active: true,
+        last_login_at: true,
+        created_at: true,
+        updated_at: true,
       },
     });
     
@@ -426,7 +426,7 @@ export async function PUT(request: NextRequest) {
             language: validatedData.language,
           },
         },
-        ip_address: request.ip || request.headers.get('x-forwarded-for') || 'Unknown',
+        ip_address: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown" || request.headers.get('x-forwarded-for') || 'Unknown',
         user_agent: request.headers.get('user-agent') || 'Unknown',
       },
     });
@@ -467,7 +467,7 @@ export async function PATCH(request: NextRequest) {
     
     for (const userId of validatedData.userIds) {
       try {
-        const user = await prisma.user.findUnique({
+        const user = await prisma.users.findUnique({
           where: { id: userId },
         });
         
@@ -515,7 +515,7 @@ export async function PATCH(request: NextRequest) {
             break;
         }
         
-        const updatedUser = await prisma.user.update({
+        const updatedUser = await prisma.users.update({
           where: { id: userId },
           data: updateData,
         });
@@ -532,7 +532,7 @@ export async function PATCH(request: NextRequest) {
               action: validatedData.action,
               reason: validatedData.reason,
             },
-            ip_address: request.ip || request.headers.get('x-forwarded-for') || 'Unknown',
+            ip_address: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown" || request.headers.get('x-forwarded-for') || 'Unknown',
             user_agent: request.headers.get('user-agent') || 'Unknown',
           },
         });
@@ -605,7 +605,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
     
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: userId },
     });
     
@@ -617,11 +617,11 @@ export async function DELETE(request: NextRequest) {
     }
     
     // Deactivate user
-    const deactivatedUser = await prisma.user.update({
+    const deactivatedUser = await prisma.users.update({
       where: { id: userId },
       data: {
-        isActive: false,
-        updatedAt: new Date(),
+        is_active: false,
+        updated_at: new Date(),
       },
     });
     
@@ -638,10 +638,10 @@ export async function DELETE(request: NextRequest) {
         entity_id: userId,
         changes: {
           reason,
-        previousState: user.isActive,
+        previousState: user.is_active,
         newState: false,
         },
-        ip_address: request.ip || request.headers.get('x-forwarded-for') || 'Unknown',
+        ip_address: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown" || request.headers.get('x-forwarded-for') || 'Unknown',
         user_agent: request.headers.get('user-agent') || 'Unknown',
       },
     });

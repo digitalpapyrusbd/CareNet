@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
     const { role, phone, email, password } = validatedData;
     
     // Check if user already exists
-    const existingUser = await prisma.user.findFirst({
+    const existingUser = await prisma.users.findFirst({
       where: {
         OR: [
           { phone: formatPhoneNumber(phone) },
@@ -138,23 +138,23 @@ export async function POST(request: NextRequest) {
     if (role === UserRole.COMPANY) {
       // Create user and company in a transaction
       const result = await prisma.$transaction(async (tx) => {
-        const newUser = await tx.user.create({
+        const newUser = await tx.users.create({
           data: {
             role,
             phone: formattedPhone,
             email,
             passwordHash,
             name: validatedData.name,
-            kycStatus: 'PENDING',
-            isActive: true,
+            kyc_status: 'PENDING',
+            is_active: true,
           },
         });
         
-        await tx.company.create({
+        await tx.companies.create({
           data: {
             userId: newUser.id,
-            companyName: validatedData.companyName,
-            tradeLicense: validatedData.tradeLicense,
+            company_name: validatedData.companyName,
+            trade_license: validatedData.trade_license,
             address: validatedData.companyAddress,
             contactPerson: validatedData.contactPerson,
             companyType: validatedData.companyType,
@@ -167,28 +167,28 @@ export async function POST(request: NextRequest) {
     } else if (role === UserRole.CAREGIVER) {
       // Create user and caregiver profile in a transaction
       const result = await prisma.$transaction(async (tx) => {
-        const newUser = await tx.user.create({
+        const newUser = await tx.users.create({
           data: {
             role,
             phone: formattedPhone,
             email,
             passwordHash,
             name: validatedData.name,
-            kycStatus: 'PENDING',
-            isActive: true,
+            kyc_status: 'PENDING',
+            is_active: true,
           },
         });
         
-        await tx.caregiver.create({
+        await tx.caregivers.create({
           data: {
             userId: newUser.id,
             nid: validatedData.nidNumber,
-            dateOfBirth: new Date(validatedData.dateOfBirth),
+            date_of_birth: new Date(validatedData.dateOfBirth),
             gender: 'OTHER', // Default value
             skills: validatedData.skills,
-            experienceYears: 0, // Default value, would be calculated from experience text
-            isVerified: false,
-            isAvailable: true,
+            experience_years: 0, // Default value, would be calculated from experience text
+            is_verified: false,
+            is_available: true,
           },
         });
         
@@ -197,20 +197,20 @@ export async function POST(request: NextRequest) {
       user = result;
     } else if (role === UserRole.GUARDIAN) {
       // Create guardian user
-      user = await prisma.user.create({
+      user = await prisma.users.create({
         data: {
           role,
           phone: formattedPhone,
           email,
           passwordHash,
           name: validatedData.name,
-          kycStatus: 'VERIFIED', // Guardians don't need verification
-          isActive: true,
+          kyc_status: 'VERIFIED', // Guardians don't need verification
+          is_active: true,
         },
       });
       
       // Create guardian profile
-      await prisma.guardian.create({
+      await prisma.guardians.create({
         data: {
           userId: user.id,
           address: validatedData.address,
@@ -219,24 +219,24 @@ export async function POST(request: NextRequest) {
       });
     } else if (role === UserRole.PATIENT) {
       // Create patient user
-      user = await prisma.user.create({
+      user = await prisma.users.create({
         data: {
           role,
           phone: formattedPhone,
           email,
           passwordHash,
           name: validatedData.name,
-          kycStatus: 'VERIFIED', // Patients don't need verification
-          isActive: true,
+          kyc_status: 'VERIFIED', // Patients don't need verification
+          is_active: true,
         },
       });
       
       // Create patient profile
-      await prisma.patient.create({
+      await prisma.patients.create({
         data: {
           userId: user.id,
-          dateOfBirth: new Date(validatedData.dateOfBirth),
-          bloodGroup: validatedData.bloodGroup,
+          date_of_birth: new Date(validatedData.dateOfBirth),
+          blood_group: validatedData.bloodGroup,
           allergies: validatedData.allergies,
           medicalConditions: validatedData.medicalConditions,
           gender: 'OTHER', // Default value
@@ -249,7 +249,7 @@ export async function POST(request: NextRequest) {
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
     
     // Store OTP in database (you might want to use Redis for this in production)
-    await prisma.verificationCode.create({
+    await prisma.verification_codes.create({
       data: {
         userId: user.id,
         code: otp,
@@ -274,7 +274,7 @@ export async function POST(request: NextRequest) {
         action_type: 'USER_REGISTERED',
         entity_type: 'USER',
         entity_id: user.id,
-        ip_address: request.ip || request.headers.get('x-forwarded-for') || 'Unknown',
+        ip_address: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown" || request.headers.get('x-forwarded-for') || 'Unknown',
         user_agent: request.headers.get('user-agent') || 'Unknown',
       },
     });
@@ -287,9 +287,9 @@ export async function POST(request: NextRequest) {
         phone: user.phone,
         email: user.email,
         name: user.name,
-        kycStatus: user.kycStatus,
-        isActive: user.isActive,
-        createdAt: user.createdAt,
+        kyc_status: user.kycStatus,
+        is_active: user.is_active,
+        created_at: user.createdAt,
       },
       message: 'Registration successful. Please verify your phone number.',
       requiresOTP: true,

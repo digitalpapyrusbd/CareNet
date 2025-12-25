@@ -32,8 +32,8 @@ export async function GET(request: NextRequest) {
     switch (user.role) {
       case UserRole.GUARDIAN:
         // Guardians can only see health records for their patients
-        const guardianPatients = await prisma.patient.findMany({
-          where: { guardianId: user.id },
+        const guardianPatients = await prisma.patients.findMany({
+          where: { guardian_id: user.id },
           select: { id: true }
         });
         const patientIds = guardianPatients.map((p: any) => p.id);
@@ -53,8 +53,8 @@ export async function GET(request: NextRequest) {
         
       case UserRole.PATIENT:
         // Patients can only see their own health records
-        const patientRecord = await prisma.patient.findFirst({
-          where: { userId: user.id },
+        const patientRecord = await prisma.patients.findFirst({
+          where: { user_id: user.id },
           select: { id: true }
         });
         
@@ -79,16 +79,15 @@ export async function GET(request: NextRequest) {
 
     // Get health records and total count
     const [healthRecords, total] = await Promise.all([
-      prisma.healthRecord.findMany({
+      prisma.health_records.findMany({
         where,
         skip,
         take: limit,
-        include: {
-          patient: {
+        include: { patients: {
             select: {
               id: true,
               name: true,
-              dateOfBirth: true,
+              date_of_birth: true,
               guardian: {
                 select: {
                   id: true,
@@ -99,9 +98,9 @@ export async function GET(request: NextRequest) {
             },
           },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { created_at: 'desc' },
       }),
-      prisma.healthRecord.count({ where }),
+      prisma.health_records.count({ where }),
     ]);
 
     const totalPages = Math.ceil(total / limit);
@@ -165,15 +164,15 @@ export async function POST(request: NextRequest) {
     let hasAccess = false;
     
     if (user.role === UserRole.GUARDIAN) {
-      const patient = await prisma.patient.findUnique({
+      const patient = await prisma.patients.findUnique({
         where: { id: patientId },
-        select: { guardianId: true }
+        select: { guardian_id: true }
       });
       
-      hasAccess = patient?.guardianId === user.id;
+      hasAccess = patient?.guardian_id === user.id;
     } else if (user.role === UserRole.PATIENT) {
-      const patient = await prisma.patient.findFirst({
-        where: { userId: user.id },
+      const patient = await prisma.patients.findFirst({
+        where: { user_id: user.id },
         select: { id: true }
       });
       
@@ -190,7 +189,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create health record
-    const healthRecord = await prisma.healthRecord.create({
+    const healthRecord = await prisma.health_records.create({
       data: {
         patientId,
         recordType,
@@ -203,12 +202,11 @@ export async function POST(request: NextRequest) {
         validUntil: validUntil ? new Date(validUntil) : null,
         isArchived: false,
       },
-      include: {
-        patient: {
+      include: { patients: {
           select: {
             id: true,
             name: true,
-            dateOfBirth: true,
+            date_of_birth: true,
             guardian: {
               select: {
                 id: true,
@@ -274,13 +272,12 @@ export async function PUT(request: NextRequest) {
     } = body;
 
     // Check if record exists and user has access
-    const existingRecord = await prisma.healthRecord.findUnique({
+    const existingRecord = await prisma.health_records.findUnique({
       where: { id: recordId },
-      include: {
-        patient: {
+      include: { patients: {
           select: {
-            guardianId: true,
-            userId: true,
+            guardian_id: true,
+            user_id: true,
           },
         },
       },
@@ -297,7 +294,7 @@ export async function PUT(request: NextRequest) {
     let hasAccess = false;
     
     if (user.role === UserRole.GUARDIAN) {
-      hasAccess = existingRecord.patient.guardianId === user.id;
+      hasAccess = existingRecord.patient.guardian_id === user.id;
     } else if (user.role === UserRole.PATIENT) {
       hasAccess = existingRecord.patient.userId === user.id;
     } else if (user.role === UserRole.SUPER_ADMIN || user.role === UserRole.MODERATOR) {
@@ -312,7 +309,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update health record
-    const updatedRecord = await prisma.healthRecord.update({
+    const updatedRecord = await prisma.health_records.update({
       where: { id: recordId },
       data: {
         ...(title && { title }),
@@ -323,12 +320,11 @@ export async function PUT(request: NextRequest) {
         ...(validUntil && { validUntil: new Date(validUntil) }),
         ...(isArchived !== undefined && { isArchived }),
       },
-      include: {
-        patient: {
+      include: { patients: {
           select: {
             id: true,
             name: true,
-            dateOfBirth: true,
+            date_of_birth: true,
             guardian: {
               select: {
                 id: true,

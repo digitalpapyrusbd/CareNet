@@ -35,8 +35,8 @@ export async function GET(request: NextRequest) {
     switch (user.role) {
       case UserRole.GUARDIAN: {
         // Guardians can only see care logs for their patients
-        const guardianPatients = await prisma.patient.findMany({
-          where: { guardianId: user.id },
+        const guardianPatients = await prisma.patients.findMany({
+          where: { guardian_id: user.id },
           select: { id: true }
         });
         const patientIds = guardianPatients.map((p: any) => p.id);
@@ -62,8 +62,8 @@ export async function GET(request: NextRequest) {
         
       case UserRole.COMPANY: {
         // Companies can see care logs for their caregivers
-        const company = await prisma.company.findUnique({
-          where: { userId: user.id },
+        const company = await prisma.companies.findUnique({
+          where: { user_id: user.id },
         });
         
         if (company) {
@@ -100,12 +100,11 @@ export async function GET(request: NextRequest) {
 
     // Get care logs and total count
     const [careLogs, total] = await Promise.all([
-      prisma.careLog.findMany({
+      prisma.care_logs.findMany({
         where,
         skip,
         take: limit,
-        include: {
-          caregiver: {
+        include: { caregivers: {
             select: {
               id: true,
               user: {
@@ -122,13 +121,13 @@ export async function GET(request: NextRequest) {
             select: {
               id: true,
               name: true,
-              dateOfBirth: true,
+              date_of_birth: true,
             },
           },
           job: {
             select: {
               id: true,
-              startDate: true,
+              start_date: true,
               endDate: true,
             },
           },
@@ -142,7 +141,7 @@ export async function GET(request: NextRequest) {
         },
         orderBy: { timestamp: 'desc' },
       }),
-      prisma.careLog.count({ where }),
+      prisma.care_logs.count({ where }),
     ]);
 
     const totalPages = Math.ceil(total / limit);
@@ -204,7 +203,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify caregiver is assigned to this job
-    const assignment = await prisma.assignment.findFirst({
+    const assignment = await prisma.assignments.findFirst({
       where: {
         id: assignmentId,
         jobId,
@@ -220,7 +219,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create care log
-    const careLog = await prisma.careLog.create({
+    const careLog = await prisma.care_logs.create({
       data: {
         jobId,
         assignmentId,
@@ -235,8 +234,7 @@ export async function POST(request: NextRequest) {
         photoUrls,
         guardianNotified: false,
       },
-      include: {
-        caregiver: {
+      include: { caregivers: {
           select: {
             id: true,
             user: {
@@ -266,7 +264,7 @@ export async function POST(request: NextRequest) {
         job: {
           select: {
             id: true,
-            startDate: true,
+            start_date: true,
             endDate: true,
           },
         },

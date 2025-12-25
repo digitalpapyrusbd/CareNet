@@ -74,9 +74,9 @@ async function updateResetRateLimit(identifier: string, type: 'PHONE' | 'EMAIL')
     data.count++;
     data.lastRequest = new Date().toISOString();
     
-    await kv.setex(rateLimitKey, 60 * 60, JSON.stringify(data)); // 1 hour expiry
+    await kv.set(rateLimitKey, JSON.stringify(data), { ex: 60 * 60 }); // 1 hour expiry
   } else {
-    await kv.setex(rateLimitKey, 60 * 60, JSON.stringify({
+    await kv.set(rateLimitKey, JSON.stringify({
       count: 1,
       lastRequest: new Date().toISOString(),
     }));
@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
     if (validatedData.method === 'PHONE') {
       user = await getUserByPhone(validatedData.phone);
     } else {
-      user = await prisma.user.findUnique({
+      user = await prisma.users.findUnique({
         where: { email: validatedData.email },
       });
     }
@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Check if user is active
-    if (!user.isActive) {
+    if (!user.is_active) {
       return NextResponse.json(
         { error: 'Account is deactivated' },
         { status: 401 }
@@ -161,7 +161,7 @@ export async function POST(request: NextRequest) {
       attempts: 0,
     };
     
-    await kv.setex(resetKey, 10 * 60, JSON.stringify(resetData));
+    await kv.set(resetKey, JSON.stringify(resetData), { ex: 10 * 60  });
     
     // Update rate limit
     await updateResetRateLimit(identifier, validatedData.method);
@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
         action_type: 'PASSWORD_RESET_REQUEST',
         entity_type: 'USER',
         entity_id: user.id,
-        ip_address: request.ip || request.headers.get('x-forwarded-for') || 'Unknown',
+        ip_address: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown" || request.headers.get('x-forwarded-for') || 'Unknown',
         user_agent: request.headers.get('user-agent') || 'Unknown',
       },
     });
@@ -272,7 +272,7 @@ export async function PUT(request: NextRequest) {
         );
       }
       
-      await kv.setex(resetKey, 10 * 60, JSON.stringify(resetData));
+      await kv.set(resetKey, JSON.stringify(resetData), { ex: 10 * 60  });
       
       return NextResponse.json(
         { error: 'Invalid OTP', attemptsRemaining: 3 - resetData.attempts },
@@ -285,7 +285,7 @@ export async function PUT(request: NextRequest) {
     resetData.confirmToken = confirmToken;
     resetData.otpVerified = true;
     
-    await kv.setex(resetKey, 10 * 60, JSON.stringify(resetData));
+    await kv.set(resetKey, JSON.stringify(resetData), { ex: 10 * 60  });
     
     return NextResponse.json({
       message: 'OTP verified successfully',
@@ -330,7 +330,7 @@ export async function PATCH(request: NextRequest) {
         const parsedData = JSON.parse(data as string);
         if (parsedData.resetToken === validatedData.token || parsedData.confirmToken === validatedData.token) {
           resetData = parsedData;
-          user = await prisma.user.findUnique({
+          user = await prisma.users.findUnique({
             where: { id: parsedData.userId },
           });
           break;
@@ -368,7 +368,7 @@ export async function PATCH(request: NextRequest) {
     
     // Update password and clear reset data
     await prisma.$transaction(async (tx) => {
-      await tx.user.update({
+      await tx.users.update({
         where: { id: user.id },
         data: {
           passwordHash,
@@ -391,7 +391,7 @@ export async function PATCH(request: NextRequest) {
         action_type: 'PASSWORD_RESET_COMPLETE',
         entity_type: 'USER',
         entity_id: user.id,
-        ip_address: request.ip || request.headers.get('x-forwarded-for') || 'Unknown',
+        ip_address: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown" || request.headers.get('x-forwarded-for') || 'Unknown',
         user_agent: request.headers.get('user-agent') || 'Unknown',
       },
     });
@@ -459,7 +459,7 @@ export async function GET(request: NextRequest) {
           const parsedData = JSON.parse(data as string);
           if (parsedData.resetToken === token || parsedData.confirmToken === token) {
             resetData = parsedData;
-            user = await prisma.user.findUnique({
+            user = await prisma.users.findUnique({
               where: { id: parsedData.userId },
             });
             break;

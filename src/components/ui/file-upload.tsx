@@ -214,7 +214,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
             <Button
               onClick={handleUpload}
               disabled={uploading || disabled}
-              variant="primary"
+              variant="default"
             >
               {uploading ? `Uploading... ${uploadProgress > 0 ? `${uploadProgress}%` : ''}` : 'Upload'}
             </Button>

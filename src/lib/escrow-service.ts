@@ -67,7 +67,7 @@ export class EscrowService {
   async createEscrow(request: CreateEscrowRequest): Promise<EscrowTransaction> {
     try {
       // Verify payment exists and is completed
-      const payment = await prisma.payment.findUnique({
+      const payment = await prisma.payments.findUnique({
         where: { id: request.paymentId },
       });
 
@@ -80,7 +80,7 @@ export class EscrowService {
       }
 
       // Check if escrow already exists for this payment
-      const existingEscrow = await prisma.escrowTransaction.findFirst({
+      const existingEscrow = await prisma.escrow_transactions.findFirst({
         where: { paymentId: request.paymentId },
       });
 
@@ -89,10 +89,10 @@ export class EscrowService {
       }
 
       // Create escrow transaction
-      const escrow = await prisma.escrowTransaction.create({
+      const escrow = await prisma.escrow_transactions.create({
         data: {
           paymentId: request.paymentId,
-          jobId: request.jobId,
+          job_id: request.jobId,
           amount: request.amount,
           currency: request.currency,
           status: 'HELD',
@@ -102,7 +102,7 @@ export class EscrowService {
       });
 
       // Update payment status to indicate it's in escrow
-      await prisma.payment.update({
+      await prisma.payments.update({
         where: { id: request.paymentId },
         data: { status: 'ESCROW' },
       });
@@ -125,13 +125,12 @@ export class EscrowService {
    */
   async releaseEscrow(request: ReleaseEscrowRequest): Promise<EscrowTransaction> {
     try {
-      const escrow = await prisma.escrowTransaction.findUnique({
+      const escrow = await prisma.escrow_transactions.findUnique({
         where: { id: request.escrowId },
         include: {
           payment: true,
           job: {
-            include: {
-              caregiver: true,
+            include: { caregivers: true,
               company: true,
             },
           },
@@ -147,7 +146,7 @@ export class EscrowService {
       }
 
       // Update escrow status
-      const updatedEscrow = await prisma.escrowTransaction.update({
+      const updatedEscrow = await prisma.escrow_transactions.update({
         where: { id: request.escrowId },
         data: {
           status: 'RELEASED',
@@ -162,7 +161,7 @@ export class EscrowService {
       });
 
       // Update payment status
-      await prisma.payment.update({
+      await prisma.payments.update({
         where: { id: escrow.paymentId },
         data: { status: 'RELEASED' },
       });
@@ -171,12 +170,12 @@ export class EscrowService {
       if (escrow.job?.caregiver) {
         await prisma.caregiverPayment.create({
           data: {
-            caregiverId: escrow.job.caregiverId,
+            caregiver_id: escrow.job.caregiverId,
             paymentId: escrow.paymentId,
             amount: escrow.amount,
             currency: escrow.currency,
             status: 'PAID',
-            paidAt: new Date(),
+            paid_at: new Date(),
             escrowId: escrow.id,
           },
         });
@@ -200,7 +199,7 @@ export class EscrowService {
    */
   async refundEscrow(request: RefundEscrowRequest): Promise<EscrowTransaction> {
     try {
-      const escrow = await prisma.escrowTransaction.findUnique({
+      const escrow = await prisma.escrow_transactions.findUnique({
         where: { id: request.escrowId },
         include: {
           payment: true,
@@ -224,7 +223,7 @@ export class EscrowService {
       const refundResult = await this.processRefund(escrow.paymentId, escrow.amount, request.reason);
 
       // Update escrow status
-      const updatedEscrow = await prisma.escrowTransaction.update({
+      const updatedEscrow = await prisma.escrow_transactions.update({
         where: { id: request.escrowId },
         data: {
           status: 'REFUNDED',
@@ -240,7 +239,7 @@ export class EscrowService {
       });
 
       // Update payment status
-      await prisma.payment.update({
+      await prisma.payments.update({
         where: { id: escrow.paymentId },
         data: { status: 'REFUNDED' },
       });
@@ -264,7 +263,7 @@ export class EscrowService {
    */
   async createDispute(request: DisputeEscrowRequest): Promise<EscrowTransaction> {
     try {
-      const escrow = await prisma.escrowTransaction.findUnique({
+      const escrow = await prisma.escrow_transactions.findUnique({
         where: { id: request.escrowId },
       });
 
@@ -277,21 +276,21 @@ export class EscrowService {
       }
 
       // Create dispute record
-      const dispute = await prisma.dispute.create({
+      const dispute = await prisma.disputes.create({
         data: {
           escrowId: request.escrowId,
-          jobId: escrow.jobId,
+          job_id: escrow.jobId,
           status: 'OPEN',
           disputedBy: request.disputedBy,
           reason: request.reason,
           description: request.description,
           evidence: request.evidence || [],
-          createdAt: new Date(),
+          created_at: new Date(),
         },
       });
 
       // Update escrow status
-      const updatedEscrow = await prisma.escrowTransaction.update({
+      const updatedEscrow = await prisma.escrow_transactions.update({
         where: { id: request.escrowId },
         data: {
           status: 'DISPUTED',
@@ -322,13 +321,12 @@ export class EscrowService {
    */
   async getEscrowTransaction(escrowId: string): Promise<EscrowTransaction | null> {
     try {
-      return await prisma.escrowTransaction.findUnique({
+      return await prisma.escrow_transactions.findUnique({
         where: { id: escrowId },
         include: {
           payment: true,
           job: {
-            include: {
-              caregiver: true,
+            include: { caregivers: true,
               guardian: true,
               company: true,
             },
@@ -359,25 +357,24 @@ export class EscrowService {
       // Filter based on user role
       if (userRole === 'GUARDIAN') {
         whereClause.job = {
-          guardianId: userId,
+          guardianId: user_id,
         };
       } else if (userRole === 'CAREGIVER') {
         whereClause.job = {
-          caregiverId: userId,
+          caregiverId: user_id,
         };
       } else if (userRole === 'COMPANY') {
         whereClause.job = {
-          companyId: userId,
+          companyId: user_id,
         };
       }
 
-      return await prisma.escrowTransaction.findMany({
+      return await prisma.escrow_transactions.findMany({
         where: whereClause,
         include: {
           payment: true,
           job: {
-            include: {
-              caregiver: true,
+            include: { caregivers: true,
               guardian: true,
               company: true,
             },
@@ -399,7 +396,7 @@ export class EscrowService {
   private async processRefund(paymentId: string, amount: number, reason: string): Promise<any> {
     try {
       // Get payment details to determine gateway
-      const payment = await prisma.payment.findUnique({
+      const payment = await prisma.payments.findUnique({
         where: { id: paymentId },
       });
 
@@ -433,10 +430,10 @@ export class EscrowService {
     metadata?: Record<string, any>
   ): Promise<void> {
     try {
-      await prisma.auditLog.create({
+      await prisma.audit_logs.create({
         data: {
-          entityType: 'ESCROW',
-          entityId: escrowId,
+          entity_type: 'ESCROW',
+          entity_id: escrowId,
           action,
           description,
           metadata: metadata || {},

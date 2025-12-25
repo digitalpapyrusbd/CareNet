@@ -85,13 +85,13 @@ export class FCMService {
 
     try {
       // Get user's FCM tokens from database
-      const userTokens = await this.prisma.userDevice.findMany({
+      const userTokens = await this.prisma.user_devices.findMany({
         where: {
-          userId,
-          isActive: true,
+          user_id,
+          is_active: true,
         },
         select: {
-          fcmToken: true,
+          fcm_token: true,
         },
       });
 
@@ -169,13 +169,13 @@ export class FCMService {
     }
 
     try {
-      const userTokens = await this.prisma.userDevice.findMany({
+      const userTokens = await this.prisma.user_devices.findMany({
         where: {
-          userId,
-          isActive: true,
+          user_id,
+          is_active: true,
         },
         select: {
-          fcmToken: true,
+          fcm_token: true,
         },
       });
 
@@ -200,13 +200,13 @@ export class FCMService {
     }
 
     try {
-      const userTokens = await this.prisma.userDevice.findMany({
+      const userTokens = await this.prisma.user_devices.findMany({
         where: {
-          userId,
-          isActive: true,
+          user_id,
+          is_active: true,
         },
         select: {
-          fcmToken: true,
+          fcm_token: true,
         },
       });
 
@@ -232,18 +232,18 @@ export class FCMService {
   }): Promise<boolean> {
     try {
       // Upsert device token
-      await this.prisma.userDevice.upsert({
+      await this.prisma.user_devices.upsert({
         where: {
-          deviceId: deviceInfo.deviceId,
+          device_id: deviceInfo.device_id,
         },
         update: {
           fcmToken,
-          isActive: true,
+          is_active: true,
           lastSeenAt: new Date(),
           appVersion: deviceInfo.appVersion,
         },
         create: {
-          userId,
+          user_id,
           deviceId: deviceInfo.deviceId,
           fcmToken,
           platform: deviceInfo.platform,
@@ -261,12 +261,12 @@ export class FCMService {
 
   async unregisterDevice(deviceId: string): Promise<boolean> {
     try {
-      await this.prisma.userDevice.update({
+      await this.prisma.user_devices.update({
         where: {
-          deviceId,
+          device_id,
         },
         data: {
-          isActive: false,
+          is_active: false,
         },
       });
 
@@ -289,14 +289,14 @@ export class FCMService {
     });
 
     if (invalidTokens.length > 0) {
-      await this.prisma.userDevice.updateMany({
+      await this.prisma.user_devices.updateMany({
         where: {
-          fcmToken: {
+          fcm_token: {
             in: invalidTokens,
           },
         },
         data: {
-          isActive: false,
+          is_active: false,
         },
       });
     }
@@ -334,7 +334,7 @@ export class FCMService {
       },
       data: {
         type: 'job_assignment',
-        jobId: jobData.id,
+        job_id: jobData.id,
         action: 'view_job',
       },
       android: {

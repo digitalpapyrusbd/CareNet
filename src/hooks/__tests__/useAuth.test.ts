@@ -3,7 +3,7 @@ import { renderHook, render, act, waitFor, cleanup } from '@testing-library/reac
 import { useAuth } from '@/hooks/useAuth';
 import { storage } from '@/utils';
 import { server } from '@/__tests__/mocks/server';
-import { rest } from 'msw';
+import { http, HttpResponse } from 'msw';
 
 // Mock next/navigation
 jest.mock('next/navigation', () => ({
@@ -112,14 +112,11 @@ describe('useAuth Hook', () => {
     it('should handle login failure', async () => {
       // Override MSW handler for this test
       server.use(
-        rest.post('*/auth/login', (req, res, ctx) => {
-          return res(
-            ctx.status(401),
-            ctx.json({
-              success: false,
-              message: 'Invalid credentials',
-            })
-          );
+        http.post('*/auth/login', () => {
+          return HttpResponse.json({
+            success: false,
+            message: 'Invalid credentials',
+          }, { status: 401 });
         })
       );
 
@@ -259,18 +256,16 @@ describe('useAuth Hook', () => {
     // Confirm token-based login path initializes state correctly
     it('should login with existing tokens', async () => {
       server.use(
-        rest.get('*/auth/me', (req, res, ctx) => {
-          return res(
-            ctx.json({
-              success: true,
-              user: {
-                id: 'user-123',
-                phone: '+8801700000000',
-                name: 'Test User',
-                role: 'GUARDIAN',
-              },
-            })
-          );
+        http.get('*/auth/me', () => {
+          return HttpResponse.json({
+            success: true,
+            user: {
+              id: 'user-123',
+              phone: '+8801700000000',
+              name: 'Test User',
+              role: 'GUARDIAN',
+            },
+          });
         })
       );
 
@@ -310,16 +305,14 @@ describe('useAuth Hook', () => {
       });
 
       server.use(
-        rest.post('*/auth/refresh', (req, res, ctx) => {
-          return res(
-            ctx.json({
-              success: true,
-              data: {
-                accessToken: 'new-access-token',
-                refreshToken: 'refresh-token',
-              },
-            })
-          );
+        http.post('*/auth/refresh', () => {
+          return HttpResponse.json({
+            success: true,
+            data: {
+              accessToken: 'new-access-token',
+              refreshToken: 'refresh-token',
+            },
+          });
         })
       );
 

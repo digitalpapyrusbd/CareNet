@@ -26,8 +26,8 @@ export async function POST(request: NextRequest) {
     const validatedData = callbackSchema.parse(body);
 
     // Find payment record
-    const payment = await prisma.payment.findUnique({
-      where: { transactionId: validatedData.payment_ref_id },
+    const payment = await prisma.payments.findUnique({
+      where: { transaction_id: validatedData.payment_ref_id },
     });
 
     if (!payment) {
@@ -73,14 +73,14 @@ export async function POST(request: NextRequest) {
       gatewayResponse: validatedData as any,
     };
 
-    await prisma.payment.update({
+    await prisma.payments.update({
       where: { id: payment.id },
       data: updateData,
     });
 
     // If payment is successful, update job status if applicable
     if (validatedData.status === 'Success' && payment.jobId) {
-      await prisma.job.update({
+      await prisma.jobs.update({
         where: { id: payment.jobId },
         data: { status: 'ACTIVE' as const },
       });
