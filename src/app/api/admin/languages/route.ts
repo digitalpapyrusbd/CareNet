@@ -1,29 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdminAuth } from '@/lib/middleware/api-auth';
+import { withRoles } from '@/lib/middleware/api-auth';
+import { UserRole } from '@prisma/client';
 import { readdir, readFile, writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 
 const LOCALES_DIR = join(process.cwd(), 'src/lib/locales');
 
-export async function GET(request: NextRequest) {
+export const GET = withRoles([UserRole.SUPER_ADMIN, UserRole.PLATFORM_ADMIN])(async (request: NextRequest) => {
   // #region agent log
   const logEntry = {location:'api/admin/languages/route.ts:9',message:'GET request received',data:{hasAuthHeader:!!request.headers.get('authorization'),url:request.url},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'M'};
   await fetch('http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(logEntry)}).catch(()=>{});
   // #endregion
 
   try {
-    // Verify admin authentication
-    const authResult = await verifyAdminAuth(request);
-    // #region agent log
-    await fetch('http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api/admin/languages/route.ts:14',message:'Auth result',data:{success:authResult.success,hasUser:!!authResult.user,error:authResult.error},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'N'})}).catch(()=>{});
-    // #endregion
-    if (!authResult.success) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
 
     // Get list of language files
     const languages = [];
@@ -60,7 +50,7 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 function getLanguageName(code: string): string {
   const names: Record<string, string> = {

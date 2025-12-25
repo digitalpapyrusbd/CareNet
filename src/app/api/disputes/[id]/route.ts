@@ -17,7 +17,7 @@ const resolveDisputeSchema = z.object({
 // Get a single dispute by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // Check authentication and authorization
   const authResult = await authorize([
@@ -30,7 +30,7 @@ export async function GET(
   if (authResult) return authResult;
 
   const user = (request as any).user;
-  const { id } = params;
+  const { id } = await params;
 
   try {
     // Build where clause based on user role
@@ -138,7 +138,7 @@ export async function GET(
 // Assign moderator to dispute - Admin/Moderator only
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // Check authentication and authorization - only Admin/Moderator can assign
   const authResult = await authorize([
@@ -148,7 +148,7 @@ export async function POST(
   if (authResult) return authResult;
 
   const user = (request as any).user;
-  const { id } = params;
+  const { id } = await params;
 
   try {
     const body = await request.json();

@@ -7,7 +7,7 @@ import rateLimitRequest from '@/lib/middleware/rateLimit'
 // Get a single payment by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const rl = await rateLimitRequest(request as unknown as Request, { key: 'payments_get_by_id', limit: 30, windowSeconds: 60 })
   if (rl) return rl
@@ -21,7 +21,7 @@ export async function GET(
   if (authResult) return authResult;
 
   const user = (request as any).user;
-  const { id } = params;
+  const { id } = await params;
 
   try {
     // Build where clause based on user role
@@ -111,7 +111,7 @@ export async function GET(
 // Process a payment (approve/reject) - Admin/Moderator only
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const rl = await rateLimitRequest(request as unknown as Request, { key: 'payments_process', limit: 10, windowSeconds: 60 })
   if (rl) return rl
@@ -122,7 +122,7 @@ export async function POST(
   ])(request);
   if (authResult) return authResult;
 
-  const { id } = params;
+  const { id } = await params;
 
   try {
     const body = await request.json();

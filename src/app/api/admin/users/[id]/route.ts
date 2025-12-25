@@ -25,9 +25,9 @@ function logDebug(location: string, message: string, data: any, hypothesisId: st
 // Get single user by ID (Admin only)
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await params;
   // #region agent log
   logDebug('admin/users/[id]/route.ts:22', 'GET /api/admin/users/[id] called', { userId: id }, 'A');
   // #endregion

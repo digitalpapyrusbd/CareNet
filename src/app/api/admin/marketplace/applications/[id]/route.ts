@@ -6,7 +6,7 @@ import { UserRole } from '@/lib/auth';
 // Update application status (APPROVED/REJECTED)
 export async function PATCH(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   const authResult = await authorize([UserRole.SUPER_ADMIN, UserRole.MODERATOR])(request);
   if (authResult) return authResult;

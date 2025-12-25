@@ -1,21 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdminAuth } from '@/lib/middleware/api-auth';
+import { withRoles } from '@/lib/middleware/api-auth';
+import { UserRole } from '@prisma/client';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 
 const LOCALES_DIR = join(process.cwd(), 'src/lib/locales');
 
-export async function POST(request: NextRequest) {
+export const POST = withRoles([UserRole.SUPER_ADMIN, UserRole.PLATFORM_ADMIN])(async (request: NextRequest) => {
   try {
-    // Verify admin authentication
-    const authResult = await verifyAdminAuth(request);
-    if (!authResult.success) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
 
     const formData = await request.formData();
     const file = formData.get('file') as File;
@@ -81,4 +74,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

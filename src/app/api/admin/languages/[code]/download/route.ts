@@ -1,24 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdminAuth } from '@/lib/middleware/api-auth';
+import { withRoles } from '@/lib/middleware/api-auth';
+import { UserRole } from '@prisma/client';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 
 const LOCALES_DIR = join(process.cwd(), 'src/lib/locales');
 
-export async function GET(
+export const GET = withRoles([UserRole.SUPER_ADMIN, UserRole.PLATFORM_ADMIN])(async (
   request: NextRequest,
-  { params }: { params: { code: string } }
-) {
+  { params }: { params: Promise<{ code: string }> }
+) => {
   try {
-    // Verify admin authentication
-    const authResult = await verifyAdminAuth(request);
-    if (!authResult.success) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
 
     const code = params.code.toLowerCase();
     const filePath = join(LOCALES_DIR, `${code}.json`);
@@ -47,4 +40,4 @@ export async function GET(
       { status: 500 }
     );
   }
-}
+});

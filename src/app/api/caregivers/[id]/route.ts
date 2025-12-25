@@ -6,7 +6,7 @@ import { UserRole } from '@/lib/auth';
 // Get single caregiver by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // #region agent log
   fetch('http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api/caregivers/[id]/route.ts:7',message:'GET request received',data:{caregiverId:params.id,hasAuthHeader:!!request.headers.get('authorization')},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
@@ -22,7 +22,7 @@ export async function GET(
   }
 
   const user = (request as any).user;
-  const caregiverId = params.id;
+  const caregiverId = (await params).id;
 
   try {
     // #region agent log

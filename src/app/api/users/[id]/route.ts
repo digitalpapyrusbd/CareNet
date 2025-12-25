@@ -6,13 +6,13 @@ import { UserRole } from '@/lib/auth';
 // Get single user
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // Check authentication
   const authResult = await authenticate(request);
   if (authResult) return authResult;
 
-  const { id } = params;
+  const { id } = await params;
   const user = (request as any).user;
 
   try {
@@ -99,13 +99,13 @@ export async function GET(
 // Update user
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // Check authentication
   const authResult = await authenticate(request);
   if (authResult) return authResult;
 
-  const { id } = params;
+  const { id } = await params;
   const user = (request as any).user;
 
   try {
@@ -176,13 +176,13 @@ export async function PUT(
 // Delete user (admin only)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // Check authentication and authorization
   const authResult = await authorize([UserRole.SUPER_ADMIN])(request);
   if (authResult) return authResult;
 
-  const { id } = params;
+  const { id } = await params;
 
   try {
     // Check if user exists

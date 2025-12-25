@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 // Get a single notification
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // Authenticate the user
   const authResult = await authenticate(request);
@@ -16,7 +16,7 @@ export async function GET(
   }
   
   const currentUser = getCurrentUser(request);
-  const notificationId = params.id;
+  const notificationId = (await params).id;
 
   try {
     const notification = await prisma.notification.findFirst({
@@ -54,7 +54,7 @@ export async function GET(
 // Mark notification as read
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // Authenticate the user
   const authResult = await authenticate(request);
@@ -63,7 +63,7 @@ export async function PATCH(
   }
   
   const currentUser = getCurrentUser(request);
-  const notificationId = params.id;
+  const notificationId = (await params).id;
 
   try {
     const body = await request.json();
@@ -114,7 +114,7 @@ export async function PATCH(
 // Delete notification
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // Authenticate the user
   const authResult = await authenticate(request);
@@ -123,7 +123,7 @@ export async function DELETE(
   }
   
   const currentUser = getCurrentUser(request);
-  const notificationId = params.id;
+  const notificationId = (await params).id;
 
   try {
     // Check if notification belongs to current user

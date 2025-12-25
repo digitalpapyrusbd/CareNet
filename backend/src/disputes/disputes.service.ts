@@ -21,7 +21,7 @@ export class DisputesService {
     // Simplified logic:
     let againstId = '';
     if (job.guardian_id === userId) {
-      againstId = job.company_id; // Usually dispute against agency
+      againstId = job.agency_id || job.company_id || ''; // Use agency_id if available, otherwise company_id, fallback to empty string
     } else {
       againstId = job.guardian_id;
     }

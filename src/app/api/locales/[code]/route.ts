@@ -7,7 +7,7 @@ const LOCALES_DIR = join(process.cwd(), 'src/lib/locales');
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { code: string } }
+  { params }: { params: Promise<{ code: string }> }
 ) {
   try {
     const code = params.code.toLowerCase();

@@ -6,7 +6,7 @@ import { UserRole } from '@/lib/auth';
 // Get a single feedback by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // Check authentication and authorization
   const authResult = await authorize([
@@ -19,7 +19,7 @@ export async function GET(
   if (authResult) return authResult;
 
   const user = (request as any).user;
-  const { id } = params;
+  const { id } = await params;
 
   try {
     // Build where clause based on user role
@@ -119,7 +119,7 @@ export async function GET(
 // Flag/unflag feedback as inappropriate - Admin/Moderator only
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // Check authentication and authorization - only Admin/Moderator can flag feedback
   const authResult = await authorize([
@@ -128,7 +128,7 @@ export async function POST(
   ])(request);
   if (authResult) return authResult;
 
-  const { id } = params;
+  const { id } = await params;
 
   try {
     // Get current feedback

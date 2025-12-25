@@ -21,6 +21,7 @@ export class ServiceZonesService {
     const zone = await this.prisma.service_zones.create({
       data: {
         company_id: data.company_id,
+        agency_id: data.company_id, // Use the same ID for both fields
         zone_name: data.zone_name,
         region_code: data.region_code || 'BD',
         boundary_geojson: data.boundary_geojson,

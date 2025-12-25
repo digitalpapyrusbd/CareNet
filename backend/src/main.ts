@@ -6,6 +6,7 @@ import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter'
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
+import './polyfill'; // Import polyfill to ensure crypto is available globally
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

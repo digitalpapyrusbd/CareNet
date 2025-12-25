@@ -15,6 +15,7 @@ export class PackagesService {
     const pkg = await this.prisma.packages.create({
       data: {
         company_id: companyId,
+        agency_id: companyId, // Use the same ID for both fields
         name: createPackageDto.name,
         description: createPackageDto.description,
         category: createPackageDto.category,
@@ -57,6 +58,14 @@ export class PackagesService {
               is_verified: true,
             },
           },
+          agencies: {
+            select: {
+              agency_name: true,
+              logo_url: true,
+              rating_avg: true,
+              is_verified: true,
+            },
+          },
         },
         orderBy: { created_at: 'desc' },
       }),
@@ -84,6 +93,17 @@ export class PackagesService {
             is_verified: true,
           },
         },
+        agencies: {
+          select: {
+            id: true,
+            agency_name: true,
+            logo_url: true,
+            description: true,
+            rating_avg: true,
+            rating_count: true,
+            is_verified: true,
+          },
+        },
       },
     });
 
@@ -103,7 +123,7 @@ export class PackagesService {
       where: { id },
     });
 
-    if (!pkg || pkg.company_id !== companyId) {
+    if (!pkg || (pkg.company_id !== companyId && pkg.agency_id !== companyId)) {
       throw new NotFoundException('Package not found');
     }
 
@@ -118,7 +138,7 @@ export class PackagesService {
       where: { id },
     });
 
-    if (!pkg || pkg.company_id !== companyId) {
+    if (!pkg || (pkg.company_id !== companyId && pkg.agency_id !== companyId)) {
       throw new NotFoundException('Package not found');
     }
 

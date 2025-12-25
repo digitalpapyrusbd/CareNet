@@ -6,14 +6,14 @@ import { UserRole } from '@/lib/auth';
 // Respond to feedback - Company only
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // Check authentication and authorization - only Company can respond to feedback
   const authResult = await authorize([UserRole.COMPANY])(request);
   if (authResult) return authResult;
 
   const user = (request as any).user;
-  const { id } = params;
+  const { id } = await params;
 
   try {
     const body = await request.json();

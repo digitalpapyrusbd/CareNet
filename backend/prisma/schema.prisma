@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 
@@ -13,6 +14,7 @@ enum UserRole {
   SUPER_ADMIN
   PLATFORM_ADMIN
   MODERATOR
+  AGENCY
   AGENCY_ADMIN
   AGENCY_MANAGER
   CAREGIVER
@@ -81,6 +83,7 @@ enum CareLogType {
 enum FeedbackType {
   CAREGIVER
   COMPANY
+  AGENCY
   GUARDIAN
 }
 
@@ -232,6 +235,7 @@ model users {
   created_at                              DateTime           @default(now())
   updated_at                              DateTime           @updatedAt
   company_id                              String?
+  agency_id                               String?
   
   audit_logs                              audit_logs[]
   caregivers                              caregivers?
@@ -247,6 +251,7 @@ model users {
   user_devices                            user_devices[]
   verification_codes                      verification_codes[]
   companies                               companies?         @relation(fields: [company_id], references: [id])
+  agencies                                agencies?          @relation(fields: [agency_id], references: [id])
   shops                                   shops?
   verification_steps                      verification_steps[]
   account_lockouts                        account_lockouts[]
@@ -260,6 +265,45 @@ model users {
   @@index([role])
   @@index([email])
   @@index([phone])
+}
+
+model agencies {
+  id                      String             @id @default(cuid())
+  userId                  String             @unique
+  agency_name            String
+  trade_license           String
+  trade_license_url       String?
+  tin                     String?
+  contact_person          String
+  contact_phone           String
+  contact_email           String?
+  address                 String
+  logo_url                String?
+  description             String?
+  specializations         Json?
+  payout_method           PayoutMethod
+  payout_account          String
+  commission_rate         Decimal            @default(12.00)
+  subscription_tier       SubscriptionTier   @default(STARTER)
+  subscription_expires_at DateTime?
+  rating_avg              Decimal            @default(0.0)
+  rating_count            Int                @default(0)
+  is_verified             Boolean            @default(false)
+  verification_notes      String?
+  deleted_at              DateTime?
+  created_at              DateTime           @default(now())
+  updated_at              DateTime           @updatedAt
+  
+  caregivers              caregivers[]
+  jobs                    jobs[]
+  marketplace_jobs        marketplace_jobs[]
+  packages                packages[]
+  service_zones           service_zones[]
+  users                   users[]
+
+  @@index([rating_avg])
+  @@index([userId])
+  @@index([is_verified])
 }
 
 model companies {
@@ -304,6 +348,7 @@ model companies {
 model caregivers {
   id                                               String             @id @default(cuid())
   userId                                           String             @unique
+  agency_id                                       String?
   company_id                                       String?
   nid                                              String             @unique
   nid_url                                          String
@@ -333,6 +378,7 @@ model caregivers {
   assignments_assignments_replaced_byTocaregivers  assignments[]      @relation("assignments_replaced_byTocaregivers")
   assignments_assignments_caregiver_idTocaregivers assignments[]      @relation("assignments_caregiver_idTocaregivers")
   care_logs                                        care_logs[]
+  agencies                                        agencies?         @relation(fields: [agency_id], references: [id])
   companies                                        companies?         @relation(fields: [company_id], references: [id])
   users                                            users              @relation(fields: [userId], references: [id])
   job_applications                                 job_applications[]
@@ -341,6 +387,7 @@ model caregivers {
   @@index([skills])
   @@index([rating_avg])
   @@index([is_verified, is_available])
+  @@index([agency_id])
   @@index([company_id])
 }
 
@@ -535,6 +582,8 @@ model shops {
   user        users    @relation(fields: [user_id], references: [id])
   products    products[]
   orders      orders[]
+
+  @@index([user_id, is_active])
 }
 
 model products {
@@ -576,7 +625,8 @@ model orders {
 
 model packages {
   id               String    @id @default(cuid())
-  company_id       String
+  agency_id        String
+  company_id       String?
   name             String
   description      String
   category         PackageCategory
@@ -592,10 +642,12 @@ model packages {
   updated_at       DateTime  @updatedAt
   
   jobs             jobs[]
-  companies        companies @relation(fields: [company_id], references: [id])
+  agencies         agencies @relation(fields: [agency_id], references: [id])
+  companies        companies? @relation(fields: [company_id], references: [id])
 
   @@index([is_active])
   @@index([category])
+  @@index([agency_id])
   @@index([company_id])
 }
 
@@ -603,7 +655,8 @@ model jobs {
   id                   String        @id @default(cuid())
   package_id           String
   patient_id           String
-  company_id           String
+  company_id           String?
+  agency_id            String?
   guardian_id          String
   start_date           DateTime
   end_date             DateTime
@@ -623,7 +676,8 @@ model jobs {
   care_logs            care_logs[]
   disputes             disputes[]
   users                users         @relation(fields: [guardian_id], references: [id])
-  companies            companies     @relation(fields: [company_id], references: [id])
+  companies            companies?    @relation(fields: [company_id], references: [id])
+  agencies             agencies?     @relation(fields: [agency_id], references: [id])
   patients             patients      @relation(fields: [patient_id], references: [id])
   packages             packages      @relation(fields: [package_id], references: [id])
   payments             payments[]
@@ -632,6 +686,7 @@ model jobs {
   @@index([start_date, end_date])
   @@index([status])
   @@index([company_id])
+  @@index([agency_id])
   @@index([patient_id])
 }
 
@@ -736,7 +791,7 @@ model disputes {
   id                              String    @id @default(cuid())
   job_id                          String
   raised_by                       String
-  against                         String
+  against                          String
   dispute_type                    DisputeType
   description                     String
   evidence_urls                   Json?
@@ -884,7 +939,8 @@ model user_devices {
 
 model service_zones {
   id               String    @id @default(cuid())
-  company_id       String
+  company_id       String?
+  agency_id        String
   zone_name        String
   region_code      String
   boundary_geojson Json?
@@ -892,15 +948,18 @@ model service_zones {
   created_at       DateTime  @default(now())
   updated_at       DateTime  @updatedAt
   
-  companies        companies @relation(fields: [company_id], references: [id])
+  companies        companies? @relation(fields: [company_id], references: [id])
+  agencies         agencies  @relation(fields: [agency_id], references: [id])
 
   @@index([region_code])
   @@index([company_id])
+  @@index([agency_id])
 }
 
 model marketplace_jobs {
   id                 String             @id @default(cuid())
-  company_id         String
+  company_id         String?
+  agency_id          String
   title              String
   description        String
   location           String
@@ -918,11 +977,13 @@ model marketplace_jobs {
   
   job_applications   job_applications[]
   caregivers         caregivers?        @relation(fields: [filled_by], references: [id])
-  companies          companies          @relation(fields: [company_id], references: [id])
+  companies          companies?         @relation(fields: [company_id], references: [id])
+  agencies          agencies?          @relation(fields: [agency_id], references: [id])
 
   @@index([start_date])
   @@index([status])
   @@index([company_id])
+  @@index([agency_id])
 }
 
 model job_applications {
@@ -952,7 +1013,7 @@ model scheduled_tasks {
   job_id     String?
   execute_at DateTime
   payload    Json?
-  createdAt  DateTime  @default(now())
+  createdAt  DateTime @default(now())
   executedAt DateTime?
   status     String    @default("pending")
 }
@@ -982,7 +1043,6 @@ model escrow_ledger {
   @@index([escrow_record_id])
 }
 
-
 model provider_transactions {
   id              String   @id @default(cuid())
   provider        String
@@ -1006,14 +1066,8 @@ model files {
   url           String
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
-
+  
   uploader      users    @relation(fields: [uploaded_by], references: [id])
 
   @@index([uploaded_by])
 }
-
-
-
-
-
-
