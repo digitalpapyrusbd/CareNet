@@ -89,3 +89,6 @@ credentials/
 # Test artifacts (already covered above but kept for reference)
 # *.test.js.snap - moved to Testing section
 # __snapshots__/ - moved to Testing section
+
+# Project-specific excludes
+DO_NOT_COMMIT/
