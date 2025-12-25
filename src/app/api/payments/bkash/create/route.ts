@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
         currency: validatedData.currency,
         method: 'BKASH',
         status: 'PENDING',
-        userId: user.id,
+        user_id: user.id,
         job_id: validatedData.jobId,
         transaction_id: '', // Will be filled after bKash response
         gatewayResponse: null,

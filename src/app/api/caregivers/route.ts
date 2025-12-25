@@ -182,7 +182,7 @@ export async function POST(request: NextRequest) {
     // Create caregiver
     const caregiver = await prisma.caregivers.create({
       data: {
-        userId: user.id,
+        user_id: user.id,
         companyId,
         nid,
         nidUrl,

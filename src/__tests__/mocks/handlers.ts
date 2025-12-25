@@ -141,7 +141,7 @@ export const handlers = [
           id: 'patient-' + Date.now(),
           ...body,
           guardian_id: 'user-123',
-          createdAt: new Date().toISOString(),
+          created_at: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
       });
@@ -236,7 +236,7 @@ export const handlers = [
           ...body,
           status: 'PENDING',
           totalPrice: 5000,
-          createdAt: new Date().toISOString(),
+          created_at: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
       });
@@ -269,7 +269,7 @@ export const handlers = [
           status: 'COMPLETED',
           method: 'CARD',
           transaction_id: 'txn-mock-' + Date.now(),
-          createdAt: new Date().toISOString(),
+          created_at: new Date().toISOString(),
         },
       });
   }),
@@ -286,7 +286,7 @@ export const handlers = [
           name: body.name,
           role: body.role || 'GUARDIAN',
           email: null,
-          createdAt: new Date().toISOString(),
+          created_at: new Date().toISOString(),
         },
       });
   }),
@@ -412,7 +412,7 @@ export const handlers = [
           job_id: body.jobId,
           amount: body.amount,
           status: 'HELD',
-          createdAt: new Date().toISOString(),
+          created_at: new Date().toISOString(),
         },
       });
   }),
@@ -440,7 +440,7 @@ export const handlers = [
         data: {
           id: 'feedback-' + Date.now(),
           ...body,
-          createdAt: new Date().toISOString(),
+          created_at: new Date().toISOString(),
         },
       });
   }),
@@ -497,7 +497,7 @@ export const handlers = [
           id: 'dispute-' + Date.now(),
           ...body,
           status: 'PENDING',
-          createdAt: new Date().toISOString(),
+          created_at: new Date().toISOString(),
         },
       });
   }),
@@ -529,7 +529,7 @@ export const handlers = [
           url: 'https://example.com/files/document.pdf',
           size: 1024000,
           mimeType: 'application/pdf',
-          createdAt: new Date().toISOString(),
+          created_at: new Date().toISOString(),
         },
       });
   }),
@@ -562,7 +562,7 @@ export const handlers = [
           profilePicture: null,
           address: '123 Test Street, Dhaka',
           emergencyContact: '+8801800000000',
-          createdAt: '2025-01-01T00:00:00Z',
+          created_at: '2025-01-01T00:00:00Z',
         },
       });
   }),

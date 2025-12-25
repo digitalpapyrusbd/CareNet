@@ -98,7 +98,7 @@ export async function GET(
     const userData = caregiver.users;
     
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api/caregivers/[id]/route.ts:99',message:'Transforming data',data:{hasUserData:!!userData,caregiver_id:caregiver.id,userId:caregiver.userId},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F1'})}).catch(()=>{});
+    fetch('http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api/caregivers/[id]/route.ts:99',message:'Transforming data',data:{hasUserData:!!userData,caregiver_id:caregiver.id,user_id:caregiver.userId},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F1'})}).catch(()=>{});
     // #endregion
     
     if (!userData) {

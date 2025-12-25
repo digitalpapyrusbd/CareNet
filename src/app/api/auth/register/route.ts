@@ -152,11 +152,11 @@ export async function POST(request: NextRequest) {
         
         await tx.companies.create({
           data: {
-            userId: newUser.id,
+            user_id: newUser.id,
             company_name: validatedData.companyName,
             trade_license: validatedData.trade_license,
             address: validatedData.companyAddress,
-            contactPerson: validatedData.contactPerson,
+            contact_person: validatedData.contactPerson,
             companyType: validatedData.companyType,
           },
         });
@@ -181,7 +181,7 @@ export async function POST(request: NextRequest) {
         
         await tx.caregivers.create({
           data: {
-            userId: newUser.id,
+            user_id: newUser.id,
             nid: validatedData.nidNumber,
             date_of_birth: new Date(validatedData.dateOfBirth),
             gender: 'OTHER', // Default value
@@ -212,7 +212,7 @@ export async function POST(request: NextRequest) {
       // Create guardian profile
       await prisma.guardians.create({
         data: {
-          userId: user.id,
+          user_id: user.id,
           address: validatedData.address,
           emergencyContact: validatedData.emergencyContact,
         },
@@ -234,7 +234,7 @@ export async function POST(request: NextRequest) {
       // Create patient profile
       await prisma.patients.create({
         data: {
-          userId: user.id,
+          user_id: user.id,
           date_of_birth: new Date(validatedData.dateOfBirth),
           blood_group: validatedData.bloodGroup,
           allergies: validatedData.allergies,
@@ -251,7 +251,7 @@ export async function POST(request: NextRequest) {
     // Store OTP in database (you might want to use Redis for this in production)
     await prisma.verification_codes.create({
       data: {
-        userId: user.id,
+        user_id: user.id,
         code: otp,
         type: 'PHONE_VERIFICATION',
         expiresAt: otpExpiry,

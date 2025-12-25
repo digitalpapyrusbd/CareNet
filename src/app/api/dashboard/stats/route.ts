@@ -248,7 +248,7 @@ async function getRecentActivity(role: string, entityId: string) {
             id: true,
             description: true,
             status: true,
-            createdAt: true,
+            created_at: true,
           },
         }),
       ]);

@@ -315,11 +315,8 @@ export async function extendSession(
     const newTTL = rememberMe ? EXTENDED_SESSION_TTL : DEFAULT_SESSION_TTL;
     session.expiresAt = new Date(Date.now() + newTTL * 1000);
 
-    await kv.set(
-      `${SESSION_PREFIX}${sessionId}`,
-      JSON.stringify(session, { ex: newTTL }),
-    );
-    await kv.expire(`${USER_SESSIONS_PREFIX}${session.userId}`, newTTL);
+    await kv.set(`${SESSION_PREFIX}${sessionId}`, JSON.stringify(session), ttl);
+    await kv.expire(`${USER_SESSIONS_PREFIX}${session.userId}`, ttl);
     await kv.expire(ACTIVE_SESSIONS_PREFIX, newTTL);
 
     return true;

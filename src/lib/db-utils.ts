@@ -48,11 +48,11 @@ export async function updateUserVerification(userId: string, isPhoneVerified: bo
 
 // Company utilities
 export async function createCompany(data: {
-  userId: string;
+  user_id: string;
   company_name: string;
   trade_license: string;
-  contactPerson: string;
-  contactPhone: string;
+  contact_person: string;
+  contact_phone: string;
   address: string;
   payoutMethod: string;
   payoutAccount: string;
@@ -78,7 +78,7 @@ export async function getCompanyByUserId(userId: string) {
 
 // Caregiver utilities
 export async function createCaregiver(data: {
-  userId: string;
+  user_id: string;
   company_id?: string;
   nid: string;
   nidUrl: string;

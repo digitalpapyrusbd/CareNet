@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
         currency: validatedData.currency,
         method: 'NAGAD',
         status: 'PENDING',
-        userId: user.id,
+        user_id: user.id,
         job_id: validatedData.jobId,
         transaction_id: '', // Will be filled after Nagad response
         gatewayResponse: null,

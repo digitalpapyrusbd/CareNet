@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     // Store OTP in database
     await prisma.verification_codes.create({
       data: {
-        userId: user.id,
+        user_id: user.id,
         code: otp,
         type: 'PHONE_VERIFICATION',
         expiresAt: otpExpiry,

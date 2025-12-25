@@ -272,7 +272,7 @@ export async function POST(request: NextRequest) {
     // Create agency
     const agency = await prisma.companies.create({
       data: {
-        userId: currentUser.id,
+        user_id: currentUser.id,
         company_name: validatedData.agencyName,
         trade_license: validatedData.tradeLicense,
         tin: validatedData.tin,
