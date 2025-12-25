@@ -1,9 +1,9 @@
-﻿'use client';
+'use client';
 
 import { UniversalNav } from '@/components/layout/UniversalNav';
 
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, User, Star, Briefcase, Phone, MessageSquare } from 'lucide-react';
+import { ArrowLeft, User, Star, Phone, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function CaregiverProfilePage() {

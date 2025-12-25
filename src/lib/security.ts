@@ -152,13 +152,13 @@ export const generateTokens = (userId: string, userRole: string): { accessToken:
   };
   
   const accessTokenOptions: SignOptions = {
-    expiresIn: SECURITY_CONFIG.jwt.accessTokenExpiry as string,
+    expiresIn: SECURITY_CONFIG.jwt.accessTokenExpiry,
     algorithm: SECURITY_CONFIG.jwt.algorithm as Algorithm,
     issuer: SECURITY_CONFIG.jwt.issuer,
   };
   
   const refreshTokenOptions: SignOptions = {
-    expiresIn: SECURITY_CONFIG.jwt.refreshTokenExpiry as string,
+    expiresIn: SECURITY_CONFIG.jwt.refreshTokenExpiry,
     algorithm: SECURITY_CONFIG.jwt.algorithm as Algorithm,
     issuer: SECURITY_CONFIG.jwt.issuer,
   };

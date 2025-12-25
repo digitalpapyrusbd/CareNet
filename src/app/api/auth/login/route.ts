@@ -4,9 +4,23 @@ import { verifyPassword, generateTokenPair, extractTokenFromHeader, verifyRefres
 import { getUserByPhone, updateUserLastLogin, getUserById } from '@/lib/db-utils';
 import { prisma } from '@/lib/db';
 import { UserRole } from '@prisma/client';
-import { createSession, deleteSession, getUserSessions, verifySessionMFA, deleteUserSessions } from '@/lib/session';
-import { kv } from '@vercel/kv';
+import { createSession, deleteSession, getUserSessions, deleteUserSessions } from '@/lib/session';
 import speakeasy from 'speakeasy';
+import { kvMock } from '@/lib/kv-mock';
+
+// Use KV mock for development if no real KV configured
+const hasRealKV = process.env.KV_REST_API_URL && 
+  process.env.KV_REST_API_URL !== 'https://localhost:8079' &&
+  process.env.KV_REST_API_TOKEN &&
+  process.env.KV_REST_API_TOKEN !== 'dev-token-dummy';
+
+let kv: typeof kvMock;
+if (hasRealKV) {
+  const vercelKv = require('@vercel/kv');
+  kv = vercelKv.kv;
+} else {
+  kv = kvMock;
+}
 
 // Enhanced validation schemas
 const loginSchema = z.object({
@@ -72,7 +86,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Check if user is active
-    if (!user.isActive) {
+    if (!user.is_active) {
       return NextResponse.json(
         { error: 'Account is deactivated' },
         { status: 401 }
@@ -80,7 +94,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Verify password
-    const isPasswordValid = await verifyPassword(validatedData.password, user.passwordHash);
+    const isPasswordValid = await verifyPassword(validatedData.password, user.password_hash);
     
     if (!isPasswordValid) {
       // Update failed attempts

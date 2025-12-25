@@ -1,15 +1,13 @@
-﻿'use client';
+'use client';
 
 import { UniversalNav } from '@/components/layout/UniversalNav';
 
-import { useRouter } from 'next/navigation';
 import { MessageSquare, Search, Eye, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 
 export default function AdminTicketsPage() {
-  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState<'all' | 'open' | 'resolved'>('all');
 
@@ -45,7 +43,7 @@ export default function AdminTicketsPage() {
 
           <div className="flex gap-2">
             {['all', 'open', 'resolved'].map((f) => (
-              <button key={f} onClick={() => setFilter(f as any)}
+              <button key={f} onClick={() => setFilter(f as 'all' | 'open' | 'resolved')}
                 className="flex-1 px-4 py-2 rounded-lg capitalize text-sm" style={{
                   background: filter === f ? 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #A8E063 0%, #7CE577 100%)' : 'rgba(255, 255, 255, 0.5)',
                   color: filter === f ? 'white' : '#535353'

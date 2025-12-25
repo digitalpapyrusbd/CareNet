@@ -1,9 +1,9 @@
-﻿'use client';
+'use client';
 
 import { UniversalNav } from '@/components/layout/UniversalNav';
 
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, Briefcase, User, Calendar, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function AgencyJobDetailPage() {

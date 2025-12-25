@@ -103,6 +103,7 @@
     "tailwindcss-animate": "^1.0.7",
     "twilio": "^5.10.6",
     "vaul": "^1.1.2",
+    "web-vitals": "^5.1.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {

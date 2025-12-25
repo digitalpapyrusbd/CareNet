@@ -60,34 +60,42 @@ export default function LoginPage() {
     setErrors({});
 
     try {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'login/page.tsx:58',message:'Login attempt started',data:{phone},timestamp:Date.now(),sessionId:'debug-session',runId:'login-test',hypothesisId:'AUTH_CONNECTION'})}).catch(()=>{});
-      // #endregion
-      
       const response = await apiCallNoAuth('/auth/login', {
         method: 'POST',
         body: { phone, password },
       });
 
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'login/page.tsx:66',message:'Login successful',data:{userId:response.user?.id,role:response.user?.role},timestamp:Date.now(),sessionId:'debug-session',runId:'login-test',hypothesisId:'AUTH_CONNECTION'})}).catch(()=>{});
-      // #endregion
+      // Handle MFA required response
+      if (response.mfa_required) {
+        // Store temp token for MFA verification
+        if (response.temp_token) {
+          localStorage.setItem('mfaTempToken', response.temp_token);
+        }
+        
+        // Redirect to MFA verification page
+        router.push('/auth/mfa/verify');
+        return;
+      }
 
-      // Store tokens (backend returns access_token and refresh_token in snake_case)
+      // Normal login response - store tokens (backend returns access_token and refresh_token in snake_case)
       if (response.access_token) {
         localStorage.setItem('authToken', response.access_token);
         if (response.refresh_token) {
           localStorage.setItem('refreshToken', response.refresh_token);
         }
+      } else {
+        throw new Error('Invalid response: missing access token');
       }
 
       // Store user info
       if (response.user) {
         localStorage.setItem('user', JSON.stringify(response.user));
+      } else {
+        throw new Error('Invalid response: missing user data');
       }
 
       // Redirect based on role
-      const role = response.user?.role?.toLowerCase() || '';
+      const role = response.user.role?.toLowerCase() || '';
       if (role.includes('super') || role.includes('admin')) {
         router.push('/admin/dashboard');
       } else if (role.includes('moderator')) {
@@ -104,10 +112,6 @@ export default function LoginPage() {
         router.push('/');
       }
     } catch (error: any) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'login/page.tsx:106',message:'Login failed',data:{error:error.message,status:error.status,errorData:error.data},timestamp:Date.now(),sessionId:'debug-session',runId:'login-test',hypothesisId:'AUTH_CONNECTION'})}).catch(()=>{});
-      // #endregion
-      
       let errorMessage = 'Login failed. Please check your credentials.';
       
       if (error.status === 0) {

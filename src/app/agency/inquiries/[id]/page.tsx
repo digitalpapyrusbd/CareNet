@@ -1,9 +1,9 @@
-﻿'use client';
+'use client';
 
 import { UniversalNav } from '@/components/layout/UniversalNav';
 
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, MessageSquare, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useState } from 'react';

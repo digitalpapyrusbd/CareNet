@@ -1,10 +1,9 @@
-﻿'use client';
+'use client';
 
 import { UniversalNav } from '@/components/layout/UniversalNav';
 
 import { useRouter } from 'next/navigation';
-import { Users, Briefcase, DollarSign, Star, Plus, Package, Calendar, TrendingUp } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Users, Briefcase, DollarSign, Star, Plus } from 'lucide-react';
 
 export default function AgencyDashboardPage() {
   const router = useRouter();

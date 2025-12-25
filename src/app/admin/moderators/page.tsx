@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import { UniversalNav } from '@/components/layout/UniversalNav';
@@ -43,7 +43,7 @@ export default function ModeratorManagementPage() {
 
         <div className="flex gap-2 mb-6">
           {['all', 'active', 'inactive', 'suspended'].map((f) => (
-            <button key={f} onClick={() => setFilter(f as any)}
+            <button key={f} onClick={() => setFilter(f as 'all' | 'active' | 'inactive' | 'suspended')}
               className="flex-1 px-4 py-2 rounded-lg capitalize text-sm" style={{
                 background: filter === f ? 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #8EC5FC 0%, #5B9FFF 100%)' : 'rgba(255, 255, 255, 0.5)',
                 color: filter === f ? 'white' : '#535353'

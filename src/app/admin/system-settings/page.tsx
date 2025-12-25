@@ -1,9 +1,9 @@
-﻿'use client';
+'use client';
 
 import { UniversalNav } from '@/components/layout/UniversalNav';
 
 import { useRouter } from 'next/navigation';
-import { Settings, DollarSign, Clock, Shield, Save } from 'lucide-react';
+import { DollarSign, Clock, Shield, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

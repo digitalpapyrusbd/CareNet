@@ -15,6 +15,84 @@ try {
   // ignore
 }
 
+// BroadcastChannel polyfill for MSW (required by MSW but not available in Node.js)
+if (typeof global.BroadcastChannel === 'undefined') {
+  global.BroadcastChannel = class BroadcastChannel {
+    constructor(name) {
+      this.name = name;
+      this._listeners = [];
+    }
+    postMessage(message) {
+      // No-op in test environment
+    }
+    addEventListener(type, listener) {
+      if (type === 'message') {
+        this._listeners.push(listener);
+      }
+    }
+    removeEventListener(type, listener) {
+      if (type === 'message') {
+        this._listeners = this._listeners.filter(l => l !== listener);
+      }
+    }
+    close() {
+      this._listeners = [];
+    }
+  };
+}
+
+// WritableStream polyfill for MSW (required by MSW but not available in Node.js)
+if (typeof global.WritableStream === 'undefined') {
+  global.WritableStream = class WritableStream {
+    constructor(underlyingSink = {}) {
+      this._underlyingSink = underlyingSink;
+      this._state = 'writable';
+    }
+    get locked() {
+      return this._state === 'locked';
+    }
+    abort(reason) {
+      if (this._state === 'closed' || this._state === 'errored') {
+        return Promise.resolve();
+      }
+      this._state = 'errored';
+      if (this._underlyingSink.abort) {
+        return Promise.resolve(this._underlyingSink.abort(reason));
+      }
+      return Promise.resolve();
+    }
+    close() {
+      if (this._state === 'closed' || this._state === 'errored') {
+        return Promise.reject(new TypeError('Stream is already closed or errored'));
+      }
+      this._state = 'closed';
+      if (this._underlyingSink.close) {
+        return Promise.resolve(this._underlyingSink.close());
+      }
+      return Promise.resolve();
+    }
+    getWriter() {
+      if (this._state === 'locked') {
+        throw new TypeError('Stream is locked');
+      }
+      this._state = 'locked';
+      return {
+        write: (chunk) => {
+          if (this._underlyingSink.write) {
+            return Promise.resolve(this._underlyingSink.write(chunk));
+          }
+          return Promise.resolve();
+        },
+        close: () => this.close(),
+        abort: (reason) => this.abort(reason),
+        releaseLock: () => {
+          this._state = 'writable';
+        },
+      };
+    }
+  };
+}
+
 // Response/Request/Headers must be defined BEFORE MSW server loads
 if (typeof global.Response === 'undefined') {
   global.Response = class {

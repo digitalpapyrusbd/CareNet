@@ -11,15 +11,24 @@ export class PrismaService
   private pool: Pool;
 
   constructor() {
-    const pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-    });
-    const adapter = new PrismaPg(pool);
-    super({
-      adapter,
-      log: ['query', 'info', 'warn', 'error'],
-    });
-    this.pool = pool;
+    try {
+      if (!process.env.DATABASE_URL) {
+        throw new Error('DATABASE_URL environment variable is not set');
+      }
+      
+      const pool = new Pool({
+        connectionString: process.env.DATABASE_URL,
+      });
+      const adapter = new PrismaPg(pool);
+      super({
+        adapter,
+        log: process.env.NODE_ENV === 'development' ? ['query', 'info', 'warn', 'error'] : ['error'],
+      });
+      this.pool = pool;
+    } catch (error) {
+      console.error('PrismaService constructor error:', error);
+      throw error;
+    }
   }
 
   async onModuleInit() {

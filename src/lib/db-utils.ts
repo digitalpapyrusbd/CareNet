@@ -21,26 +21,26 @@ export async function createUser(data: {
 }
 
 export async function getUserByPhone(phone: string) {
-  return await prisma.user.findUnique({
+  return await prisma.users.findUnique({
     where: { phone },
   });
 }
 
 export async function getUserById(id: string) {
-  return await prisma.user.findUnique({
+  return await prisma.users.findUnique({
     where: { id },
   });
 }
 
 export async function updateUserLastLogin(userId: string) {
-  return await prisma.user.update({
+  return await prisma.users.update({
     where: { id: userId },
     data: { lastLoginAt: new Date() },
   });
 }
 
 export async function updateUserVerification(userId: string, isPhoneVerified: boolean) {
-  return await prisma.user.update({
+  return await prisma.users.update({
     where: { id: userId },
     data: { isPhoneVerified },
   });

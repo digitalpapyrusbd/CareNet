@@ -107,15 +107,17 @@ export async function getSessionAnalytics(): Promise<{
     
     // Count recently active users (last hour)
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-    const recentlyActive = await prisma.audit_logs.count({
+    const recentlyActiveUsers = await prisma.audit_logs.findMany({
       where: {
         timestamp: {
           gte: oneHourAgo
         },
         action_type: 'LOGIN'
       },
-      distinct: ['actor_id']
+      distinct: ['actor_id'],
+      select: { actor_id: true }
     });
+    const recentlyActive = recentlyActiveUsers.length;
     
     return {
       totalSessions: stats.totalActive,
@@ -189,23 +191,23 @@ export async function detectSuspiciousActivity(): Promise<{
           userId,
           sessionId: sessions[0].actor_id,
           reason: 'Multiple login attempts detected',
-          risk: 'MEDIUM',
+          risk: 'MEDIUM' as const,
           details: {
             attemptCount: sessions.length,
             timeWindow: '2 hours',
-            ips: [...new Set(sessions.map(s => s.ip_address))]
+            ips: [...new Set(sessions.map((s: { ip_address: unknown }) => s.ip_address))]
           }
         });
       }
       
       // Check for different IPs in short time
-      const uniqueIPs = new Set(sessions.map(s => s.ip_address));
+      const uniqueIPs = new Set(sessions.map((s: { ip_address: unknown }) => s.ip_address));
       if (uniqueIPs.size > 3) {
         suspiciousSessions.push({
           userId,
           sessionId: sessions[0].actor_id,
           reason: 'Multiple IP addresses detected',
-          risk: 'HIGH',
+          risk: 'HIGH' as const,
           details: {
             ipCount: uniqueIPs.size,
             ips: Array.from(uniqueIPs),
@@ -239,7 +241,7 @@ export async function sessionHealthCheck(): Promise<{
     const stats = await getSessionStats();
     checks.push({
       name: 'Session Storage',
-      status: 'PASS',
+      status: 'PASS' as const,
       message: `Successfully connected, ${stats.totalActive} active sessions`,
       details: stats
     });
@@ -248,7 +250,7 @@ export async function sessionHealthCheck(): Promise<{
     await prisma.$queryRaw`SELECT 1`;
     checks.push({
       name: 'Database Connectivity',
-      status: 'PASS',
+      status: 'PASS' as const,
       message: 'Database connection successful'
     });
     
@@ -265,13 +267,13 @@ export async function sessionHealthCheck(): Promise<{
     if (recentLogins > 0) {
       checks.push({
         name: 'Recent Activity',
-        status: 'PASS',
+        status: 'PASS' as const,
         message: `${recentLogins} logins in last 24 hours`
       });
     } else {
       checks.push({
         name: 'Recent Activity',
-        status: 'WARN',
+        status: 'WARN' as const,
         message: 'No login activity in last 24 hours'
       });
     }
@@ -281,13 +283,13 @@ export async function sessionHealthCheck(): Promise<{
     if (suspicious.suspiciousSessions.length === 0) {
       checks.push({
         name: 'Security Check',
-        status: 'PASS',
+        status: 'PASS' as const,
         message: 'No suspicious activity detected'
       });
     } else {
       checks.push({
         name: 'Security Check',
-        status: 'WARN',
+        status: 'WARN' as const,
         message: `${suspicious.suspiciousSessions.length} suspicious activities detected`,
         details: suspicious
       });
@@ -302,7 +304,7 @@ export async function sessionHealthCheck(): Promise<{
   } catch (error) {
     checks.push({
       name: 'Health Check',
-      status: 'FAIL',
+      status: 'FAIL' as const,
       message: error instanceof Error ? error.message : 'Unknown error'
     });
     

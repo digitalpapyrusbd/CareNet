@@ -1,9 +1,9 @@
-﻿'use client';
+'use client';
 
 import { UniversalNav } from '@/components/layout/UniversalNav';
 
 import { useRouter } from 'next/navigation';
-import { Shield, AlertTriangle, Clock, Eye } from 'lucide-react';
+import { Shield, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 

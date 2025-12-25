@@ -319,7 +319,7 @@ export class FrontendOptimizer {
     renderItem: (index: number) => HTMLElement
   ): void {
     let startIndex = 0;
-    let visibleItems = Math.ceil(containerElement.clientHeight / itemHeight) + 2;
+    const visibleItems = Math.ceil(containerElement.clientHeight / itemHeight) + 2;
     
     const updateVisibleItems = () => {
       const scrollTop = containerElement.scrollTop;

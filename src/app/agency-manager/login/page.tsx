@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { UniversalNav } from '@/components/layout/UniversalNav';
 
@@ -11,7 +11,7 @@ export default function AgencyManagerLoginPage() {
   const router = useRouter();
   const [status, setStatus] = useState<string | null>(null);
 
-  const handleLogin = async (credentials: { email: string; password: string }) => {
+  const handleLogin = async (_credentials: { email: string; password: string }) => {
     setStatus('Signing in...');
     await new Promise((resolve) => setTimeout(resolve, 1200));
     setStatus(null);

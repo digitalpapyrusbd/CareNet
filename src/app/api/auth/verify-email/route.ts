@@ -205,7 +205,7 @@ export async function PUT(request: NextRequest) {
     }
     
     // Update user based on purpose
-    let updateData: any = {
+    const updateData: any = {
       isEmailVerified: true,
       emailVerifiedAt: new Date(),
     };
