@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multilingual System - Manual Testing Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            margin-bottom: 40px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 20px;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .section-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .section-progress {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .test-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #fafafa;
+            border-radius: 4px;
+            border-left: 4px solid #e0e0e0;
+            transition: all 0.2s;
+        }
+        
+        .test-item:hover {
+            background: #f0f0f0;
+        }
+        
+        .test-item.completed {
+            border-left-color: #4caf50;
+            background: #f1f8f4;
+        }
+        
+        .test-item.failed {
+            border-left-color: #f44336;
+            background: #ffebee;
+        }
+        
+        .test-item input[type="checkbox"] {
+            margin-right: 15px;
+            margin-top: 3px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .test-content {
+            flex: 1;
+        }
+        
+        .test-id {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .test-description {
+            color: #666;
+            font-size: 0.95em;
+            margin-bottom: 8px;
+        }
+        
+        .test-notes {
+            margin-top: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+            display: none;
+        }
+        
+        .test-item.expanded .test-notes {
+            display: block;
+        }
+        
+        .test-notes textarea {
+            width: 100%;
+            min-height: 60px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 0.9em;
+            resize: vertical;
+        }
+        
+        .status-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .status-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s;
+        }
+        
+        .status-btn.pass {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .status-btn.pass:hover {
+            background: #45a049;
+        }
+        
+        .status-btn.fail {
+            background: #f44336;
+            color: white;
+        }
+        
+        .status-btn.fail:hover {
+            background: #da190b;
+        }
+        
+        .status-btn.na {
+            background: #9e9e9e;
+            color: white;
+        }
+        
+        .status-btn.na:hover {
+            background: #757575;
+        }
+        
+        .summary {
+            position: sticky;
+            top: 20px;
+            background: #2196f3;
+            color: white;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 30px;
+        }
+        
+        .summary h2 {
+            margin-bottom: 15px;
+        }
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .export-btn {
+            background: #ff9800;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 20px;
+            transition: all 0.2s;
+        }
+        
+        .export-btn:hover {
+            background: #f57c00;
+        }
+        
+        .expand-btn {
+            background: none;
+            border: none;
+            color: #2196f3;
+            cursor: pointer;
+            font-size: 0.9em;
+            padding: 5px 10px;
+            margin-top: 5px;
+        }
+        
+        .expand-btn:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌐 Multilingual System - Manual Testing Guide</h1>
+        <p class="subtitle">Interactive testing checklist for comprehensive QA</p>
+        
+        <div class="summary">
+            <h2>Testing Progress</h2>
+            <div class="summary-stats">
+                <div class="stat">
+                    <div class="stat-value" id="total-tests">0</div>
+                    <div class="stat-label">Total Tests</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="completed-tests">0</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="passed-tests">0</div>
+                    <div class="stat-label">Passed</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="failed-tests">0</div>
+                    <div class="stat-label">Failed</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="progress-percent">0%</div>
+                    <div class="stat-label">Progress</div>
+                </div>
+            </div>
+            <button class="export-btn" onclick="exportResults()">📥 Export Results</button>
+        </div>
+        
+        <div id="test-sections"></div>
+    </div>
+    
+    <script>
+        // Test data structure
+        const testSections = [
+            {
+                id: 'A',
+                title: 'A. Basic Functionality Tests',
+                tests: [
+                    { id: 'A1', desc: 'Open app in English', category: 'Language Switching' },
+                    { id: 'A2', desc: 'Click language selector dropdown in header', category: 'Language Switching' },
+                    { id: 'A3', desc: 'Verify all available languages shown (English, Bengali)', category: 'Language Switching' },
+                    { id: 'A4', desc: 'Select Bengali from dropdown', category: 'Language Switching' },
+                    { id: 'A5', desc: 'Verify ALL text changes to Bengali (check every page)', category: 'Language Switching' },
+                    { id: 'A6', desc: 'Verify menu items changed', category: 'Language Switching' },
+                    { id: 'A7', desc: 'Verify buttons changed', category: 'Language Switching' },
+                    { id: 'A8', desc: 'Verify form labels changed', category: 'Language Switching' },
+                    { id: 'A9', desc: 'Verify placeholder text changed', category: 'Language Switching' },
+                    { id: 'A10', desc: 'Verify error messages (trigger an error and check)', category: 'Language Switching' },
+                    { id: 'A11', desc: 'Refresh page - language persists', category: 'Language Switching' },
+                    { id: 'A12', desc: 'Open in new tab - language persists', category: 'Language Switching' },
+                    { id: 'A13', desc: 'Clear localStorage - resets to default language', category: 'Language Switching' },
+                    { id: 'A14', desc: 'Check all Bengali translations for accuracy', category: 'Translation Quality' },
+                    { id: 'A15', desc: 'Check text doesn\'t overflow UI elements', category: 'Translation Quality' },
+                    { id: 'A16', desc: 'Check special Bengali characters display correctly', category: 'Translation Quality' },
+                    { id: 'A17', desc: 'Check text alignment (left-to-right works properly)', category: 'Translation Quality' },
+                    { id: 'A18', desc: 'Check no missing translations (no English in Bengali mode)', category: 'Translation Quality' },
+                    { id: 'A19', desc: 'Check capitalization appropriate for each language', category: 'Translation Quality' },
+                ]
+            },
+            {
+                id: 'B',
+                title: 'B. Admin Export/Import Tests',
+                tests: [
+                    { id: 'B1', desc: 'Login as super admin', category: 'Export Functionality' },
+                    { id: 'B2', desc: 'Navigate to /admin/translations', category: 'Export Functionality' },
+                    { id: 'B3', desc: 'Click "Export All Text" button', category: 'Export Functionality' },
+                    { id: 'B4', desc: 'Verify file downloads successfully', category: 'Export Functionality' },
+                    { id: 'B5', desc: 'Verify file name is correct', category: 'Export Functionality' },
+                    { id: 'B6', desc: 'Open file - verify JSON structure is correct', category: 'Export Functionality' },
+                    { id: 'B7', desc: 'Verify all text is present in export', category: 'Export Functionality' },
+                    { id: 'B8', desc: 'Export "Menu Only" - verify smaller file', category: 'Export Functionality' },
+                    { id: 'B9', desc: 'Export "Page Content" - verify correct content', category: 'Export Functionality' },
+                    { id: 'B10', desc: 'Create a new translation file (e.g., Hindi hi.json)', category: 'Import Functionality' },
+                    { id: 'B11', desc: 'Click "Import New Language" in admin panel', category: 'Import Functionality' },
+                    { id: 'B12', desc: 'Upload valid translation file', category: 'Import Functionality' },
+                    { id: 'B13', desc: 'Verify validation passes', category: 'Import Functionality' },
+                    { id: 'B14', desc: 'Check preview shows correct translations', category: 'Import Functionality' },
+                    { id: 'B15', desc: 'Click "Activate Language"', category: 'Import Functionality' },
+                    { id: 'B16', desc: 'Verify new language appears in dropdown', category: 'Import Functionality' },
+                    { id: 'B17', desc: 'Switch to new language - verify it works', category: 'Import Functionality' },
+                    { id: 'B18', desc: 'Try uploading invalid JSON - verify error message', category: 'Import Functionality' },
+                    { id: 'B19', desc: 'Try uploading file with missing keys - verify warning', category: 'Import Functionality' },
+                    { id: 'B20', desc: 'Try uploading file with extra keys - verify handled gracefully', category: 'Import Functionality' },
+                ]
+            },
+            {
+                id: 'C',
+                title: 'C. Text Scrubber Tests',
+                tests: [
+                    { id: 'C1', desc: 'Navigate to /admin/translations/scrubber', category: 'Scan Mode' },
+                    { id: 'C2', desc: 'Click "Scan All Components"', category: 'Scan Mode' },
+                    { id: 'C3', desc: 'Wait for scan to complete', category: 'Scan Mode' },
+                    { id: 'C4', desc: 'Verify it found hardcoded strings', category: 'Scan Mode' },
+                    { id: 'C5', desc: 'Check each detected string is actually hardcoded', category: 'Scan Mode' },
+                    { id: 'C6', desc: 'Verify it didn\'t flag already translated text', category: 'Scan Mode' },
+                    { id: 'C7', desc: 'Verify it didn\'t flag variable names/code', category: 'Scan Mode' },
+                    { id: 'C8', desc: 'Check suggested keys make sense', category: 'Scan Mode' },
+                    { id: 'C9', desc: 'Preview changes for a component', category: 'Scan Mode' },
+                    { id: 'C10', desc: 'Verify preview shows correct before/after', category: 'Scan Mode' },
+                    { id: 'C11', desc: 'Select specific changes to apply (use checkboxes)', category: 'Replace Mode' },
+                    { id: 'C12', desc: 'Click "Apply Selected"', category: 'Replace Mode' },
+                    { id: 'C13', desc: 'Verify confirmation dialog appears', category: 'Replace Mode' },
+                    { id: 'C14', desc: 'Confirm changes', category: 'Replace Mode' },
+                    { id: 'C15', desc: 'Check components updated correctly', category: 'Replace Mode' },
+                    { id: 'C16', desc: 'Verify translation JSON updated with new keys', category: 'Replace Mode' },
+                    { id: 'C17', desc: 'Run app - verify no errors', category: 'Replace Mode' },
+                    { id: 'C18', desc: 'Verify text still displays correctly', category: 'Replace Mode' },
+                    { id: 'C19', desc: 'Check backup files created', category: 'Replace Mode' },
+                    { id: 'C20', desc: 'Export report - verify JSON report downloads', category: 'Replace Mode' },
+                ]
+            },
+            {
+                id: 'D',
+                title: 'D. Inline Translation Editor Tests',
+                tests: [
+                    { id: 'D1', desc: 'Navigate to /admin/translations → "Editor" tab', category: 'Editor' },
+                    { id: 'D2', desc: 'Select target language (Bengali)', category: 'Editor' },
+                    { id: 'D3', desc: 'Search for a translation key', category: 'Editor' },
+                    { id: 'D4', desc: 'Edit a translation', category: 'Editor' },
+                    { id: 'D5', desc: 'Save the translation', category: 'Editor' },
+                    { id: 'D6', desc: 'Verify it saves successfully', category: 'Editor' },
+                    { id: 'D7', desc: 'Filter by "Missing Only"', category: 'Editor' },
+                    { id: 'D8', desc: 'Filter by "Menu Only"', category: 'Editor' },
+                    { id: 'D9', desc: 'Verify missing translations are highlighted', category: 'Editor' },
+                ]
+            },
+            {
+                id: 'E',
+                title: 'E. Automatic Language Detection',
+                tests: [
+                    { id: 'E1', desc: 'Clear localStorage', category: 'Auto Detection' },
+                    { id: 'E2', desc: 'Set browser language to Bengali', category: 'Auto Detection' },
+                    { id: 'E3', desc: 'Open app in new incognito window', category: 'Auto Detection' },
+                    { id: 'E4', desc: 'Verify app loads in Bengali automatically', category: 'Auto Detection' },
+                    { id: 'E5', desc: 'Manually switch to English', category: 'Auto Detection' },
+                    { id: 'E6', desc: 'Refresh page - should stay in English (respects manual choice)', category: 'Auto Detection' },
+                    { id: 'E7', desc: 'Clear localStorage again', category: 'Auto Detection' },
+                    { id: 'E8', desc: 'Set browser language to unsupported language (e.g., French)', category: 'Auto Detection' },
+                    { id: 'E9', desc: 'Verify app defaults to English', category: 'Auto Detection' },
+                ]
+            }
+        ];
+        
+        // Load saved progress
+        function loadProgress() {
+            const saved = localStorage.getItem('testProgress');
+            if (saved) {
+                return JSON.parse(saved);
+            }
+            return {};
+        }
+        
+        // Save progress
+        function saveProgress() {
+            const progress = {};
+            document.querySelectorAll('.test-item').forEach(item => {
+                const testId = item.dataset.testId;
+                const status = item.dataset.status || 'pending';
+                const notes = item.querySelector('textarea')?.value || '';
+                progress[testId] = { status, notes };
+            });
+            localStorage.setItem('testProgress', JSON.stringify(progress));
+            updateSummary();
+        }
+        
+        // Update summary stats
+        function updateSummary() {
+            const items = document.querySelectorAll('.test-item');
+            const total = items.length;
+            let completed = 0;
+            let passed = 0;
+            let failed = 0;
+            
+            items.forEach(item => {
+                const status = item.dataset.status;
+                if (status === 'pass' || status === 'fail' || status === 'na') {
+                    completed++;
+                }
+                if (status === 'pass') passed++;
+                if (status === 'fail') failed++;
+            });
+            
+            document.getElementById('total-tests').textContent = total;
+            document.getElementById('completed-tests').textContent = completed;
+            document.getElementById('passed-tests').textContent = passed;
+            document.getElementById('failed-tests').textContent = failed;
+            document.getElementById('progress-percent').textContent = 
+                total > 0 ? Math.round((completed / total) * 100) + '%' : '0%';
+        }
+        
+        // Set test status
+        function setTestStatus(testId, status) {
+            const item = document.querySelector(`[data-test-id="${testId}"]`);
+            if (item) {
+                item.dataset.status = status;
+                item.className = `test-item ${status}`;
+                const checkbox = item.querySelector('input[type="checkbox"]');
+                if (checkbox) {
+                    checkbox.checked = status !== 'pending';
+                }
+                saveProgress();
+            }
+        }
+        
+        // Export results
+        function exportResults() {
+            const results = {
+                date: new Date().toISOString(),
+                tests: []
+            };
+            
+            document.querySelectorAll('.test-item').forEach(item => {
+                const testId = item.dataset.testId;
+                const desc = item.querySelector('.test-description').textContent;
+                const status = item.dataset.status || 'pending';
+                const notes = item.querySelector('textarea')?.value || '';
+                
+                results.tests.push({
+                    id: testId,
+                    description: desc,
+                    status: status,
+                    notes: notes
+                });
+            });
+            
+            const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `test-results-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        // Render test sections
+        function renderTests() {
+            const container = document.getElementById('test-sections');
+            const progress = loadProgress();
+            
+            testSections.forEach(section => {
+                const sectionDiv = document.createElement('div');
+                sectionDiv.className = 'test-section';
+                
+                const completed = section.tests.filter(t => progress[t.id]?.status && progress[t.id].status !== 'pending').length;
+                const total = section.tests.length;
+                
+                sectionDiv.innerHTML = `
+                    <div class="section-header">
+                        <div class="section-title">${section.title}</div>
+                        <div class="section-progress">${completed}/${total} completed</div>
+                    </div>
+                    <div class="tests-container"></div>
+                `;
+                
+                const testsContainer = sectionDiv.querySelector('.tests-container');
+                
+                section.tests.forEach(test => {
+                    const testData = progress[test.id] || { status: 'pending', notes: '' };
+                    const status = testData.status;
+                    const item = document.createElement('div');
+                    item.className = `test-item ${status}`;
+                    item.dataset.testId = test.id;
+                    item.dataset.status = status;
+                    
+                    item.innerHTML = `
+                        <input type="checkbox" ${status !== 'pending' ? 'checked' : ''}>
+                        <div class="test-content">
+                            <div class="test-id">${test.id}. ${test.desc}</div>
+                            <div class="test-description">Category: ${test.category}</div>
+                            <div class="status-buttons">
+                                <button class="status-btn pass" onclick="setTestStatus('${test.id}', 'pass')">✓ Pass</button>
+                                <button class="status-btn fail" onclick="setTestStatus('${test.id}', 'fail')">✗ Fail</button>
+                                <button class="status-btn na" onclick="setTestStatus('${test.id}', 'na')">- N/A</button>
+                                <button class="expand-btn" onclick="toggleNotes('${test.id}')">📝 Notes</button>
+                            </div>
+                            <div class="test-notes">
+                                <textarea placeholder="Add notes about this test..." onchange="saveProgress()">${testData.notes}</textarea>
+                            </div>
+                        </div>
+                    `;
+                    
+                    testsContainer.appendChild(item);
+                });
+                
+                container.appendChild(sectionDiv);
+            });
+            
+            updateSummary();
+        }
+        
+        // Toggle notes
+        function toggleNotes(testId) {
+            const item = document.querySelector(`[data-test-id="${testId}"]`);
+            if (item) {
+                item.classList.toggle('expanded');
+            }
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTests();
+        });
+    </script>
+</body>
+</html>

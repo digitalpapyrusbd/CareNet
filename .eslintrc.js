@@ -6,13 +6,15 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint'],
   rules: {
-    '@typescript-eslint/no-unused-vars': 'warn',
-    '@typescript-eslint/no-explicit-any': 'warn',
+     '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],    'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],    '@typescript-eslint/no-explicit-any': 'warn',
     'prefer-const': 'warn',
     'no-var': 'error',
     'no-console': 'warn',
     'no-debugger': 'error',
     'no-undef': ['error', { typeof: true }],
+      'react/no-unescaped-entities': 'warn',
+      'no-case-declarations': 'warn',
+      'no-useless-escape': 'warn',
   },
   env: {
     browser: true,

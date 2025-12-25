@@ -3,7 +3,7 @@
 import { UniversalNav } from '@/components/layout/UniversalNav';
 
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Calendar, Save } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 

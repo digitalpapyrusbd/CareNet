@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { MapPin, Clock, Navigation, CheckCircle2, Calendar, DollarSign, Bell } from 'lucide-react';
+import { MapPin, Clock, Navigation, CheckCircle2, DollarSign, Bell } from 'lucide-react';
 import { UniversalNav } from '@/components/layout/UniversalNav';
 
 const todaysJob = {

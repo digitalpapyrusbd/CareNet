@@ -39,7 +39,7 @@ export default function NotFoundPage() {
         {/* Message */}
         <h2 className="mb-4" style={{ color: '#535353' }}>Page Not Found</h2>
         <p className="mb-8" style={{ color: '#848484' }}>
-          Oops! The page you're looking for doesn't exist or has been moved.
+          Oops! The page you&apos;re looking for doesn&apos;t exist or has been moved.
         </p>
 
         {/* Actions */}

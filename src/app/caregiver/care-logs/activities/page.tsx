@@ -3,7 +3,7 @@
 import { UniversalNav } from '@/components/layout/UniversalNav';
 
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Activity as ActivityIcon, Plus, Save } from 'lucide-react';
+import { ArrowLeft, Activity as ActivityIcon, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';

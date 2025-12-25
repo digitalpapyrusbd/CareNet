@@ -2,7 +2,7 @@
 
 import { UniversalNav } from '@/components/layout/UniversalNav';
 
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, Send, Paperclip, Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,6 @@ import { useState } from 'react';
 
 export default function AgencyChatPage() {
   const router = useRouter();
-  const params = useParams();
   const [message, setMessage] = useState('');
 
   const messages = [
