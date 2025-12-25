@@ -366,5 +366,13 @@
     "invalidFormat": "অবৈধ ফরম্যাট",
     "phoneInvalid": "অনুম বাংলাদেশী ফোন নম্বর (+8801xxxxxxxxx)",
     "emailInvalid": "অনুম ইমেল ঠিক্র"
+  },
+  "page": {
+    "text": {
+      "password": "পাসওয়ার্ড"
+    },
+    "placeholder": {
+      "enteryourpassword": "আপনার পাসওয়ার্ড লিখুন"
+    }
   }
 }

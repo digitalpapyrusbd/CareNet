@@ -366,5 +366,13 @@
     "invalidFormat": "Invalid format",
     "phoneInvalid": "Please enter a valid Bangladeshi phone number",
     "emailInvalid": "Please enter a valid email address"
+  },
+  "page": {
+    "text": {
+      "password": "Password"
+    },
+    "placeholder": {
+      "enteryourpassword": "Enter your password"
+    }
   }
 }
