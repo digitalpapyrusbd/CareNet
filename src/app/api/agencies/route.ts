@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       where.OR = [
-        { agency_name: { contains: search, mode: "insensitive" } },
+        { company_name: { contains: search, mode: "insensitive" } },
         { contact_person: { contains: search, mode: "insensitive" } },
         { contact_phone: { contains: search, mode: "insensitive" } },
         { contact_email: { contains: search, mode: "insensitive" } },
@@ -138,7 +138,7 @@ export async function GET(request: NextRequest) {
     const orderBy: any = {};
     const sortByMap: Record<string, string> = {
       createdAt: "created_at",
-      agencyName: "agency_name",
+      agencyName: "company_name",
       ratingAvg: "rating_avg",
     };
     orderBy[sortByMap[sortBy] || sortBy] = sortOrder;

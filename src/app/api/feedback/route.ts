@@ -205,7 +205,7 @@ export async function POST(request: NextRequest) {
     // Check if feedback already exists for this job/user combination
     const existingFeedback = await prisma.feedbacks.findUnique({
       where: {
-        jobId_fromUserId_toUserId: {
+        job_id_from_user_id_to_user_id: {
           jobId,
           from_user_id: user.id,
           toUserId,

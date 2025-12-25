@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
           where: { id: user.id },
           include: {
             patients: {
-              orderBy: { created_at: 'desc' },
+              orderBy: { createdAt: 'desc' },
             },
           },
         });

@@ -5,14 +5,17 @@ import { toHaveNoViolations } from 'jest-axe';
 // Extend Jest matchers with jest-axe
 expect.extend(toHaveNoViolations);
 
-// Polyfills must be set up BEFORE importing MSW
-// TextEncoder/TextDecoder
+// ============================================================================
+// POLYFILLS - MUST BE SET UP BEFORE ANY OTHER IMPORTS
+// ============================================================================
+
+// TextEncoder/TextDecoder polyfills for Node.js < 20
 try {
   const { TextEncoder, TextDecoder } = require('util');
   if (typeof global.TextEncoder === 'undefined') global.TextEncoder = TextEncoder;
   if (typeof global.TextDecoder === 'undefined') global.TextDecoder = TextDecoder;
 } catch (e) {
-  // ignore
+  // ignore - polyfill not available
 }
 
 // BroadcastChannel polyfill for MSW (required by MSW but not available in Node.js)
@@ -93,7 +96,7 @@ if (typeof global.WritableStream === 'undefined') {
   };
 }
 
-// Response/Request/Headers must be defined BEFORE MSW server loads
+// Response/Request/Headers polyfills for MSW
 if (typeof global.Response === 'undefined') {
   global.Response = class {
     constructor(body = null, init = {}) {
@@ -135,36 +138,9 @@ if (typeof global.Headers === 'undefined') {
   };
 }
 
-// NOW import MSW server after all polyfills are in place
-const { server: mswServer } = require('./src/__tests__/mocks/server');
-global.server = mswServer;
-
-// Polyfills for test environment (jsdom)
-try {
-  // Fetch polyfill for environments where fetch is not available
-  require('whatwg-fetch');
-} catch (e) {
-  // ignore if not installed; we'll still provide lightweight shims below
-}
-
-// Ensure interval timers exist (some environments strip them from global)
-if (typeof global.setInterval !== 'function') {
-  global.setInterval = (fn, delay = 0, ...args) => global.setTimeout(fn, delay, ...args);
-}
-
-if (typeof global.clearInterval !== 'function') {
-  global.clearInterval = (id) => global.clearTimeout(id);
-}
-
-// Mock global fetch for tests that need it - make it a proper jest.fn() with all methods
-global.fetch = jest.fn(() =>
-  Promise.resolve({
-    ok: true,
-    status: 200,
-    json: () => Promise.resolve({}),
-    text: () => Promise.resolve(''),
-  })
-);
+// ============================================================================
+// MOCKS - EXTERNAL DEPENDENCIES
+// ============================================================================
 
 // Mock @upstash/redis to avoid ESM issues
 jest.mock('@upstash/redis', () => ({
@@ -196,16 +172,125 @@ jest.mock('@/hooks/useTheme', () => ({
   }),
 }));
 
+// Mock Next.js router
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    prefetch: jest.fn(),
+    back: jest.fn(),
+    forward: jest.fn(),
+    refresh: jest.fn(),
+  }),
+  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => '/',
+}));
+
+// Mock Next.js image
+jest.mock('next/image', () => ({
+  __esModule: true,
+  default: (props) => {
+    const React = require('react');
+    return React.createElement('img', props);
+  },
+}));
+
+// Mock environment variables
+process.env.NEXT_PUBLIC_API_URL = 'http://localhost:3000/api';
+process.env.NEXT_PUBLIC_BASE_URL = 'http://localhost:3000';
+
+// ============================================================================
+// GLOBAL TEST UTILITIES
+// ============================================================================
+
+global.testUtils = {
+  // Helper to create a mock file
+  createMockFile: (name = 'test.jpg', type = 'image/jpeg', size = 1024) => {
+    const file = new File(['test'], name, { type });
+    Object.defineProperty(file, 'size', { value: size });
+    return file;
+  },
+
+  // Helper to create a mock user
+  createMockUser: (overrides = {}) => ({
+    id: '1',
+    role: 'GUARDIAN',
+    phone: '+8801712345678',
+    email: 'test@example.com',
+    name: 'Test User',
+    mfaEnabled: false,
+    ...overrides,
+  }),
+
+  // Helper to create a mock API response
+  createMockApiResponse: (data, success = true) => ({
+    success,
+    data,
+    error: success ? null : 'Test error',
+  }),
+};
+
+// ============================================================================
+// CONFIGURATION
+// ============================================================================
 
 // Configure React Testing Library
 configure({ testIdAttribute: 'data-testid' });
 
-// jsdom/browser polyfills for tests
+// ============================================================================
+// HOOKS
+// ============================================================================
+
+// Console error suppression with filtering
+const originalError = console.error;
+
+beforeAll(() => {
+  // Polyfills for fetch API
+  try {
+    require('whatwg-fetch');
+  } catch (e) {
+    // ignore if not installed; we'll still provide lightweight shims below
+  }
+});
+
+beforeEach(() => {
+  console.error = (...args) => {
+    if (
+      typeof args[0] === 'string' &&
+      args[0].includes('Warning: ReactDOM.render is deprecated')
+    ) {
+      return;
+    }
+    originalError.call(console, ...args);
+  };
+});
+
+afterEach(() => {
+  // Reset state between tests
+  jest.clearAllMocks();
+
+  // Use real timers to avoid test leakage
+  if (typeof jest !== 'undefined' && typeof jest.useRealTimers === 'function') {
+    jest.useRealTimers();
+  }
+
+  // Restore original console.error
+  console.error = originalError;
+});
+
+afterAll(() => {
+  // Restore original console.error
+  console.error = originalError;
+});
+
+// ============================================================================
+// ENVIRONMENT POLYFILLS FOR JSDOM
+// ============================================================================
+
 if (typeof window !== 'undefined') {
   // Touch / TouchEvent polyfill for mobile tests
   if (typeof window.Touch === 'undefined') {
     // Minimal Touch constructor
-    // eslint-disable-next-line no-unused-vars
     class Touch {
       constructor(init) {
         Object.assign(this, init || {});
@@ -216,7 +301,6 @@ if (typeof window !== 'undefined') {
 
   if (typeof window.TouchEvent === 'undefined') {
     // Minimal TouchEvent implementation
-    // eslint-disable-next-line no-unused-vars
     class TouchEvent extends Event {
       constructor(type, init = {}) {
         super(type);
@@ -244,7 +328,7 @@ if (typeof window !== 'undefined') {
   if (typeof window.getComputedStyle !== 'function') {
     window.getComputedStyle = (el) => ({
       color: 'rgb(0, 0, 0)',
-      backgroundColor: 'rgb(255, 255, 255)',
+      backgroundColor: 'rgb(255,255,255)',
       width: '0px',
       height: '0px',
       outline: '',
@@ -275,93 +359,3 @@ if (typeof window !== 'undefined') {
     document.documentElement.setAttribute('lang', 'en');
   }
 }
-// Mock Next.js router
-jest.mock('next/navigation', () => ({
-  useRouter: () => ({
-    push: jest.fn(),
-    replace: jest.fn(),
-    prefetch: jest.fn(),
-    back: jest.fn(),
-    forward: jest.fn(),
-    refresh: jest.fn(),
-  }),
-  useSearchParams: () => new URLSearchParams(),
-  usePathname: () => '/',
-}));
-
-// Mock Next.js image
-jest.mock('next/image', () => ({
-  __esModule: true,
-  default: (props) => {
-    const React = require('react');
-    return React.createElement('img', props);
-  },
-}));
-
-// Mock environment variables
-process.env.NEXT_PUBLIC_API_URL = 'http://localhost:3000/api';
-process.env.NEXT_PUBLIC_BASE_URL = 'http://localhost:3000';
-
-// Global test utilities
-global.testUtils = {
-  // Helper to create a mock file
-  createMockFile: (name = 'test.jpg', type = 'image/jpeg', size = 1024) => {
-    const file = new File(['test'], name, { type });
-    Object.defineProperty(file, 'size', { value: size });
-    return file;
-  },
-  
-  // Helper to create a mock user
-  createMockUser: (overrides = {}) => ({
-    id: '1',
-    role: 'GUARDIAN',
-    phone: '+8801712345678',
-    email: 'test@example.com',
-    name: 'Test User',
-    mfaEnabled: false,
-    ...overrides,
-  }),
-  
-  // Helper to create a mock API response
-  createMockApiResponse: (data, success = true) => ({
-    success,
-    data,
-    error: success ? null : 'Test error',
-  }),
-};
-
-// Suppress console warnings in tests
-const originalError = console.error;
-beforeAll(() => {
-  // Start MSW server
-  server.listen({ onUnhandledRequest: 'warn' });
-  
-  console.error = (...args) => {
-    if (
-      typeof args[0] === 'string' &&
-      args[0].includes('Warning: ReactDOM.render is deprecated')
-    ) {
-      return;
-    }
-    originalError.call(console, ...args);
-  };
-});
-
-// Reset handlers between tests
-afterEach(() => {
-  server.resetHandlers();
-  // Clear fetch mock calls
-  if (global.fetch && typeof global.fetch.mockClear === 'function') {
-    global.fetch.mockClear();
-  }
-  // Ensure each test finishes with real timers to avoid leakage between suites
-  if (typeof jest !== 'undefined' && typeof jest.useRealTimers === 'function') {
-    jest.useRealTimers();
-  }
-});
-
-afterAll(() => {
-  // Stop MSW server
-  server.close();
-  console.error = originalError;
-});

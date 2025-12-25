@@ -25,15 +25,12 @@ const customJestConfig = {
     "^@lib/(.*)$": "<rootDir>/src/lib/$1",
   },
 
-  // Transform ignore patterns - IMPORTANT: Ignore MSW and other ES modules
+  // Transform ignore patterns - IMPORTANT: Ignore MSW from transformation
   // This prevents Jest from trying to transform ES module source code
   transformIgnorePatterns: [
     // Ignore ALL MSW source files (they're ES modules)
     "node_modules/msw",
     "node_modules/msw/(?!.*)",
-    // Ignore other problematic ES modules
-    "node_modules/until-async",
-    // Allow Jest to use its default node_modules handling
   ],
 
   // Test environment
@@ -84,5 +81,5 @@ const customJestConfig = {
   ],
 };
 
-// Export the merged configuration
+// Export merged configuration
 module.exports = createJestConfig(customJestConfig);
