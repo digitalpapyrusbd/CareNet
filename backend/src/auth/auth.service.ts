@@ -38,15 +38,10 @@ export class AuthService {
     const upstashToken = this.configService.get('UPSTASH_REDIS_TOKEN');
 
     if (upstashUrl && upstashToken) {
-      // Use Upstash Redis with TLS for production
-      const host = upstashUrl.replace('https://', '').replace('http://', '');
-      this.redis = new Redis({
-        host,
-        port: 6379,
+      // Use Upstash Redis with full URL to avoid DNS parsing issues
+      this.redis = new Redis(upstashUrl, {
         password: upstashToken,
-        tls: {
-          rejectUnauthorized: false,
-        },
+        tls: {},
         maxRetriesPerRequest: 3,
         retryStrategy: (times) => Math.min(times * 50, 2000),
       });
