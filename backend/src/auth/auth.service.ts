@@ -33,12 +33,31 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {
-    // Initialize Redis client
-    this.redis = new Redis({
-      host: this.configService.get('REDIS_HOST', 'localhost'),
-      port: this.configService.get('REDIS_PORT', 6379),
-      password: this.configService.get('REDIS_PASSWORD'),
-    });
+    // Initialize Redis client - supports both Upstash and standard Redis
+    const upstashUrl = this.configService.get('UPSTASH_REDIS_URL');
+    const upstashToken = this.configService.get('UPSTASH_REDIS_TOKEN');
+
+    if (upstashUrl && upstashToken) {
+      // Use Upstash Redis with TLS for production
+      const host = upstashUrl.replace('https://', '').replace('http://', '');
+      this.redis = new Redis({
+        host,
+        port: 6379,
+        password: upstashToken,
+        tls: {
+          rejectUnauthorized: false,
+        },
+        maxRetriesPerRequest: 3,
+        retryStrategy: (times) => Math.min(times * 50, 2000),
+      });
+    } else {
+      // Use standard Redis
+      this.redis = new Redis({
+        host: this.configService.get('REDIS_HOST', 'localhost'),
+        port: this.configService.get('REDIS_PORT', 6379),
+        password: this.configService.get('REDIS_PASSWORD'),
+      });
+    }
   }
 
   /**
@@ -183,8 +202,8 @@ export class AuthService {
       );
 
       return {
-        mfa_required: true,
-        temp_token: tempToken,
+        requiresMFA: true,
+        tempToken,
       };
     }
 
@@ -355,7 +374,10 @@ export class AuthService {
 
       const tokens = this.generateTokens(user.id, user.phone, user.role);
 
-      return tokens;
+      return {
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+      };
     } catch {
       throw new UnauthorizedException('Invalid refresh token');
     }
@@ -381,8 +403,8 @@ export class AuthService {
     });
 
     return {
-      access_token: accessToken,
-      refresh_token: refreshToken,
+      accessToken,
+      refreshToken,
     };
   }
 

@@ -2,10 +2,7 @@ generator client {
   provider = "prisma-client-js"
 }
 
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
+
 
 
 // ========== ENUMS ==========
@@ -236,7 +233,7 @@ model users {
   updated_at                              DateTime           @updatedAt
   company_id                              String?
   agency_id                               String?
-  
+
   audit_logs                              audit_logs[]
   caregivers                              caregivers?
   disputes_disputes_againstTousers        disputes[]         @relation("disputes_againstTousers")
@@ -293,7 +290,7 @@ model agencies {
   deleted_at              DateTime?
   created_at              DateTime           @default(now())
   updated_at              DateTime           @updatedAt
-  
+
   caregivers              caregivers[]
   jobs                    jobs[]
   marketplace_jobs        marketplace_jobs[]
@@ -332,7 +329,7 @@ model companies {
   deleted_at              DateTime?
   created_at              DateTime           @default(now())
   updated_at              DateTime           @updatedAt
-  
+
   caregivers              caregivers[]
   jobs                    jobs[]
   marketplace_jobs        marketplace_jobs[]
@@ -374,7 +371,7 @@ model caregivers {
   deleted_at                                       DateTime?
   created_at                                       DateTime           @default(now())
   updated_at                                       DateTime           @updatedAt
-  
+
   assignments_assignments_replaced_byTocaregivers  assignments[]      @relation("assignments_replaced_byTocaregivers")
   assignments_assignments_caregiver_idTocaregivers assignments[]      @relation("assignments_caregiver_idTocaregivers")
   care_logs                                        care_logs[]
@@ -412,7 +409,7 @@ model patients {
   deletedAt               DateTime?
   createdAt               DateTime         @default(now())
   updatedAt               DateTime         @updatedAt
-  
+
   care_logs               care_logs[]
   health_records          health_records[]
   jobs                    jobs[]
@@ -462,7 +459,7 @@ model account_lockouts {
   unlock_reason         String?
   is_active             Boolean          @default(true)
   created_at            DateTime         @default(now())
-  
+
   user                  users            @relation(fields: [user_id], references: [id])
 
   @@index([user_id, is_active])
@@ -485,7 +482,7 @@ model package_negotiations {
   expires_at            DateTime
   created_at            DateTime            @default(now())
   updated_at            DateTime            @updatedAt
-  
+
   guardian              users               @relation(fields: [guardian_id], references: [id])
 
   @@index([guardian_id, status])
@@ -506,7 +503,7 @@ model subscriptions {
   cancelled_at         DateTime?
   created_at           DateTime         @default(now())
   updated_at           DateTime         @updatedAt
-  
+
   user                 users            @relation(fields: [user_id], references: [id])
 
   @@index([user_id, is_active])
@@ -528,7 +525,7 @@ model verification_steps {
   resubmit_reason    String?
   created_at         DateTime              @default(now())
   updated_at         DateTime              @updatedAt
-  
+
   user               users                 @relation(fields: [user_id], references: [id])
 
   @@unique([user_id, step_type])
@@ -542,7 +539,7 @@ model conversations {
   created_by      String
   last_message_at DateTime?
   created_at      DateTime  @default(now())
-  
+
   creator         users     @relation("conversation_creator", fields: [created_by], references: [id])
   messages        messages[]
 
@@ -558,7 +555,7 @@ model messages {
   is_read         Boolean       @default(false)
   read_at         DateTime?
   created_at      DateTime      @default(now())
-  
+
   conversation    conversations @relation(fields: [conversation_id], references: [id])
   sender          users         @relation(fields: [sender_id], references: [id])
 
@@ -578,7 +575,7 @@ model shops {
   rating_count Int     @default(0)
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
-  
+
   user        users    @relation(fields: [user_id], references: [id])
   products    products[]
   orders      orders[]
@@ -598,7 +595,7 @@ model products {
   is_active      Boolean  @default(true)
   created_at     DateTime @default(now())
   updated_at     DateTime @updatedAt
-  
+
   shop           shops    @relation(fields: [shop_id], references: [id])
 
   @@index([shop_id, is_active])
@@ -615,7 +612,7 @@ model orders {
   tracking_number  String?
   created_at       DateTime @default(now())
   updated_at       DateTime @updatedAt
-  
+
   shop             shops    @relation(fields: [shop_id], references: [id])
 
   @@index([shop_id, status])
@@ -640,7 +637,7 @@ model packages {
   min_advance_days Int       @default(2)
   created_at       DateTime  @default(now())
   updated_at       DateTime  @updatedAt
-  
+
   jobs             jobs[]
   agencies         agencies @relation(fields: [agency_id], references: [id])
   companies        companies? @relation(fields: [company_id], references: [id])
@@ -671,7 +668,7 @@ model jobs {
   cancelled_by         String?
   created_at           DateTime      @default(now())
   updated_at           DateTime      @updatedAt
-  
+
   assignments          assignments[]
   care_logs            care_logs[]
   disputes             disputes[]
@@ -703,7 +700,7 @@ model assignments {
   replacement_reason                              String?
   created_at                                      DateTime    @default(now())
   updated_at                                      DateTime    @updatedAt
-  
+
   caregivers_assignments_replaced_byTocaregivers  caregivers? @relation("assignments_replaced_byTocaregivers", fields: [replaced_by], references: [id])
   caregivers_assignments_caregiver_idTocaregivers caregivers  @relation("assignments_caregiver_idTocaregivers", fields: [caregiver_id], references: [id])
   jobs                                            jobs        @relation(fields: [job_id], references: [id])
@@ -731,7 +728,7 @@ model care_logs {
   createdAt         DateTime    @default(now())
   vitals            Json?
   activities        Json?
-  
+
   patients          patients    @relation(fields: [patient_id], references: [id])
   caregivers        caregivers  @relation(fields: [caregiver_id], references: [id])
   assignments       assignments @relation(fields: [assignment_id], references: [id])
@@ -761,7 +758,7 @@ model payments {
   gatewayResponse Json?
   created_at      DateTime  @default(now())
   updated_at      DateTime  @updatedAt
-  
+
   escrows         escrows?
   users           users     @relation(fields: [payer_id], references: [id])
   jobs            jobs      @relation(fields: [job_id], references: [id])
@@ -780,7 +777,7 @@ model escrows {
   released_at DateTime?
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
-  
+
   payments    payments  @relation(fields: [payment_id], references: [id])
 
   @@index([status])
@@ -802,7 +799,7 @@ model disputes {
   resolved_at                     DateTime?
   createdAt                       DateTime  @default(now())
   updatedAt                       DateTime  @updatedAt
-  
+
   users_disputes_againstTousers   users     @relation("disputes_againstTousers", fields: [against], references: [id])
   users_disputes_raised_byTousers users     @relation("disputes_raised_byTousers", fields: [raised_by], references: [id])
   jobs                            jobs      @relation(fields: [job_id], references: [id])
@@ -827,7 +824,7 @@ model feedbacks {
   flagged_inappropriate               Boolean   @default(false)
   createdAt                           DateTime  @default(now())
   updatedAt                           DateTime  @updatedAt
-  
+
   users_feedbacks_to_user_idTousers   users     @relation("feedbacks_to_user_idTousers", fields: [to_user_id], references: [id])
   users_feedbacks_from_user_idTousers users     @relation("feedbacks_from_user_idTousers", fields: [from_user_id], references: [id])
 
@@ -851,7 +848,7 @@ model health_records {
   is_archived Boolean   @default(false)
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
-  
+
   patients    patients  @relation(fields: [patient_id], references: [id])
 
   @@index([record_type])
@@ -872,7 +869,7 @@ model notifications {
   read_at       DateTime?
   error_message String?
   createdAt     DateTime  @default(now())
-  
+
   users         users     @relation(fields: [userId], references: [id])
 
   @@index([sent_at])
@@ -891,7 +888,7 @@ model audit_logs {
   ip_address  String?
   user_agent  String?
   timestamp   DateTime @default(now())
-  
+
   users       users?   @relation(fields: [actor_id], references: [id])
 
   @@index([action_type])
@@ -910,7 +907,7 @@ model verification_codes {
   usedAt      DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+
   users       users    @relation(fields: [userId], references: [id])
 
   @@index([userId])
@@ -930,7 +927,7 @@ model user_devices {
   last_seen_at DateTime @default(now())
   created_at   DateTime @default(now())
   updated_at   DateTime @updatedAt
-  
+
   users        users    @relation(fields: [user_id], references: [id])
 
   @@index([fcm_token])
@@ -947,7 +944,7 @@ model service_zones {
   is_active        Boolean   @default(true)
   created_at       DateTime  @default(now())
   updated_at       DateTime  @updatedAt
-  
+
   companies        companies? @relation(fields: [company_id], references: [id])
   agencies         agencies  @relation(fields: [agency_id], references: [id])
 
@@ -974,7 +971,7 @@ model marketplace_jobs {
   filled_at          DateTime?
   created_at         DateTime           @default(now())
   updated_at         DateTime           @updatedAt
-  
+
   job_applications   job_applications[]
   caregivers         caregivers?        @relation(fields: [filled_by], references: [id])
   companies          companies?         @relation(fields: [company_id], references: [id])
@@ -996,7 +993,7 @@ model job_applications {
   reviewed_at        DateTime?
   review_notes       String?
   created_at         DateTime         @default(now())
-  
+
   users              users?           @relation(fields: [reviewed_by], references: [id])
   caregivers         caregivers       @relation(fields: [caregiver_id], references: [id])
   marketplace_jobs   marketplace_jobs @relation(fields: [marketplace_job_id], references: [id])
@@ -1066,7 +1063,7 @@ model files {
   url           String
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
-  
+
   uploader      users    @relation(fields: [uploaded_by], references: [id])
 
   @@index([uploaded_by])
