@@ -21,6 +21,5 @@ export default defineConfig({
   },
   datasource: {
     url: databaseUrl,
-    provider: 'postgresql',
   },
 });
