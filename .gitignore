@@ -92,3 +92,57 @@ credentials/
 
 # Project-specific excludes
 DO_NOT_COMMIT/
+github_repo_files.md
+
+# Temporary/one-time scripts (moved to DO_NOT_COMMIT/old_files)
+fix-*.ps1
+fix-*.sh
+push-to-github*.ps1
+setup-git-and-push.ps1
+verify-and-push.ps1
+batch_fix_*.ps1
+clean-history.ps1
+.complete_git_setup.sh
+.git_setup_commands.sh
+
+# Test data files (moved to DO_NOT_COMMIT/old_files)
+agencies_list.json
+caregivers_list.json
+users_list.json
+appearance-data*.js
+appearance-data*.json
+chronological-data.json
+audit_logs.json
+
+# HTML test/demo files (moved to DO_NOT_COMMIT/old_files)
+index.html
+index-chronological.html
+manual-testing-guide.html
+navigation.html
+test-login.html
+
+# Utility/test scripts (moved to DO_NOT_COMMIT/old_files)
+check-connections.sh
+check-redis.js
+test-connections.ts
+test-redis.js
+generate-*-index.js
+monitor_*.py
+START_TESTING.sh
+
+# Test images
+caregiver-detail-test.png
+
+# Temporary/status markdown files (moved to DO_NOT_COMMIT/old_files)
+*_COMPLETE.md
+*_SUMMARY.md
+*_STATUS.md
+*_REPORT.md
+*_ANALYSIS.md
+*_FIX.md
+*_README.md
+*_VALIDATION_README.md
+DEPLOYMENT_READINESS.md
+DEPLOYMENT_SUMMARY.md
+CONNECTION_STATUS.md
+CRITICAL_*.md

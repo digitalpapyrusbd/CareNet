@@ -44,7 +44,7 @@ Before deploying, ensure you have completed the following:
 - [ ] Payment gateway credentials (bKash, Nagad)
 
 ### ✅ Security
-- [ ] Strong secrets generated for JWT and NextAuth
+- [ ] Strong secrets generated for JWT (JWT_SECRET, JWT_REFRESH_SECRET)
 - [ ] CORS configured for production domain only
 - [ ] Environment variables documented
 - [ ] No hardcoded credentials in code
@@ -88,15 +88,37 @@ Copy `.env.example` to `.env.local` and fill in all required values:
 cp .env.example .env.local
 ```
 
-**Critical Variables:**
-- `DATABASE_URL` - PostgreSQL connection string
-- `NEXTAUTH_SECRET` - NextAuth secret key
-- `JWT_SECRET` - JWT secret key
-- `UPSTASH_REDIS_REST_URL` - Redis URL
-- `UPSTASH_REDIS_REST_TOKEN` - Redis token
-- `SENDGRID_API_KEY` - Email service key
-- `TWILIO_ACCOUNT_SID` - SMS service SID
-- `TWILIO_AUTH_TOKEN` - SMS service token
+**Critical Variables (Frontend - Vercel):**
+
+| Variable | Description | Example Value | How to Get |
+|----------|-------------|---------------|------------|
+| `NEXT_PUBLIC_API_URL` | Full URL to your backend API (Render service) | `https://carenet-backend-3ibc.onrender.com` | Copy from Render dashboard → Your backend service → URL |
+| `NEXT_PUBLIC_APP_URL` | Full URL to your frontend (Vercel deployment) | `https://care-net-five.vercel.app` | Copy from Vercel dashboard → Your project → Domains |
+| `KV_REST_API_URL` or `UPSTASH_REDIS_REST_URL` | Upstash Redis REST API endpoint | `https://central-maggot-12836.upstash.io` | Upstash dashboard → Your Redis database → REST API → URL |
+| `KV_REST_API_TOKEN` or `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST API token | `ATIkAAIncDJiOGZjZGNjNDIxMjY0NzZjYWJmYjNmNTY3OTlkNGZkNXAyMTI4MzY` | Upstash dashboard → Your Redis database → REST API → Token |
+| `JWT_SECRET` | Secret key for signing JWT access tokens (min 32 chars) | `7k9mP2xQ8nR5tY1wE6aS4dF3gH0jK9lZ8xC7vB6nM5qW4eR3tY2uI1oP0aS9dF8g` | Generate: `openssl rand -base64 32` |
+| `JWT_REFRESH_SECRET` | Secret key for signing JWT refresh tokens (min 32 chars) | `3nB6vC9xZ2aS5dF8gH1jK4lO7iU0yT3rE6wQ9pA2sD5fG8hJ1kL4zX7cV0bN3mQ6` | Generate: `openssl rand -base64 32` |
+| `JWT_EXPIRES_IN` | Access token expiration time | `15m` (15 minutes) | Format: `15m`, `1h`, `7d` |
+| `JWT_REFRESH_EXPIRES_IN` | Refresh token expiration time | `7d` (7 days) | Format: `15m`, `1h`, `7d` |
+| `SENDGRID_API_KEY` | SendGrid API key for sending emails | `SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx` | SendGrid dashboard → Settings → API Keys → Create API Key |
+| `SENDGRID_FROM_EMAIL` | Verified sender email address | `noreply@yourdomain.com` | SendGrid dashboard → Settings → Sender Authentication → Verify domain/email |
+| `SENDGRID_FROM_NAME` | Display name for email sender | `CareNet Support` | Any string (e.g., "CareNet Platform", "CareNet Support") |
+| `NEXT_PUBLIC_CORS_ORIGIN` | Allowed CORS origin (optional) | `https://care-net-five.vercel.app` | Same as `NEXT_PUBLIC_APP_URL` |
+
+**Critical Variables (Backend - Render):**
+
+| Variable | Description | Example Value | How to Get |
+|----------|-------------|---------------|------------|
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:password@host:5432/dbname?sslmode=require` | Render dashboard → PostgreSQL → Internal Database URL (or External) |
+| `JWT_SECRET` | Secret key for signing JWT access tokens (min 32 chars) | `7k9mP2xQ8nR5tY1wE6aS4dF3gH0jK9lZ8xC7vB6nM5qW4eR3tY2uI1oP0aS9dF8g` | Generate: `openssl rand -base64 32` |
+| `JWT_REFRESH_SECRET` | Secret key for signing JWT refresh tokens (min 32 chars) | `3nB6vC9xZ2aS5dF8gH1jK4lO7iU0yT3rE6wQ9pA2sD5fG8hJ1kL4zX7cV0bN3mQ6` | Generate: `openssl rand -base64 32` |
+| `JWT_EXPIRES_IN` | Access token expiration time | `15m` | Format: `15m`, `1h`, `7d` |
+| `JWT_REFRESH_EXPIRES_IN` | Refresh token expiration time | `7d` | Format: `15m`, `1h`, `7d` |
+| `UPSTASH_REDIS_REST_URL` | Upstash Redis REST API endpoint | `https://central-maggot-12836.upstash.io` | Upstash dashboard → Your Redis database → REST API → URL |
+| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST API token | `ATIkAAIncDJiOGZjZGNjNDIxMjY0NzZjYWJmYjNmNTY3OTlkNGZkNXAyMTI4MzY` | Upstash dashboard → Your Redis database → REST API → Token |
+| `SENDGRID_API_KEY` | SendGrid API key for sending emails | `SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx` | SendGrid dashboard → Settings → API Keys → Create API Key |
+| `SENDGRID_FROM_EMAIL` | Verified sender email address | `noreply@yourdomain.com` | SendGrid dashboard → Settings → Sender Authentication → Verify domain/email |
+| `CORS_ORIGINS` | Allowed CORS origins (comma-separated) | `https://care-net-five.vercel.app,https://carenet-backend-3ibc.onrender.com` | List all frontend URLs that should access the API |
 
 ---
 
@@ -151,28 +173,90 @@ git push origin main
 
 In Vercel Dashboard → Settings → Environment Variables, add:
 
-**Required:**
+**Required (Frontend - Vercel):**
+```bash
+# API Configuration (CRITICAL)
+# Replace with your actual Render backend URL
+NEXT_PUBLIC_API_URL=https://carenet-backend-3ibc.onrender.com
+
+# Replace with your actual Vercel frontend URL
+NEXT_PUBLIC_APP_URL=https://care-net-five.vercel.app
+
+# Redis/KV Storage (use either KV_* or UPSTASH_*)
+# Get from Upstash dashboard → Your Redis database → REST API
+KV_REST_API_URL=https://central-maggot-12836.upstash.io
+KV_REST_API_TOKEN=ATIkAAIncDJiOGZjZGNjNDIxMjY0NzZjYWJmYjNmNTY3OTlkNGZkNXAyMTI4MzY
+
+# JWT Configuration
+# Generate secrets: openssl rand -base64 32
+JWT_SECRET=7k9mP2xQ8nR5tY1wE6aS4dF3gH0jK9lZ8xC7vB6nM5qW4eR3tY2uI1oP0aS9dF8g
+JWT_REFRESH_SECRET=3nB6vC9xZ2aS5dF8gH1jK4lO7iU0yT3rE6wQ9pA2sD5fG8hJ1kL4zX7cV0bN3mQ6
+JWT_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_IN=7d
+
+# Email Service
+# Get from SendGrid dashboard → Settings → API Keys
+SENDGRID_API_KEY=SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+SENDGRID_FROM_EMAIL=noreply@yourdomain.com
+SENDGRID_FROM_NAME=CareNet Support
+
+# CORS (optional but recommended)
+NEXT_PUBLIC_CORS_ORIGIN=https://care-net-five.vercel.app
 ```
-DATABASE_URL=postgresql://...
-NEXTAUTH_URL=https://yourdomain.vercel.app
-NEXTAUTH_SECRET=your-secret-here
-JWT_SECRET=your-jwt-secret
-JWT_REFRESH_SECRET=your-refresh-secret
-UPSTASH_REDIS_REST_URL=https://...
-UPSTASH_REDIS_REST_TOKEN=your-token
-SENDGRID_API_KEY=SG...
-FROM_EMAIL=noreply@yourdomain.com
-TWILIO_ACCOUNT_SID=AC...
-TWILIO_AUTH_TOKEN=your-token
-TWILIO_PHONE_NUMBER=+1234567890
-GOOGLE_API_KEY=AIza...
+
+**Required (Backend - Render):**
+```bash
+# Database
+# Get from Render dashboard → PostgreSQL → Internal Database URL
+DATABASE_URL=postgresql://user:password@host:5432/dbname?sslmode=require
+
+# JWT Configuration
+# Generate secrets: openssl rand -base64 32
+JWT_SECRET=7k9mP2xQ8nR5tY1wE6aS4dF3gH0jK9lZ8xC7vB6nM5qW4eR3tY2uI1oP0aS9dF8g
+JWT_REFRESH_SECRET=3nB6vC9xZ2aS5dF8gH1jK4lO7iU0yT3rE6wQ9pA2sD5fG8hJ1kL4zX7cV0bN3mQ6
+JWT_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_IN=7d
+
+# Redis/KV Storage
+# Get from Upstash dashboard → Your Redis database → REST API
+UPSTASH_REDIS_REST_URL=https://central-maggot-12836.upstash.io
+UPSTASH_REDIS_REST_TOKEN=ATIkAAIncDJiOGZjZGNjNDIxMjY0NzZjYWJmYjNmNTY3OTlkNGZkNXAyMTI4MzY
+# OR use KV_* variables (both work):
+KV_REST_API_URL=https://central-maggot-12836.upstash.io
+KV_REST_API_TOKEN=ATIkAAIncDJiOGZjZGNjNDIxMjY0NzZjYWJmYjNmNTY3OTlkNGZkNXAyMTI4MzY
+
+# Email Service
+# Get from SendGrid dashboard → Settings → API Keys
+SENDGRID_API_KEY=SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+SENDGRID_FROM_EMAIL=noreply@yourdomain.com
+SENDGRID_FROM_NAME=CareNet Support
+
+# CORS
+# List all frontend URLs that should access the API (comma-separated)
+CORS_ORIGINS=https://care-net-five.vercel.app,https://carenet-backend-3ibc.onrender.com
 ```
 
 **Optional:**
 ```
+# SMS Service
+TWILIO_ACCOUNT_SID=AC...
+TWILIO_AUTH_TOKEN=your-token
+TWILIO_PHONE_NUMBER=+1234567890
+
+# AI/Google Services
+GOOGLE_API_KEY=AIza...
+
+# Firebase Push Notifications
 FIREBASE_SERVICE_ACCOUNT_JSON={"type":"service_account"...}
+
+# Payment Gateways
 BKASH_API_KEY=your-key
-NAGAD_API_KEY=your-key
+BKASH_APP_SECRET=your-secret
+NAGAD_MERCHANT_ID=your-id
+NAGAD_MERCHANT_KEY=your-key
+
+# CDN/Storage
+NEXT_PUBLIC_BASE_URL=https://yourdomain.vercel.app
 ```
 
 #### Step 4: Deploy
@@ -182,7 +266,7 @@ Click "Deploy" and wait for the build to complete.
 1. Go to Settings → Domains
 2. Add your custom domain
 3. Configure DNS records as instructed
-4. Update `NEXTAUTH_URL` to your custom domain
+4. Update `NEXT_PUBLIC_APP_URL` to your custom domain
 
 ### C. Vercel Deployment Checklist
 
@@ -191,7 +275,7 @@ Click "Deploy" and wait for the build to complete.
 - [ ] Build succeeds on Vercel
 - [ ] Database migrations run successfully
 - [ ] Custom domain configured (if applicable)
-- [ ] NEXTAUTH_URL updated to production URL
+- [ ] NEXT_PUBLIC_APP_URL updated to production URL
 - [ ] Test authentication flow
 - [ ] Test payment integration
 - [ ] Verify email notifications
@@ -237,18 +321,49 @@ Render will create:
 
 For each service, add these environment variables:
 
-**Frontend Service:**
+**Frontend Service (Vercel):**
+```bash
+# API Configuration (CRITICAL)
+NEXT_PUBLIC_API_URL=https://carenet-backend-3ibc.onrender.com
+NEXT_PUBLIC_APP_URL=https://care-net-five.vercel.app
+
+# Redis/KV Storage
+KV_REST_API_URL=https://central-maggot-12836.upstash.io
+KV_REST_API_TOKEN=ATIkAAIncDJiOGZjZGNjNDIxMjY0NzZjYWJmYjNmNTY3OTlkNGZkNXAyMTI4MzY
+
+# JWT Configuration (generate with: openssl rand -base64 32)
+JWT_SECRET=7k9mP2xQ8nR5tY1wE6aS4dF3gH0jK9lZ8xC7vB6nM5qW4eR3tY2uI1oP0aS9dF8g
+JWT_REFRESH_SECRET=3nB6vC9xZ2aS5dF8gH1jK4lO7iU0yT3rE6wQ9pA2sD5fG8hJ1kL4zX7cV0bN3mQ6
+JWT_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_IN=7d
+
+# Email Service
+SENDGRID_API_KEY=SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+SENDGRID_FROM_EMAIL=noreply@yourdomain.com
+SENDGRID_FROM_NAME=CareNet Support
 ```
-NEXTAUTH_URL=https://your-app.onrender.com
-NEXTAUTH_SECRET=[generate via Render]
-JWT_SECRET=[generate via Render]
-SENDGRID_API_KEY=SG...
-TWILIO_ACCOUNT_SID=AC...
-TWILIO_AUTH_TOKEN=...
-GOOGLE_API_KEY=AIza...
-BKASH_API_KEY=...
-NAGAD_API_KEY=...
-NEXT_PUBLIC_API_URL=https://your-app.onrender.com/api
+
+**Backend Service (Render):**
+```bash
+# Database (auto-configured by Render, but can override)
+DATABASE_URL=postgresql://user:password@host:5432/dbname?sslmode=require
+
+# JWT Configuration (generate with: openssl rand -base64 32)
+JWT_SECRET=7k9mP2xQ8nR5tY1wE6aS4dF3gH0jK9lZ8xC7vB6nM5qW4eR3tY2uI1oP0aS9dF8g
+JWT_REFRESH_SECRET=3nB6vC9xZ2aS5dF8gH1jK4lO7iU0yT3rE6wQ9pA2sD5fG8hJ1kL4zX7cV0bN3mQ6
+JWT_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_IN=7d
+
+# Redis/KV Storage
+UPSTASH_REDIS_REST_URL=https://central-maggot-12836.upstash.io
+UPSTASH_REDIS_REST_TOKEN=ATIkAAIncDJiOGZjZGNjNDIxMjY0NzZjYWJmYjNmNTY3OTlkNGZkNXAyMTI4MzY
+
+# Email Service
+SENDGRID_API_KEY=SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+SENDGRID_FROM_EMAIL=noreply@yourdomain.com
+
+# CORS (comma-separated list of allowed origins)
+CORS_ORIGINS=https://care-net-five.vercel.app,https://carenet-backend-3ibc.onrender.com
 ```
 
 **Note:** Database and Redis URLs are automatically configured via `render.yaml`.
@@ -727,7 +842,7 @@ npm run db:studio
 - Check service account has credits
 - Review service provider logs
 - Test with service provider's test tools
-- Verify `FROM_EMAIL` is verified in SendGrid
+- Verify `SENDGRID_FROM_EMAIL` is verified in SendGrid
 
 #### 6. Payment Gateway Errors
 

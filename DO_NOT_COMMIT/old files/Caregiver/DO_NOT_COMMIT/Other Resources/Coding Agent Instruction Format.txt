@@ -1,3 +1,0 @@
-I want draft a detailed document for the Ai code building agent, to look for the resources file (like PRD, Technical Architecture, Data Models, UX Flow and Screen, File Architecture, Compliance and metrics), also look at the specific codition instruction, also look at a check list file on which it will keep on modifying as which was done and which is pending, and put any specific comment about any task. Basically a document which will enable the Ai Coding agent to build without any human interation. 
-
-I am attaching the resources file. Help me draft the checklist and this document; Agent Opetation Manual. 
