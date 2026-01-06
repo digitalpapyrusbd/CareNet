@@ -3,10 +3,21 @@ import { UserRole } from "@prisma/client";
 import { kvMock } from "./kv-mock";
 
 // Use KV mock for development if no real KV configured
-const hasRealKV = process.env.KV_REST_API_URL &&
-  process.env.KV_REST_API_URL !== 'https://localhost:8079' &&
-  process.env.KV_REST_API_TOKEN &&
-  process.env.KV_REST_API_TOKEN !== 'dev-token-dummy';
+// Support both Vercel KV and Upstash Redis variable names
+const kvUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+const kvToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+const hasRealKV = kvUrl &&
+  kvUrl !== 'https://localhost:8079' &&
+  kvToken &&
+  kvToken !== 'dev-token-dummy';
+
+// Set KV environment variables for @vercel/kv package if using Upstash variables
+if (hasRealKV && !process.env.KV_REST_API_URL && process.env.UPSTASH_REDIS_REST_URL) {
+  process.env.KV_REST_API_URL = process.env.UPSTASH_REDIS_REST_URL;
+}
+if (hasRealKV && !process.env.KV_REST_API_TOKEN && process.env.UPSTASH_REDIS_REST_TOKEN) {
+  process.env.KV_REST_API_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+}
 
 let kv: any;
 if (hasRealKV) {

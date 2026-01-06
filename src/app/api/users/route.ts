@@ -6,6 +6,13 @@ import { hashPassword, verifyPassword } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { UserRole } from '@prisma/client';
 import { deleteUserSessions } from '@/lib/session';
+// Support both Vercel KV and Upstash Redis variable names
+if (!process.env.KV_REST_API_URL && process.env.UPSTASH_REDIS_REST_URL) {
+  process.env.KV_REST_API_URL = process.env.UPSTASH_REDIS_REST_URL;
+}
+if (!process.env.KV_REST_API_TOKEN && process.env.UPSTASH_REDIS_REST_TOKEN) {
+  process.env.KV_REST_API_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+}
 import { kv } from '@vercel/kv';
 
 // Validation schemas

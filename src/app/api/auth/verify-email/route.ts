@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
+// Support both Vercel KV and Upstash Redis variable names
+if (!process.env.KV_REST_API_URL && process.env.UPSTASH_REDIS_REST_URL) {
+  process.env.KV_REST_API_URL = process.env.UPSTASH_REDIS_REST_URL;
+}
+if (!process.env.KV_REST_API_TOKEN && process.env.UPSTASH_REDIS_REST_TOKEN) {
+  process.env.KV_REST_API_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+}
 import { kv } from '@vercel/kv';
 import { generateSecureToken } from '@/lib/security';
 
