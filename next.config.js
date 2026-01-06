@@ -3,9 +3,6 @@
 const nextConfig = {
   reactStrictMode: true,
 
-  // Enable Turbopack configuration to satisfy Next 16
-  turbopack: {},
-
   // Ignore TypeScript errors during production build
   typescript: {
     ignoreBuildErrors: true,
@@ -37,14 +34,15 @@ const nextConfig = {
   experimental: {
     optimizeCss: true,
     scrollRestoration: true,
-    // Fix for middleware.js.nft.json error on Vercel
-    outputFileTracingExcludes: {
-      '*': [
-        'node_modules/@swc/core-linux-x64-gnu',
-        'node_modules/@swc/core-linux-x64-musl',
-        'node_modules/@esbuild/linux-x64',
-      ],
-    },
+  },
+
+  // File tracing configuration (moved out of experimental in Next.js 16)
+  outputFileTracingExcludes: {
+    '*': [
+      'node_modules/@swc/core-linux-x64-gnu',
+      'node_modules/@swc/core-linux-x64-musl',
+      'node_modules/@esbuild/linux-x64',
+    ],
   },
 
   // Compiler optimizations
@@ -136,29 +134,11 @@ const nextConfig = {
     ];
   },
 
-  // Webpack configuration
-  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
-    // Enhance webpack configuration
-    config.experiments = {
-      ...config.experiments,
-      topLevelAwait: true,
-    };
+  // Removed webpack config to allow Turbopack (Next.js 16 default)
+  // Turbopack handles module resolution automatically
 
-    // Fix for middleware.js.nft.json error
-    if (isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        net: false,
-        tls: false,
-      };
-    }
-
-    return config;
-  },
-
-  // Output configuration
-  // output: "standalone", // Commented out due to middleware.js.nft.json error
+  // Output configuration - required for Vercel deployment
+  output: "standalone",
 
   // Logging
   logging: {
