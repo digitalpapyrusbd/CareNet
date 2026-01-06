@@ -1,11 +1,12 @@
-import { Activity, Heart, Pill, AlertCircle, Calendar } from "lucide-react";
+import { Activity, Pill, Heart, AlertCircle, Calendar, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 
 interface CareLogsViewProps {
-  patientName: string;
+  patientName?: string;
+  onNavigate?: (page: string) => void;
 }
 
-export function CareLogsView({ patientName }: CareLogsViewProps) {
+export function CareLogsView({ patientName = "Patient", onNavigate }: CareLogsViewProps) {
   const [activeTab, setActiveTab] = useState<'vitals' | 'medications' | 'activities' | 'incidents'>('vitals');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
@@ -62,6 +63,15 @@ export function CareLogsView({ patientName }: CareLogsViewProps) {
   return (
     <div className="min-h-screen pb-6">
       <div className="p-6">
+        {/* Back Button */}
+        <button
+          onClick={() => onNavigate?.('toc')}
+          className="w-10 h-10 rounded-full flex items-center justify-center mb-4"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+        >
+          <ArrowLeft className="w-5 h-5" style={{ color: '#535353' }} />
+        </button>
+
         <h1 className="mb-6" style={{ color: '#535353' }}>Care Logs</h1>
 
         {/* Date Selector */}

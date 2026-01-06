@@ -140,7 +140,7 @@ const nextConfig = {
   },
 
   // Output configuration
-  output: "standalone",
+  // output: "standalone", // Commented out due to middleware.js.nft.json error
 
   // Logging
   logging: {

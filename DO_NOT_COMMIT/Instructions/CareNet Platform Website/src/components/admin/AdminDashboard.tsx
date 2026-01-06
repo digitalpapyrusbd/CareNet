@@ -1,4 +1,4 @@
-import { Shield, Users, Building2, DollarSign, TrendingUp, Activity, AlertCircle, CheckCircle } from "lucide-react";
+import { Shield, Users, Building2, DollarSign, TrendingUp, Activity, AlertCircle, CheckCircle, ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 
 interface AdminDashboardProps {
@@ -8,6 +8,7 @@ interface AdminDashboardProps {
   onSystemSettings: () => void;
   onAnalytics: () => void;
   onVerificationQueue: () => void;
+  onNavigate?: (page: string) => void;
 }
 
 export function AdminDashboard({
@@ -16,7 +17,8 @@ export function AdminDashboard({
   onAuditLogs,
   onSystemSettings,
   onAnalytics,
-  onVerificationQueue
+  onVerificationQueue,
+  onNavigate
 }: AdminDashboardProps) {
   const kpis = {
     totalRevenue: 2450000,
@@ -42,6 +44,15 @@ export function AdminDashboard({
     <div className="min-h-screen pb-6">
       {/* Header */}
       <div className="p-6">
+        {/* Back Button */}
+        <button
+          onClick={() => onNavigate?.('toc')}
+          className="w-10 h-10 rounded-full flex items-center justify-center mb-4"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+        >
+          <ArrowLeft className="w-5 h-5" style={{ color: '#535353' }} />
+        </button>
+
         <div className="mb-6">
           <h1 style={{ color: '#535353' }}>Admin Dashboard</h1>
           <p style={{ color: '#848484' }}>Welcome back, {adminName}</p>

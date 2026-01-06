@@ -1,15 +1,16 @@
-import { FileText, Calendar, DollarSign, Download, Send } from "lucide-react";
+import { FileText, Calendar, DollarSign, Download, Send, ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { useState } from "react";
 
 interface GenerateInvoiceProps {
-  caregiverName: string;
-  onGenerate: (data: any) => void;
-  onCancel: () => void;
+  caregiverName?: string;
+  onGenerate?: (data: any) => void;
+  onCancel?: () => void;
+  onNavigate?: (page: string) => void;
 }
 
-export function GenerateInvoice({ caregiverName, onGenerate, onCancel }: GenerateInvoiceProps) {
+export function GenerateInvoice({ caregiverName = "Caregiver", onGenerate, onCancel, onNavigate }: GenerateInvoiceProps) {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [selectedJobs, setSelectedJobs] = useState<string[]>([]);
@@ -65,6 +66,15 @@ export function GenerateInvoice({ caregiverName, onGenerate, onCancel }: Generat
   return (
     <div className="min-h-screen pb-6">
       <div className="p-6">
+        {/* Back Button */}
+        <button
+          onClick={() => onCancel?.() || onNavigate?.('toc')}
+          className="w-10 h-10 rounded-full flex items-center justify-center mb-4"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+        >
+          <ArrowLeft className="w-5 h-5" style={{ color: '#535353' }} />
+        </button>
+
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center gap-3 mb-6">
             <div 

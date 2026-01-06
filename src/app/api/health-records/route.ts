@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
               id: true,
               name: true,
               date_of_birth: true,
-              guardian: {
+              users: {
                 select: {
                   id: true,
                   name: true,
@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
       hasAccess = patient?.guardian_id === user.id;
     } else if (user.role === UserRole.PATIENT) {
       const patient = await prisma.patients.findFirst({
-        where: { user_id: user.id },
+          where: { user_id: user.id },
         select: { id: true }
       });
       
@@ -191,23 +191,23 @@ export async function POST(request: NextRequest) {
     // Create health record
     const healthRecord = await prisma.health_records.create({
       data: {
-        patientId,
-        recordType,
+        patient_id: patientId,
+        record_type: recordType,
         title,
         description,
-        fileUrl,
+        file_url: fileUrl,
         metadata,
-        uploadedBy: user.id,
-        validFrom: validFrom ? new Date(validFrom) : null,
-        validUntil: validUntil ? new Date(validUntil) : null,
-        isArchived: false,
+        uploaded_by: user.id,
+        valid_from: validFrom ? new Date(validFrom) : null,
+        valid_until: validUntil ? new Date(validUntil) : null,
+        is_archived: false,
       },
       include: { patients: {
           select: {
             id: true,
             name: true,
             date_of_birth: true,
-            guardian: {
+            users: {
               select: {
                 id: true,
                 name: true,
@@ -294,9 +294,9 @@ export async function PUT(request: NextRequest) {
     let hasAccess = false;
     
     if (user.role === UserRole.GUARDIAN) {
-      hasAccess = existingRecord.patient.guardian_id === user.id;
+      hasAccess = existingRecord.patients.guardian_id === user.id;
     } else if (user.role === UserRole.PATIENT) {
-      hasAccess = existingRecord.patient.userId === user.id;
+      hasAccess = existingRecord.patients.user_id === user.id;
     } else if (user.role === UserRole.SUPER_ADMIN || user.role === UserRole.MODERATOR) {
       hasAccess = true;
     }
@@ -314,18 +314,18 @@ export async function PUT(request: NextRequest) {
       data: {
         ...(title && { title }),
         ...(description && { description }),
-        ...(fileUrl && { fileUrl }),
+        ...(fileUrl && { file_url: fileUrl }),
         ...(metadata && { metadata }),
-        ...(validFrom && { validFrom: new Date(validFrom) }),
-        ...(validUntil && { validUntil: new Date(validUntil) }),
-        ...(isArchived !== undefined && { isArchived }),
+        ...(validFrom && { valid_from: new Date(validFrom) }),
+        ...(validUntil && { valid_until: new Date(validUntil) }),
+        ...(isArchived !== undefined && { is_archived: isArchived }),
       },
       include: { patients: {
           select: {
             id: true,
             name: true,
             date_of_birth: true,
-            guardian: {
+            users: {
               select: {
                 id: true,
                 name: true,

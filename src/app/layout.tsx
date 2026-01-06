@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import ClientProviders from '@/components/providers/ClientProviders';
 import { TranslationProvider } from '@/components/providers/TranslationProvider';
@@ -7,6 +7,8 @@ import { ServiceWorkerRegistration } from '@/components/providers/ServiceWorkerR
 import { TouchTargetAuditPanel } from '@/hooks/use-touch-audit';
 import { PerformanceMonitoring } from '@/components/performance/PerformanceMonitoring';
 import { UniversalNav } from '@/components/layout/UniversalNav';
+import { PWAProvider, InstallPrompt, OfflineIndicator } from '@/components/pwa/PWAProvider';
+import { MessageProvider } from '@/components/chat/MessageProvider';
 import './globals.css';
 
 const inter = Inter({ 
@@ -28,26 +30,27 @@ export const metadata: Metadata = {
     title: 'CaregiverBD',
   },
   applicationName: 'Caregiver Platform Bangladesh',
+  icons: {
+    icon: [
+      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/icons/icon-152.png', sizes: '152x152', type: 'image/png' },
+      { url: '/icons/icon-180.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#00AEEF' },
     { media: '(prefers-color-scheme: dark)', color: '#0e0e0e' }
   ],
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
-  icons: {
-    icon: [
-      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
-    ],
-    apple: [
-      { url: '/icon-152.png', sizes: '152x152', type: 'image/png' },
-      { url: '/icon-180.png', sizes: '180x180', type: 'image/png' },
-    ],
-  },
 };
 
 export default function RootLayout({
@@ -60,7 +63,7 @@ export default function RootLayout({
       <head>
         <PerformanceMonitoring />
         <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="apple-touch-icon" href="/icon-180.png" />
+        <link rel="apple-touch-icon" href="/icons/icon-180.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="format-detection" content="telephone=no" />
@@ -70,14 +73,22 @@ export default function RootLayout({
         <ServiceWorkerRegistration />
         <ThemeProvider>
           <TranslationProvider>
-            <ClientProviders>
-              {/* Main content wrapper */}
-              <div id="main-content" className="min-h-screen flex flex-col">
-                {children}
-              </div>
-              {/* Global universal navigation (includes mobile bottom menu) */}
-              <UniversalNav />
-            </ClientProviders>
+            <PWAProvider>
+              <MessageProvider>
+                <ClientProviders>
+                  {/* Main content wrapper */}
+                  <div id="main-content" className="min-h-screen flex flex-col">
+                    {children}
+                  </div>
+                  {/* Global universal navigation (includes mobile bottom menu) */}
+                  <UniversalNav />
+                </ClientProviders>
+                
+                {/* PWA Components */}
+                <InstallPrompt />
+                <OfflineIndicator />
+              </MessageProvider>
+            </PWAProvider>
           </TranslationProvider>
         </ThemeProvider>
         {/* Touch Target Audit Tool (Development Only) */}

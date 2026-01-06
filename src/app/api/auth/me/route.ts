@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     switch (user.role) {
       case 'COMPANY':
         userData = await prisma.companies.findUnique({
-          where: { user_id: user.id },
+          where: { userId: user.id },
           include: {
             users: {
               select: {
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
         
       case 'CAREGIVER':
         userData = await prisma.caregivers.findUnique({
-          where: { user_id: user.id },
+          where: { userId: user.id },
           include: { users: {
               select: {
                 id: true,
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
                 created_at: true,
               },
             },
-            company: {
+            companies: {
               select: {
                 id: true,
                 company_name: true,
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
         userData = await prisma.patients.findFirst({
           where: { user_id: user.id },
           include: {
-            guardian: {
+            users: {
               select: {
                 id: true,
                 name: true,

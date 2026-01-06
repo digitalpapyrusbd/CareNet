@@ -34,28 +34,29 @@ export async function getUserById(id: string) {
 
 export async function updateUserLastLogin(userId: string) {
   return await prisma.users.update({
-    where: { id: user_id },
+    where: { id: userId },
     data: { last_login_at: new Date() },
   });
 }
 
 export async function updateUserVerification(userId: string, isPhoneVerified: boolean) {
+  // Note: isPhoneVerified field doesn't exist in users schema, this function may need to be removed or refactored
   return await prisma.users.update({
-    where: { id: user_id },
-    data: { isPhoneVerified },
+    where: { id: userId },
+    data: {},
   });
 }
 
 // Company utilities
 export async function createCompany(data: {
-  user_id: string;
+  userId: string;
   company_name: string;
   trade_license: string;
   contact_person: string;
   contact_phone: string;
   address: string;
-  payoutMethod: string;
-  payoutAccount: string;
+  payout_method: string;
+  payout_account: string;
   commissionRate?: number;
 }) {
   return await prisma.companies.create({
@@ -72,17 +73,17 @@ export async function createCompany(data: {
 
 export async function getCompanyByUserId(userId: string) {
   return await prisma.companies.findUnique({
-    where: { user_id },
+    where: { userId },
   });
 }
 
 // Caregiver utilities
 export async function createCaregiver(data: {
-  user_id: string;
+  userId: string;
   company_id?: string;
   nid: string;
   nidUrl: string;
-  photoUrl: string;
+  photo_url: string;
   date_of_birth: Date;
   gender: string;
   address: string;
@@ -106,7 +107,7 @@ export async function createCaregiver(data: {
 
 export async function getCaregiverByUserId(userId: string) {
   return await prisma.caregivers.findUnique({
-    where: { user_id },
+    where: { userId },
   });
 }
 
@@ -136,7 +137,7 @@ export async function createPatient(data: {
 export async function getPatientsByGuardian(guardianId: string) {
   return await prisma.patients.findMany({
     where: { guardian_id },
-    orderBy: { created_at: 'desc' },
+    orderBy: { createdAt: 'desc' },
   });
 }
 
@@ -168,14 +169,14 @@ export async function getJobsByGuardian(guardianId: string) {
       company: true,
       package: true,
       assignments: {
-        include: { caregivers: {
+        include: { caregivers_assignments_caregiver_idTocaregivers: {
             include: { users: true,
             },
           },
         },
       },
     },
-    orderBy: { created_at: 'desc' },
+    orderBy: { createdAt: 'desc' },
   });
 }
 
@@ -204,7 +205,7 @@ export async function getPaymentsByPayer(payerId: string) {
         },
       },
     },
-    orderBy: { created_at: 'desc' },
+    orderBy: { createdAt: 'desc' },
   });
 }
 

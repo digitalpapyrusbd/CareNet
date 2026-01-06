@@ -8,8 +8,8 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  // Check authentication and authorization - only Company can respond to feedback
-  const authResult = await authorize([UserRole.COMPANY])(request);
+  // Check authentication and authorization - only Agency can respond to feedback
+  const authResult = await authorize([UserRole.AGENCY])(request);
   if (authResult) return authResult;
 
   const user = (request as any).user;
@@ -30,7 +30,7 @@ export async function POST(
     const feedback = await prisma.feedbacks.findUnique({
       where: { id },
       include: {
-        toUser: {
+        users_feedbacks_to_user_idTousers: {
           select: {
             id: true,
             role: true,
@@ -47,17 +47,17 @@ export async function POST(
     }
 
     // Check if feedback is already responded to
-    if (feedback.company_response) {
+    if (feedback.agency_response) {
       return NextResponse.json(
         { error: 'Feedback already has a response' },
         { status: 400 }
       );
     }
 
-    // Verify feedback is about the company
-    if (feedback.reviewee_type !== 'COMPANY' || feedback.toUserId !== user.id) {
+    // Verify feedback is about the agency
+    if (feedback.reviewee_type !== 'AGENCY' || feedback.to_user_id !== user.id) {
       return NextResponse.json(
-        { error: 'You can only respond to feedback about your company' },
+        { error: 'You can only respond to feedback about your agency' },
         { status: 403 }
       );
     }
@@ -66,41 +66,22 @@ export async function POST(
     const updatedFeedback = await prisma.feedbacks.update({
       where: { id },
       data: {
-        company_response: response.trim(),
-        respondedAt: new Date(),
+        agency_response: response.trim(),
+        responded_at: new Date(),
       },
       include: {
-        fromUser: {
+        users_feedbacks_from_user_idTousers: {
           select: {
             id: true,
             name: true,
             role: true,
           },
         },
-        toUser: {
+        users_feedbacks_to_user_idTousers: {
           select: {
             id: true,
             name: true,
             role: true,
-          },
-        },
-        job: {
-          select: {
-            id: true,
-            patient: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-            company: {
-              select: {
-                id: true,
-                company_name: true,
-              },
-            },
-            startDate: true,
-            endDate: true,
           },
         },
       },

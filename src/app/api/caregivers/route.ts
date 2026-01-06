@@ -6,7 +6,7 @@ import { UserRole } from '@/lib/auth';
 // Get all caregivers (admin/moderator only)
 export async function GET(request: NextRequest) {
   // Check authentication and authorization
-  const authResult = await authorize([UserRole.SUPER_ADMIN, UserRole.MODERATOR, UserRole.COMPANY])(request);
+  const authResult = await authorize([UserRole.SUPER_ADMIN, UserRole.MODERATOR, UserRole.AGENCY])(request);
   if (authResult) return authResult;
 
   const user = (request as any).user;
@@ -25,14 +25,14 @@ export async function GET(request: NextRequest) {
     // Build where clause
     const where: any = {};
     
-    // Companies can only see their own caregivers
-    if (user.role === UserRole.COMPANY) {
-      const company = await prisma.companies.findUnique({
-        where: { user_id: user.id },
+    // Agencies can only see their own caregivers
+    if (user.role === UserRole.AGENCY) {
+      const agency = await prisma.agencies.findUnique({
+        where: { userId: user.id },
       });
       
-      if (company) {
-        where.companyId = company.id;
+      if (agency) {
+        where.agency_id = agency.id;
       }
     }
     
@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
               created_at: true,
             },
           },
-          company: {
+          companies: {
             select: {
               id: true,
               company_name: true,
@@ -85,8 +85,7 @@ export async function GET(request: NextRequest) {
           },
           _count: {
             select: {
-              assignments: true,
-              careLogs: true,
+              care_logs: true,
             },
           },
         },
@@ -154,7 +153,7 @@ export async function POST(request: NextRequest) {
     // Check if user already has a caregiver profile
     if (user.role === UserRole.CAREGIVER) {
       const existingCaregiver = await prisma.caregivers.findUnique({
-        where: { user_id: user.id },
+        where: { userId: user.id },
       });
 
       if (existingCaregiver) {
@@ -165,15 +164,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Verify company if provided
+    // Verify agency if provided
     if (companyId) {
-      const company = await prisma.companies.findUnique({
+      const agency = await prisma.agencies.findUnique({
         where: { id: companyId },
       });
 
-      if (!company) {
+      if (!agency) {
         return NextResponse.json(
-          { error: 'Invalid company ID' },
+          { error: 'Invalid agency ID' },
           { status: 400 }
         );
       }
@@ -182,19 +181,19 @@ export async function POST(request: NextRequest) {
     // Create caregiver
     const caregiver = await prisma.caregivers.create({
       data: {
-        user_id: user.id,
-        companyId,
+        userId: user.id,
+        agency_id: companyId,
         nid,
-        nidUrl,
-        photoUrl,
+        nid_url: nidUrl,
+        photo_url: photoUrl,
         date_of_birth: new Date(dateOfBirth),
         gender,
         address,
         skills,
         certifications,
-        experienceYears,
+        experience_years: experienceYears,
         languages,
-        hourlyRate,
+        hourly_rate: hourlyRate,
         background_check_status: 'PENDING',
         rating_avg: 0.0,
         rating_count: 0,
@@ -210,10 +209,10 @@ export async function POST(request: NextRequest) {
             phone: true,
           },
         },
-        company: {
+        agencies: {
           select: {
             id: true,
-            company_name: true,
+            agency_name: true,
           },
         },
       },

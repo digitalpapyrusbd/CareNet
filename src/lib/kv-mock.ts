@@ -45,4 +45,78 @@ export const kvMock = {
     item.expiresAt = Date.now() + seconds * 1000;
     return 1;
   },
+
+  sadd: async (key: string, ...members: string[]): Promise<number> => {
+    const item = store.get(key);
+    let set: Set<string>;
+
+    if (item) {
+      try {
+        const parsed = JSON.parse(item.value);
+        if (Array.isArray(parsed)) {
+          set = new Set(parsed);
+        } else {
+          set = new Set(); // Should not happen if strictly used as set
+        }
+      } catch {
+        set = new Set();
+      }
+    } else {
+      set = new Set();
+    }
+
+    let added = 0;
+    for (const member of members) {
+      if (!set.has(member)) {
+        set.add(member);
+        added++;
+      }
+    }
+
+    store.set(key, { value: JSON.stringify(Array.from(set)), expiresAt: item?.expiresAt });
+    return added;
+  },
+
+  srem: async (key: string, ...members: string[]): Promise<number> => {
+    const item = store.get(key);
+    if (!item) return 0;
+
+    let set: Set<string>;
+    try {
+      const parsed = JSON.parse(item.value);
+      if (Array.isArray(parsed)) {
+        set = new Set(parsed);
+      } else {
+        return 0;
+      }
+    } catch {
+      return 0;
+    }
+
+    let removed = 0;
+    for (const member of members) {
+      if (set.has(member)) {
+        set.delete(member);
+        removed++;
+      }
+    }
+
+    store.set(key, { value: JSON.stringify(Array.from(set)), expiresAt: item.expiresAt });
+    return removed;
+  },
+
+  smembers: async (key: string): Promise<string[]> => {
+    const item = store.get(key);
+    if (!item) return [];
+
+    try {
+      const parsed = JSON.parse(item.value);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  }
 };

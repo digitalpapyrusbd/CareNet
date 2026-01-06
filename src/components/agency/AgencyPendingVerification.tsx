@@ -5,7 +5,7 @@ interface AgencyPendingVerificationProps {
   documents: {
     tradeLicense: 'uploaded' | 'verified' | 'pending';
     tinCertificate?: 'uploaded' | 'verified' | 'pending';
-    companyInfo: 'uploaded' | 'verified' | 'pending';
+    agencyInfo: 'uploaded' | 'verified' | 'pending';
   };
 }
 
@@ -84,14 +84,14 @@ export function AgencyPendingVerification({ estimatedTime, documents }: AgencyPe
             <div className="flex items-center justify-between p-3 rounded-lg" style={{ background: 'rgba(255, 255, 255, 0.5)' }}>
               <div className="flex items-center gap-3">
                 {(() => {
-                  const Icon = getStatusIcon(documents.companyInfo);
-                  return <Icon className="w-5 h-5" style={{ color: getStatusColor(documents.companyInfo) }} />;
+                  const Icon = getStatusIcon(documents.agencyInfo);
+                  return <Icon className="w-5 h-5" style={{ color: getStatusColor(documents.agencyInfo) }} />;
                 })()}
                 <span style={{ color: '#535353' }}>Company Information</span>
               </div>
               <span className="text-xs px-2 py-1 rounded-full capitalize"
-                style={{ background: `${getStatusColor(documents.companyInfo)}33`, color: getStatusColor(documents.companyInfo) }}>
-                {documents.companyInfo}
+                style={{ background: `${getStatusColor(documents.agencyInfo)}33`, color: getStatusColor(documents.agencyInfo) }}>
+                {documents.agencyInfo}
               </span>
             </div>
           </div>

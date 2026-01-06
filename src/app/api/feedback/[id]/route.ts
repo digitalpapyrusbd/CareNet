@@ -12,7 +12,7 @@ export async function GET(
   const authResult = await authorize([
     UserRole.SUPER_ADMIN,
     UserRole.MODERATOR,
-    UserRole.COMPANY,
+    UserRole.AGENCY,
     UserRole.GUARDIAN,
     UserRole.CAREGIVER
   ])(request);
@@ -35,19 +35,19 @@ export async function GET(
         ];
         break;
         
-      case UserRole.COMPANY:
-        // Companies can see feedback for their caregivers and themselves
-        const company = await prisma.companies.findUnique({
-          where: { user_id: user.id },
+      case UserRole.AGENCY:
+        // Agencies can see feedback for their caregivers and themselves
+        const agency = await prisma.agencies.findUnique({
+          where: { userId: user.id },
         });
         
-        if (company) {
+        if (agency) {
           where.OR = [
-            { toUserId: user.id }, // Feedback about the company
+            { toUserId: user.id }, // Feedback about the agency
             { 
-              toUser: {
+              users_feedbacks_to_user_idTousers: {
                 caregiver: {
-                  companyId: company.id,
+                  agency_id: agency.id,
                 },
               },
             }, // Feedback about their caregivers
@@ -60,37 +60,18 @@ export async function GET(
     const feedback = await prisma.feedbacks.findFirst({
       where,
       include: {
-        fromUser: {
+        users_feedbacks_from_user_idTousers: {
           select: {
             id: true,
             name: true,
             role: true,
           },
         },
-        toUser: {
+        users_feedbacks_to_user_idTousers: {
           select: {
             id: true,
             name: true,
             role: true,
-          },
-        },
-        job: {
-          select: {
-            id: true,
-            patient: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-            company: {
-              select: {
-                id: true,
-                company_name: true,
-              },
-            },
-            startDate: true,
-            endDate: true,
           },
         },
       },
@@ -150,37 +131,18 @@ export async function POST(
         flagged_inappropriate: !feedback.flagged_inappropriate,
       },
       include: {
-        fromUser: {
+        users_feedbacks_from_user_idTousers: {
           select: {
             id: true,
             name: true,
             role: true,
           },
         },
-        toUser: {
+        users_feedbacks_to_user_idTousers: {
           select: {
             id: true,
             name: true,
             role: true,
-          },
-        },
-        job: {
-          select: {
-            id: true,
-            patient: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-            company: {
-              select: {
-                id: true,
-                company_name: true,
-              },
-            },
-            startDate: true,
-            endDate: true,
           },
         },
       },

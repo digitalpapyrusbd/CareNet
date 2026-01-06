@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     const patientId = searchParams.get('patientId');
     const logType = searchParams.get('logType');
     const startDate = searchParams.get('startDate');
-    const endDate = searchParams.get('endDate');
+    const end_date = searchParams.get('end_date');
 
     const skip = (page - 1) * limit;
 
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
       case UserRole.COMPANY: {
         // Companies can see care logs for their caregivers
         const company = await prisma.companies.findUnique({
-          where: { user_id: user.id },
+          where: { userId: user.id },
         });
         
         if (company) {
@@ -76,25 +76,25 @@ export async function GET(request: NextRequest) {
     }
     
     if (jobId) {
-      where.jobId = jobId;
+      where.job_id = jobId;
     }
     
     if (logType) {
       where.logType = logType;
     }
     
-    if (startDate && endDate) {
+    if (startDate && end_date) {
       where.timestamp = {
         gte: new Date(startDate),
-        lte: new Date(endDate),
+        lte: new Date(end_date),
       };
     } else if (startDate) {
       where.timestamp = {
         gte: new Date(startDate),
       };
-    } else if (endDate) {
+    } else if (end_date) {
       where.timestamp = {
-        lte: new Date(endDate),
+        lte: new Date(end_date),
       };
     }
 
@@ -107,35 +107,35 @@ export async function GET(request: NextRequest) {
         include: { caregivers: {
             select: {
               id: true,
-              user: {
+              users: {
                 select: {
                   id: true,
                   name: true,
                   phone: true,
                 },
               },
-              photoUrl: true,
+              photo_url: true,
             },
           },
-          patient: {
+          patients: {
             select: {
               id: true,
               name: true,
               date_of_birth: true,
             },
           },
-          job: {
+          jobs: {
             select: {
               id: true,
               start_date: true,
-              endDate: true,
+              end_date: true,
             },
           },
-          assignment: {
+          assignments: {
             select: {
               id: true,
-              shiftStartTime: true,
-              shiftEndTime: true,
+              shift_start_time: true,
+                shift_end_time: true,
             },
           },
         },
@@ -206,8 +206,8 @@ export async function POST(request: NextRequest) {
     const assignment = await prisma.assignments.findFirst({
       where: {
         id: assignmentId,
-        jobId,
-        caregiverId: user.id,
+        job_id: jobId,
+        caregiver_id: user.id,
       },
     });
 
@@ -221,37 +221,37 @@ export async function POST(request: NextRequest) {
     // Create care log
     const careLog = await prisma.care_logs.create({
       data: {
-        jobId,
-        assignmentId,
-        caregiverId: user.id,
-        patientId,
-        logType,
+        job_id: jobId,
+        assignment_id: assignmentId,
+        caregiver_id: user.id,
+        patient_id: patientId,
+        log_type: logType,
         timestamp: new Date(timestamp),
-        locationLat: locationLat ? parseFloat(locationLat) : null,
-        locationLng: locationLng ? parseFloat(locationLng) : null,
+        location_lat: locationLat ? parseFloat(locationLat) : null,
+        location_lng: locationLng ? parseFloat(locationLng) : null,
         data,
         notes,
-        photoUrls,
-        guardianNotified: false,
+        photo_urls: photoUrls,
+        guardian_notified: false,
       },
       include: { caregivers: {
           select: {
             id: true,
-            user: {
+            users: {
               select: {
                 id: true,
                 name: true,
                 phone: true,
               },
             },
-            photoUrl: true,
+            photo_url: true,
           },
         },
-        patient: {
+        patients: {
           select: {
             id: true,
             name: true,
-            guardian: {
+            users: {
               select: {
                 id: true,
                 name: true,
@@ -261,18 +261,18 @@ export async function POST(request: NextRequest) {
             },
           },
         },
-        job: {
+        jobs: {
           select: {
             id: true,
             start_date: true,
-            endDate: true,
+            end_date: true,
           },
         },
-        assignment: {
+        assignments: {
           select: {
             id: true,
-            shiftStartTime: true,
-            shiftEndTime: true,
+            shift_start_time: true,
+                shift_end_time: true,
           },
         },
       },

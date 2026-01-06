@@ -63,8 +63,8 @@ export class FeedbackService {
         where: { userId: userId },
         data: { rating_avg: avg, rating_count: count },
       });
-    } else if (type === FeedbackType.COMPANY) {
-      await this.prisma.companies.update({
+    } else if (type === FeedbackType.AGENCY) {
+      await this.prisma.agencies.update({
         where: { userId: userId },
         data: { rating_avg: avg, rating_count: count },
       });

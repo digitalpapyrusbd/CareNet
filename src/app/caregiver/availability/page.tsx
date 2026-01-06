@@ -1,128 +1,213 @@
-﻿'use client';
+"use client";
 
-import { UniversalNav } from '@/components/layout/UniversalNav';
+import { useState } from "react";
+import { ArrowLeft, Calendar, Save } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { UniversalNav } from "@/components/layout/UniversalNav";
 
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, Save } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+const DAYS = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
 
-export default function UpdateAvailabilityPage() {
-  const router = useRouter();
-  const [availability, setAvailability] = useState({
-    monday: { available: true, start: '08:00', end: '20:00' },
-    tuesday: { available: true, start: '08:00', end: '20:00' },
-    wednesday: { available: true, start: '08:00', end: '20:00' },
-    thursday: { available: true, start: '08:00', end: '20:00' },
-    friday: { available: true, start: '08:00', end: '20:00' },
-    saturday: { available: false, start: '', end: '' },
-    sunday: { available: false, start: '', end: '' },
-  });
+export default function AvailabilityManagementPage() {
+  const [availability, setAvailability] = useState<
+    Record<string, { enabled: boolean; startTime: string; endTime: string }>
+  >(() =>
+    DAYS.reduce(
+      (acc, day) => ({
+        ...acc,
+        [day]: { enabled: false, startTime: "09:00", endTime: "17:00" },
+      }),
+      {},
+    ),
+  );
 
-  const days = [
-    { key: 'monday', label: 'Monday' },
-    { key: 'tuesday', label: 'Tuesday' },
-    { key: 'wednesday', label: 'Wednesday' },
-    { key: 'thursday', label: 'Thursday' },
-    { key: 'friday', label: 'Friday' },
-    { key: 'saturday', label: 'Saturday' },
-    { key: 'sunday', label: 'Sunday' },
-  ];
+  const toggleDay = (day: string) => {
+    setAvailability((prev) => ({
+      ...prev,
+      [day]: { ...prev[day], enabled: !prev[day].enabled },
+    }));
+  };
+
+  const updateTime = (
+    day: string,
+    field: "startTime" | "endTime",
+    value: string,
+  ) => {
+    setAvailability((prev) => ({
+      ...prev,
+      [day]: { ...prev[day], [field]: value },
+    }));
+  };
+
+  const handleSave = () => {
+    console.log("Saving availability:", availability);
+    window.location.href = "/caregiver/registration/step-6";
+  };
 
   return (
-    <>
-      <UniversalNav userRole="caregiver" showBack={true} />
-      <div className="min-h-screen pb-6 pb-24 md:pt-14">
-      <div className="p-6">
+    <div
+      className="min-h-screen flex flex-col p-6"
+      style={{ backgroundColor: "#F5F7FA" }}
+    >
+      {/* Header */}
+      <div className="mb-8">
         <Button
           variant="ghost"
-          onClick={() => router.back()}
-          className="mb-4 hover:bg-white/30"
-          style={{ color: '#535353' }}
+          onClick={() => window.history.back()}
+          className="mb-6 hover:bg-white/30"
+          style={{ color: "#535353" }}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
 
-        <div className="mb-6">
-          <h1 className="mb-2" style={{ color: '#535353' }}>Update Availability</h1>
-          <p style={{ color: '#848484' }}>Set your weekly availability schedule</p>
+        <div className="text-center mb-6">
+          <div
+            className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4"
+            style={{
+              background:
+                "radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FEB4C5 0%, #DB869A 100%)",
+              boxShadow: "0px 4px 18px rgba(240, 161, 180, 0.4)",
+            }}
+          >
+            <Calendar className="w-10 h-10 text-white" />
+          </div>
+          <h1 className="mb-2" style={{ color: "#535353" }}>
+            Set Your Availability
+          </h1>
+          <p style={{ color: "#848484" }}>Step 6 of 6: Weekly Schedule</p>
         </div>
 
-        <div className="space-y-3 mb-6">
-          {days.map((day) => {
-            const dayAvail = availability[day.key as keyof typeof availability];
-            return (
-              <div key={day.key} className="finance-card p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <p style={{ color: '#535353' }}>{day.label}</p>
-                  <button
-                    onClick={() => setAvailability({
-                      ...availability,
-                      [day.key]: { ...dayAvail, available: !dayAvail.available }
-                    })}
-                    className="px-4 py-2 rounded-lg text-sm"
-                    style={{
-                      background: dayAvail.available
-                        ? 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #A8E063 0%, #7CE577 100%)'
-                        : 'rgba(255, 255, 255, 0.5)',
-                      color: dayAvail.available ? 'white' : '#535353'
-                    }}
+        <div
+          className="w-full h-2 rounded-full mb-6"
+          style={{ backgroundColor: "rgba(132, 132, 132, 0.1)" }}
+        >
+          <div
+            className="h-2 rounded-full transition-all"
+            style={{
+              width: "83.33%",
+              background:
+                "radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FEB4C5 0%, #DB869A 100%)",
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Form */}
+      <div className="flex-1 space-y-3">
+        {DAYS.map((day) => (
+          <div key={day} className="finance-card p-4">
+            <div className="flex items-center justify-between mb-3">
+              <label className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={availability[day].enabled}
+                  onChange={() => toggleDay(day)}
+                  className="w-5 h-5 accent-pink-500"
+                />
+                <span style={{ color: "#535353" }}>{day}</span>
+              </label>
+            </div>
+
+            {availability[day].enabled && (
+              <div className="grid grid-cols-2 gap-3 pl-8">
+                <div>
+                  <label
+                    className="block text-xs mb-1"
+                    style={{ color: "#848484" }}
                   >
-                    {dayAvail.available ? 'Available' : 'Unavailable'}
-                  </button>
+                    Start Time
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="time"
+                      value={availability[day].startTime}
+                      onChange={(e) =>
+                        updateTime(day, "startTime", e.target.value)
+                      }
+                      className="w-full finance-card px-3 py-2 text-sm pr-8"
+                      style={{ color: "#535353", outline: "none" }}
+                    />
+                    <svg
+                      className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4"
+                      style={{ color: "#848484" }}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 18" fill="none" />
+                    </svg>
+                  </div>
                 </div>
 
-                {dayAvail.available && (
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs mb-1 block" style={{ color: '#848484' }}>Start Time</label>
-                      <input
-                        type="time"
-                        value={dayAvail.start}
-                        onChange={(e) => setAvailability({
-                          ...availability,
-                          [day.key]: { ...dayAvail, start: e.target.value }
-                        })}
-                        className="w-full px-3 py-2 rounded-lg bg-white/50 border border-white/50 text-sm"
-                        style={{ color: '#535353' }}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs mb-1 block" style={{ color: '#848484' }}>End Time</label>
-                      <input
-                        type="time"
-                        value={dayAvail.end}
-                        onChange={(e) => setAvailability({
-                          ...availability,
-                          [day.key]: { ...dayAvail, end: e.target.value }
-                        })}
-                        className="w-full px-3 py-2 rounded-lg bg-white/50 border border-white/50 text-sm"
-                        style={{ color: '#535353' }}
-                      />
-                    </div>
+                <div>
+                  <label
+                    className="block text-xs mb-1"
+                    style={{ color: "#848484" }}
+                  >
+                    End Time
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="time"
+                      value={availability[day].endTime}
+                      onChange={(e) =>
+                        updateTime(day, "endTime", e.target.value)
+                      }
+                      className="w-full finance-card px-3 py-2 text-sm pr-8"
+                      style={{ color: "#535353", outline: "none" }}
+                    />
+                    <svg
+                      className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4"
+                      style={{ color: "#848484" }}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 18" fill="none" />
+                    </svg>
                   </div>
-                )}
+                </div>
               </div>
-            );
-          })}
-        </div>
-
-        <Button
-          onClick={() => router.back()}
-          className="w-full"
-          style={{
-            background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #A8E063 0%, #7CE577 100%)',
-            color: 'white'
-          }}
-        >
-          <Save className="w-4 h-4 mr-2" />
-          Save Availability
-        </Button>
+            )}
+          </div>
+        ))}
       </div>
-    </div>
-    </>
 
+      {/* Info Card */}
+      <div
+        className="finance-card p-4"
+        style={{ background: "rgba(254, 180, 197, 0.1)" }}
+      >
+        <p className="text-sm text-center" style={{ color: "#848484" }}>
+          💡 You can update your availability anytime from your dashboard
+        </p>
+      </div>
+
+      {/* Submit Button */}
+      <Button
+        onClick={handleSave}
+        className="w-full py-6 mt-6"
+        style={{
+          background:
+            "radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FEB4C5 0%, #DB869A 100%)",
+          color: "white",
+          boxShadow: "0px 4px 18px rgba(240, 161, 180, 0.4)",
+        }}
+      >
+        Submit for Verification
+      </Button>
+    </div>
   );
 }
-

@@ -1,18 +1,19 @@
 import { useState } from "react";
-import { Eye, EyeOff, Upload, Check } from "lucide-react";
+import { Eye, EyeOff, Upload, Check, ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Checkbox } from "../ui/checkbox";
 
 interface GuardianRegistrationProps {
-  onComplete: () => void;
-  onBack: () => void;
+  onComplete?: () => void;
+  onBack?: () => void;
+  onNavigate?: (page: string) => void;
 }
 
 type Step = 1 | 2 | 3;
 
-export function GuardianRegistration({ onComplete, onBack }: GuardianRegistrationProps) {
+export function GuardianRegistration({ onComplete, onBack, onNavigate }: GuardianRegistrationProps) {
   const [step, setStep] = useState<Step>(1);
   
   // Step 1 fields
@@ -64,7 +65,7 @@ export function GuardianRegistration({ onComplete, onBack }: GuardianRegistratio
       return;
     }
     console.log("Registration complete");
-    onComplete();
+    onComplete?.();
   };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,6 +76,15 @@ export function GuardianRegistration({ onComplete, onBack }: GuardianRegistratio
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6">
+      {/* Back Button */}
+      <button
+        onClick={() => onNavigate?.('toc')}
+        className="w-10 h-10 rounded-full flex items-center justify-center mb-6 self-start"
+        style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+      >
+        <ArrowLeft className="w-5 h-5" style={{ color: '#535353' }} />
+      </button>
+
       {/* Progress Indicator */}
       <div className="w-full max-w-md mb-8">
         <div className="flex items-center justify-between mb-2">

@@ -1,82 +1,198 @@
-﻿'use client';
+"use client";
 
-import { UniversalNav } from '@/components/layout/UniversalNav';
-
-import React, { useState } from 'react';
-import Layout from '@/components/layout/Layout';
-import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from "react";
+import { ArrowLeft, Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { UniversalNav } from "@/components/layout/UniversalNav";
 
 export default function CaregiverRegistrationStepTwoPage() {
-  const router = useRouter();
-  const [code, setCode] = useState(['', '', '', '', '', '']);
-  const [timer, setTimer] = useState(45);
+  const [otp, setOtp] = useState(["", "", "", "", "", "", ""]);
+  const [timeLeft, setTimeLeft] = useState(120); // 2 minutes in seconds
 
-  React.useEffect(() => {
-    if (timer === 0) return;
-    const id = setInterval(() => setTimer((prev) => (prev > 0 ? prev - 1 : 0)), 1000);
-    return () => clearInterval(id);
-  }, [timer]);
+  useEffect(() => {
+    if (timeLeft > 0) {
+      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [timeLeft]);
 
-  const handleInput = (value: string, index: number) => {
-    if (!/^[0-9]?$/.test(value)) return;
-    const next = [...code];
-    next[index] = value;
-    setCode(next);
+  const handleOtpChange = (index: number, value: string) => {
+    if (value.length <= 1 && /^\d*$/.test(value)) {
+      const newOtp = [...otp];
+      newOtp[index] = value;
+      setOtp(newOtp);
 
-    const nextInput = document.querySelector<HTMLInputElement>(`input[data-index="${index + 1}"]`);
-    if (value && nextInput) nextInput.focus();
+      // Auto-focus next input
+      if (value && index < 5) {
+        const nextInput = document.getElementById(
+          `otp-${index + 1}`,
+        ) as HTMLInputElement;
+        nextInput?.focus();
+      }
+    }
   };
 
-  const canContinue = code.every((digit) => digit.trim().length === 1);
+  const handleKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>,
+  ) => {
+    // Handle backspace - move to previous input
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      const prevInput = document.getElementById(
+        `otp-${index - 1}`,
+      ) as HTMLInputElement;
+      prevInput?.focus();
+    }
+  };
+
+  const canContinue = otp.every((digit) => digit.length === 1);
+
+  const handleResend = () => {
+    setTimeLeft(120);
+    setOtp(["", "", "", "", "", ""]);
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
 
   return (
     <>
       <UniversalNav userRole="caregiver" showBack={true} />
-      <Layout>
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-yellow-100 dark:from-gray-900 dark:to-amber-950 px-4 py-10 pb-24 md:pt-14">
-        <div className="w-full max-w-md finance-card p-8 text-center">
-          <p className="text-sm mb-2" style={{ color: '#848484' }}>Step 2 of 6</p>
-          <h1 className="text-2xl font-semibold mb-2" style={{ color: '#535353' }}>Enter 6-digit code</h1>
-          <p className="text-sm mb-6" style={{ color: '#848484' }}>
-            We sent a code to <strong>+880  12</strong>. Enter it below to continue.
-          </p>
+      <div
+        className="min-h-screen flex flex-col p-6"
+        style={{ backgroundColor: "#F5F7FA" }}
+      >
+        {/* Header */}
+        <div className="mb-8">
+          <Button
+            variant="ghost"
+            onClick={() => window.history.back()}
+            className="mb-6 hover:bg-white/30"
+            style={{ color: "#535353" }}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
 
-          <div className="flex justify-between gap-2 mb-6">
-            {code.map((digit, index) => (
+          <div className="text-center mb-6">
+            <div
+              className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4"
+              style={{
+                background:
+                  "radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FEB4C5 0%, #DB869A 100%)",
+                boxShadow: "0px 4px 18px rgba(240, 161, 180, 0.4)",
+              }}
+            >
+              <Shield className="w-10 h-10 text-white" />
+            </div>
+            <h1 className="mb-2" style={{ color: "#535353" }}>
+              Verify Your Number
+            </h1>
+            <p style={{ color: "#848484" }}>Step 2 of 6: OTP Verification</p>
+          </div>
+
+          {/* Progress Bar */}
+          <div
+            className="w-full h-2 rounded-full mb-6"
+            style={{ backgroundColor: "rgba(132, 132, 132, 0.1)" }}
+          >
+            <div
+              className="h-2 rounded-full transition-all"
+              style={{
+                width: "33.33%",
+                background:
+                  "radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FEB4C5 0%, #DB869A 100%)",
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1">
+          <div className="finance-card p-6 mb-6">
+            <p className="text-center mb-2" style={{ color: "#535353" }}>
+              We sent a 6-digit code to
+            </p>
+            <p className="text-center mb-4" style={{ color: "#848484" }}>
+              +880 1712345678
+            </p>
+            <p className="text-xs text-center" style={{ color: "#848484" }}>
+              Enter code below to verify your number
+            </p>
+          </div>
+
+          {/* OTP Input */}
+          <div className="flex justify-center gap-3 mb-6">
+            {otp.map((digit, index) => (
               <input
                 key={index}
-                data-index={index}
+                id={`otp-${index}`}
                 type="text"
                 inputMode="numeric"
                 maxLength={1}
                 value={digit}
-                onChange={(e) => handleInput(e.target.value, index)}
-                className="w-12 h-14 rounded-2xl text-center text-xl font-semibold bg-white/60 border border-white/50 focus:outline-none focus:ring-2 focus:ring-rose-200"
+                onChange={(e) => handleOtpChange(index, e.target.value)}
+                onKeyDown={(e) => handleKeyDown(index, e)}
+                className="w-12 h-14 text-center finance-card text-xl"
+                style={{ color: "#535353", outline: "none" }}
               />
             ))}
           </div>
 
-          <Button
-            className="w-full mb-4"
-            disabled={!canContinue}
-            onClick={() => router.push('/caregiver/registration/step-3')}
-            style={{
-              background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FFB3C1 0%, #FF8FA3 100%)',
-              color: 'white',
-              opacity: canContinue ? 1 : 0.5,
-            }}
+          {/* Timer */}
+          <div className="text-center mb-6">
+            {timeLeft > 0 ? (
+              <p style={{ color: "#848484" }}>
+                Time remaining:{" "}
+                <span style={{ color: "#FEB4C5" }}>{formatTime(timeLeft)}</span>
+              </p>
+            ) : (
+              <Button
+                variant="ghost"
+                onClick={handleResend}
+                style={{ color: "#FEB4C5" }}
+              >
+                Resend Code
+              </Button>
+            )}
+          </div>
+
+          {/* Security Notice */}
+          <div
+            className="finance-card p-4"
+            style={{ background: "rgba(254, 180, 197, 0.1)" }}
           >
-            Continue
-          </Button>
-
-          <p className="text-xs" style={{ color: '#848484' }}>
-            Resend code in <strong>{timer}s</strong>
-          </p>
+            <p className="text-sm text-center" style={{ color: "#848484" }}>
+              🔒 Your phone number will be used for secure login and job
+              notifications
+            </p>
+          </div>
         </div>
-      </div>
-    </Layout>
-    </>
 
+        {/* Verify Button */}
+        <Button
+          onClick={() =>
+            (window.location.href = "/caregiver/registration/step-3")
+          }
+          disabled={!canContinue}
+          className="w-full py-6 mt-6"
+          style={{
+            background: !canContinue
+              ? "rgba(132, 132, 132, 0.3)"
+              : "radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FEB4C5 0%, #DB869A 100%)",
+            color: "white",
+            boxShadow: !canContinue
+              ? "none"
+              : "0px 4px 18px rgba(240, 161, 180, 0.4)",
+            cursor: !canContinue ? "not-allowed" : "pointer",
+          }}
+        >
+          Verify & Continue
+        </Button>
+      </div>
+    </>
   );
 }

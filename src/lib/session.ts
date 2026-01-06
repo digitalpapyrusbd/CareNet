@@ -1,6 +1,22 @@
-import { kv } from "@vercel/kv";
 import { v4 as uuidv4 } from "uuid";
 import { UserRole } from "@prisma/client";
+import { kvMock } from "./kv-mock";
+
+// Use KV mock for development if no real KV configured
+const hasRealKV = process.env.KV_REST_API_URL &&
+  process.env.KV_REST_API_URL !== 'https://localhost:8079' &&
+  process.env.KV_REST_API_TOKEN &&
+  process.env.KV_REST_API_TOKEN !== 'dev-token-dummy';
+
+let kv: any;
+if (hasRealKV) {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const vercelKv = require('@vercel/kv');
+  kv = vercelKv.kv;
+} else {
+  console.log("Using KV Mock for session storage");
+  kv = kvMock;
+}
 
 // Session interface
 export interface Session {

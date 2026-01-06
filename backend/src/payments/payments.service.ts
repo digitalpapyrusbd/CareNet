@@ -98,7 +98,7 @@ export class PaymentsService {
           select: {
             id: true,
             guardian_id: true,
-            company_id: true,
+            agency_id: true,
           },
         },
         escrows: true,

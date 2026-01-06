@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     // Create a marketplace job
     const job = await prisma.marketplace_jobs.create({
       data: {
-        agency_id: agency.id,
+        company_id: agency.id,
         title: 'Demo Elderly Care Shift',
         description: 'Assist with daily activities and medication reminders.',
         location: 'Dhaka',

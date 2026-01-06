@@ -220,7 +220,7 @@ model users {
   role             UserRole
   phone            String    @unique
   email            String?   @unique
-  password_hash    String
+  password_hash    String?
   name             String
   language         String    @default("en")
   kyc_status       KYCStatus @default(PENDING)
@@ -232,8 +232,9 @@ model users {
   deleted_at       DateTime?
   created_at       DateTime  @default(now())
   updated_at       DateTime  @updatedAt
-  company_id       String?
   agency_id        String?
+  google_id        String?   @unique
+  google_email     String?
 
   audit_logs                              audit_logs[]
   caregivers                              caregivers?
@@ -248,7 +249,6 @@ model users {
   payments                                payments[]
   user_devices                            user_devices[]
   verification_codes                      verification_codes[]
-  companies                               companies?             @relation(fields: [company_id], references: [id])
   agencies                                agencies?              @relation(fields: [agency_id], references: [id])
   shops                                   shops?
   verification_steps                      verification_steps[]
@@ -304,44 +304,6 @@ model agencies {
   @@index([is_verified])
 }
 
-model companies {
-  id                      String           @id @default(cuid())
-  userId                  String           @unique
-  company_name            String
-  trade_license           String
-  trade_license_url       String?
-  tin                     String?
-  contact_person          String
-  contact_phone           String
-  contact_email           String?
-  address                 String
-  logo_url                String?
-  description             String?
-  specializations         Json?
-  payout_method           PayoutMethod
-  payout_account          String
-  commission_rate         Decimal          @default(12.00)
-  subscription_tier       SubscriptionTier @default(STARTER)
-  subscription_expires_at DateTime?
-  rating_avg              Decimal          @default(0.0)
-  rating_count            Int              @default(0)
-  is_verified             Boolean          @default(false)
-  verification_notes      String?
-  deleted_at              DateTime?
-  created_at              DateTime         @default(now())
-  updated_at              DateTime         @updatedAt
-
-  caregivers       caregivers[]
-  jobs             jobs[]
-  marketplace_jobs marketplace_jobs[]
-  packages         packages[]
-  service_zones    service_zones[]
-  users            users[]
-
-  @@index([rating_avg])
-  @@index([userId])
-  @@index([is_verified])
-}
 
 model caregivers {
   id                      String                @id @default(cuid())
@@ -377,7 +339,6 @@ model caregivers {
   assignments_assignments_caregiver_idTocaregivers assignments[]      @relation("assignments_caregiver_idTocaregivers")
   care_logs                                        care_logs[]
   agencies                                         agencies?          @relation(fields: [agency_id], references: [id])
-  companies                                        companies?         @relation(fields: [company_id], references: [id])
   users                                            users              @relation(fields: [userId], references: [id])
   job_applications                                 job_applications[]
   marketplace_jobs                                 marketplace_jobs[]
@@ -386,7 +347,6 @@ model caregivers {
   @@index([rating_avg])
   @@index([is_verified, is_available])
   @@index([agency_id])
-  @@index([company_id])
 }
 
 model patients {
@@ -624,7 +584,6 @@ model orders {
 model packages {
   id               String          @id @default(cuid())
   agency_id        String
-  company_id       String?
   name             String
   description      String
   category         PackageCategory
@@ -641,19 +600,16 @@ model packages {
 
   jobs      jobs[]
   agencies  agencies   @relation(fields: [agency_id], references: [id])
-  companies companies? @relation(fields: [company_id], references: [id])
 
   @@index([is_active])
   @@index([category])
   @@index([agency_id])
-  @@index([company_id])
 }
 
 model jobs {
   id                   String    @id @default(cuid())
   package_id           String
   patient_id           String
-  company_id           String?
   agency_id            String?
   guardian_id          String
   start_date           DateTime
@@ -674,7 +630,6 @@ model jobs {
   care_logs   care_logs[]
   disputes    disputes[]
   users       users         @relation(fields: [guardian_id], references: [id])
-  companies   companies?    @relation(fields: [company_id], references: [id])
   agencies    agencies?     @relation(fields: [agency_id], references: [id])
   patients    patients      @relation(fields: [patient_id], references: [id])
   packages    packages      @relation(fields: [package_id], references: [id])
@@ -683,7 +638,6 @@ model jobs {
   @@index([guardian_id])
   @@index([start_date, end_date])
   @@index([status])
-  @@index([company_id])
   @@index([agency_id])
   @@index([patient_id])
 }
@@ -937,7 +891,6 @@ model user_devices {
 
 model service_zones {
   id               String   @id @default(cuid())
-  company_id       String?
   agency_id        String
   zone_name        String
   region_code      String
@@ -946,11 +899,9 @@ model service_zones {
   created_at       DateTime @default(now())
   updated_at       DateTime @updatedAt
 
-  companies companies? @relation(fields: [company_id], references: [id])
   agencies  agencies   @relation(fields: [agency_id], references: [id])
 
   @@index([region_code])
-  @@index([company_id])
   @@index([agency_id])
 }
 
@@ -975,12 +926,10 @@ model marketplace_jobs {
 
   job_applications job_applications[]
   caregivers       caregivers?        @relation(fields: [filled_by], references: [id])
-  companies        companies?         @relation(fields: [company_id], references: [id])
   agencies         agencies?          @relation(fields: [agency_id], references: [id])
 
   @@index([start_date])
   @@index([status])
-  @@index([company_id])
   @@index([agency_id])
 }
 

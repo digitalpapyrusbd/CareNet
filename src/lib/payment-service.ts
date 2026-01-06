@@ -53,7 +53,7 @@ export class PaymentService {
             merchantAssociationInfo: {
               id: 'caregiver_platform',
               name: 'Caregiver Platform',
-              logo: '/logo.png',
+              logo: '/logo_only.png',
               url: 'https://caregiver-platform.com',
             },
           };

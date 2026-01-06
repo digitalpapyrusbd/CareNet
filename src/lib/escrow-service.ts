@@ -129,9 +129,14 @@ export class EscrowService {
         where: { id: request.escrowId },
         include: {
           payment: true,
-          job: {
-            include: { caregivers: true,
-              company: true,
+          jobs: {
+            include: { 
+              assignments: {
+                include: {
+                  caregivers_assignments_caregiver_idTocaregivers: true,
+                },
+              },
+              companies: true,
             },
           },
         },
@@ -176,7 +181,6 @@ export class EscrowService {
             currency: escrow.currency,
             status: 'PAID',
             paid_at: new Date(),
-            escrowId: escrow.id,
           },
         });
       }
@@ -261,7 +265,7 @@ export class EscrowService {
   /**
    * Create dispute for escrow transaction
    */
-  async createDispute(request: DisputeEscrowRequest): Promise<EscrowTransaction> {
+  async disputeEscrow(request: DisputeEscrowRequest): Promise<EscrowTransaction> {
     try {
       const escrow = await prisma.escrow_transactions.findUnique({
         where: { id: request.escrowId },
@@ -278,8 +282,7 @@ export class EscrowService {
       // Create dispute record
       const dispute = await prisma.disputes.create({
         data: {
-          escrowId: request.escrowId,
-          job_id: escrow.jobId,
+          job_id: escrow.job_id,
           status: 'OPEN',
           disputedBy: request.disputedBy,
           reason: request.reason,
@@ -319,16 +322,21 @@ export class EscrowService {
   /**
    * Get escrow transaction by ID
    */
-  async getEscrowTransaction(escrowId: string): Promise<EscrowTransaction | null> {
+  async getEscrowTransaction(escrowId: string): Promise<any> {
     try {
       return await prisma.escrow_transactions.findUnique({
         where: { id: escrowId },
         include: {
-          payment: true,
-          job: {
-            include: { caregivers: true,
-              guardian: true,
-              company: true,
+          payments: true,
+          jobs: {
+            include: { 
+              assignments: {
+                include: {
+                  caregivers_assignments_caregiver_idTocaregivers: true,
+                },
+              },
+              users: true,
+              companies: true,
             },
           },
         },
@@ -405,12 +413,12 @@ export class EscrowService {
       }
 
       // Process refund based on payment gateway
-      if (payment.gateway === 'BKASH') {
+      if (payment.method === 'BKASH') {
         const { bkashGateway } = await import('@/lib/payment-gateways/bkash');
-        return await bkashGateway.processRefund(payment.gatewayTransactionId, amount, reason);
-      } else if (payment.gateway === 'NAGAD') {
+        return await bkashGateway.processRefund(payment.transaction_id, amount, reason);
+      } else if (payment.method === 'NAGAD') {
         const { nagadGateway } = await import('@/lib/payment-gateways/nagad');
-        return await nagadGateway.processRefund(payment.gatewayTransactionId, amount, reason);
+        return await nagadGateway.processRefund(payment.transaction_id, amount, reason);
       } else {
         throw new Error('Unsupported payment gateway for refund');
       }
@@ -424,8 +432,7 @@ export class EscrowService {
    * Log escrow actions for audit trail
    */
   private async logEscrowAction(
-    escrowId: string,
-    action: string,
+          action_type: string,
     description: string,
     metadata?: Record<string, any>
   ): Promise<void> {

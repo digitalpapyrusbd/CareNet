@@ -15,27 +15,27 @@ export class SubscriptionsController {
 
   @Post()
   create(
-    @CurrentUser('company_id') companyId: string,
+    @CurrentUser('agency_id') agencyId: string,
     @Body() createDto: CreateSubscriptionDto,
   ) {
-    return this.subscriptionsService.create(companyId, createDto);
+    return this.subscriptionsService.create(agencyId, createDto);
   }
 
   @Get()
-  findByCompany(@CurrentUser('company_id') companyId: string) {
-    return this.subscriptionsService.findByCompany(companyId);
+  findByAgency(@CurrentUser('agency_id') agencyId: string) {
+    return this.subscriptionsService.findByAgency(agencyId);
   }
 
   @Patch('upgrade')
   upgrade(
-    @CurrentUser('company_id') companyId: string,
+    @CurrentUser('agency_id') agencyId: string,
     @Body() updateDto: UpdateSubscriptionDto,
   ) {
-    return this.subscriptionsService.upgrade(companyId, updateDto);
+    return this.subscriptionsService.upgrade(agencyId, updateDto);
   }
 
   @Post('cancel')
-  cancel(@CurrentUser('company_id') companyId: string) {
-    return this.subscriptionsService.cancel(companyId);
+  cancel(@CurrentUser('agency_id') agencyId: string) {
+    return this.subscriptionsService.cancel(agencyId);
   }
 }

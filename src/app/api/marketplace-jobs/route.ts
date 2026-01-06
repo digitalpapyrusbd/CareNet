@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     // Companies can only see their own marketplace jobs
     if (user.role === UserRole.COMPANY) {
       const company = await prisma.companies.findUnique({
-        where: { user_id: user.id },
+        where: { userId: user.id },
       });
       
       if (company) {
@@ -78,47 +78,40 @@ export async function GET(request: NextRequest) {
               rating_avg: true,
             },
           },
-          postedByUser: {
+          caregivers: {
             select: {
               id: true,
-              name: true,
-              phone: true,
-            },
-          },
-          filledByCaregiver: {
-            select: {
-              id: true,
-              user: {
+              users: {
                 select: {
                   id: true,
                   name: true,
                   phone: true,
                 },
               },
-              photoUrl: true,
-              ratingAvg: true,
+              photo_url: true,
+              rating_avg: true,
             },
           },
-          applications: {
+          job_applications: {
             include: { caregivers: {
                 select: {
                   id: true,
-                  user: {
+                  users: {
                     select: {
                       id: true,
                       name: true,
                       phone: true,
                     },
                   },
-                  photoUrl: true,
-                  ratingAvg: true,
+                  photo_url: true,
+                  rating_avg: true,
                 },
               },
             },
           },
           _count: {
             select: {
-              applications: true,
+              job_applications: true,
             },
           },
         },
@@ -172,7 +165,7 @@ export async function POST(request: NextRequest) {
       startDate,
       durationDays,
       hoursPerDay,
-      offeredRate,
+        offered_rate: offeredRate,
       companyId,
     } = body;
 
@@ -189,7 +182,7 @@ export async function POST(request: NextRequest) {
     
     if (user.role === UserRole.COMPANY) {
       const company = await prisma.companies.findUnique({
-        where: { user_id: user.id },
+        where: { userId: user.id },
       });
       
       if (!company) {
@@ -214,11 +207,11 @@ export async function POST(request: NextRequest) {
         title,
         description,
         location,
-        requiredSkills,
+        required_skills: requiredSkills,
         start_date: new Date(startDate),
         duration_days: parseInt(durationDays),
         hours_per_day: parseInt(hoursPerDay),
-        offeredRate: parseFloat(offeredRate),
+        offered_rate: parseFloat(offeredRate),
         status: 'OPEN',
         applications_count: 0,
       },
@@ -227,13 +220,6 @@ export async function POST(request: NextRequest) {
             id: true,
             company_name: true,
             is_verified: true,
-          },
-        },
-        postedByUser: {
-          select: {
-            id: true,
-            name: true,
-            phone: true,
           },
         },
       },
@@ -300,7 +286,7 @@ export async function PUT(request: NextRequest) {
 
     // Get caregiver profile
     const caregiver = await prisma.caregivers.findUnique({
-      where: { user_id: user.id },
+      where: { userId: user.id },
     });
 
     if (!caregiver) {
@@ -313,7 +299,7 @@ export async function PUT(request: NextRequest) {
     // Check if already applied
     const existingApplication = await prisma.job_applications.findUnique({
       where: {
-        marketplaceJobId_caregiverId: {
+        marketplace_job_id_caregiver_id: {
           marketplace_job_id: jobId,
           caregiver_id: caregiver.id,
         },
@@ -338,24 +324,24 @@ export async function PUT(request: NextRequest) {
       include: { caregivers: {
           select: {
             id: true,
-            user: {
+            users: {
               select: {
                 id: true,
                 name: true,
                 phone: true,
               },
             },
-            photoUrl: true,
-            ratingAvg: true,
+            photo_url: true,
+            rating_avg: true,
           },
         },
-        marketplaceJob: {
+        marketplace_jobs: {
           select: {
             id: true,
             title: true,
             location: true,
-            offeredRate: true,
-            company: {
+            offered_rate: true,
+            companies: {
               select: {
                 id: true,
                 company_name: true,

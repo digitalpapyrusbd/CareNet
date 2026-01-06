@@ -1,14 +1,21 @@
-import { Lock, AlertTriangle, Check, X, CreditCard } from "lucide-react";
+import { Lock, AlertTriangle, Check, X, CreditCard, ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 
 interface PaymentLockedProps {
-  accountType: "guardian" | "agency" | "caregiver" | "shop";
-  outstandingAmount: number;
-  daysPastDue: number;
-  onPayNow: () => void;
+  accountType?: "guardian" | "agency" | "caregiver" | "shop";
+  outstandingAmount?: number;
+  daysPastDue?: number;
+  onPayNow?: () => void;
+  onNavigate?: (page: string) => void;
 }
 
-export function PaymentLocked({ accountType, outstandingAmount, daysPastDue, onPayNow }: PaymentLockedProps) {
+export function PaymentLocked({ 
+  accountType = "guardian", 
+  outstandingAmount = 5000, 
+  daysPastDue = 15, 
+  onPayNow, 
+  onNavigate 
+}: PaymentLockedProps) {
   const restrictedFeatures = {
     guardian: [
       "Browse new packages",
@@ -65,6 +72,17 @@ export function PaymentLocked({ accountType, outstandingAmount, daysPastDue, onP
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6">
+      {/* Back Button */}
+      <div className="w-full max-w-md mb-4">
+        <button
+          onClick={() => onNavigate?.('toc')}
+          className="w-10 h-10 rounded-full flex items-center justify-center"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+        >
+          <ArrowLeft className="w-5 h-5" style={{ color: '#535353' }} />
+        </button>
+      </div>
+
       {/* Lock Icon */}
       <div 
         className="w-20 h-20 rounded-full flex items-center justify-center mb-6"

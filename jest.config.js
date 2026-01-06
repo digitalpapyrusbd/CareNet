@@ -58,7 +58,7 @@ const customJestConfig = {
   testPathIgnorePatterns: [
     "<rootDir>/.next/",
     "<rootDir>/node_modules/",
-    "<rootDir>/tests/",
+    // "<rootDir>/tests/", // Allow tests in /tests/ directory for migration tests
     "<rootDir>/backend/",
     "<rootDir>/src/__tests__/mocks/",
     "<rootDir>/DO_NOT_COMMIT/",

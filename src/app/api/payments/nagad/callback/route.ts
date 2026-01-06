@@ -40,10 +40,12 @@ export async function POST(request: NextRequest) {
 
     // Verify signature
     const nagadGateway = new NagadPaymentGateway({
-      merchantId: process.env.NAGAD_MERCHANT_ID || '',
-      merchantKey: process.env.NAGAD_MERCHANT_KEY || '',
-      isProduction: process.env.NODE_ENV === 'production',
-      baseUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+      username: process.env.NAGAD_USERNAME || '',
+      password: process.env.NAGAD_PASSWORD || '',
+      appKey: process.env.NAGAD_APP_KEY || '',
+      appSecret: process.env.NAGAD_APP_SECRET || '',
+      baseUrl: process.env.NAGAD_BASE_URL || 'https://api.mynagad.com/v2/checkout',
+      sandbox: process.env.NODE_ENV !== 'production',
     });
 
     const isValidSignature = nagadGateway.verifySignature(
@@ -79,9 +81,9 @@ export async function POST(request: NextRequest) {
     });
 
     // If payment is successful, update job status if applicable
-    if (validatedData.status === 'Success' && payment.jobId) {
+    if (validatedData.status === 'Success' && payment.job_id) {
       await prisma.jobs.update({
-        where: { id: payment.jobId },
+        where: { id: payment.job_id },
         data: { status: 'ACTIVE' as const },
       });
     }

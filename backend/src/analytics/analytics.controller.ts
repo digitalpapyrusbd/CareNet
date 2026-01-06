@@ -13,10 +13,10 @@ export class AnalyticsController {
     return this.analyticsService.getPlatformStats();
   }
 
-  @Get('company/:id')
+  @Get('agency/:id')
   @Roles(UserRole.AGENCY_ADMIN, UserRole.AGENCY_MANAGER, UserRole.SUPER_ADMIN)
-  getCompanyAnalytics(@Param('id') id: string) {
-    return this.analyticsService.getCompanyAnalytics(id);
+  getAgencyAnalytics(@Param('id') id: string) {
+    return this.analyticsService.getAgencyAnalytics(id);
   }
 
   @Get('revenue')

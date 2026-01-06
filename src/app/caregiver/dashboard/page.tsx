@@ -1,141 +1,346 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { MapPin, Clock, Navigation, CheckCircle2, DollarSign, Bell } from 'lucide-react';
-import { UniversalNav } from '@/components/layout/UniversalNav';
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import {
+  Heart,
+  Calendar,
+  MapPin,
+  Clock,
+  TrendingUp,
+  Bell,
+  Menu,
+  DollarSign,
+  User,
+  MessageCircle,
+} from "lucide-react";
+import { UniversalNav } from "@/components/layout/UniversalNav";
 
-const todaysJob = {
-  patient: 'Anwar Hossain',
-  package: 'Post-Surgery Recovery Care',
-  time: '9:00 AM - 5:00 PM',
-  location: 'House 12, Road 7, Banani',
-  guardian: 'Fahima Rahman',
+const TODAYS_JOB = {
+  patient: "Mrs. Fatima Rahman",
+  age: 72,
+  conditions: ["Diabetes", "Hypertension"],
+  address: "House 45, Road 12, Dhanmondi, Dhaka",
+  time: "9:00 AM - 5:00 PM",
+  startTime: "9:00 AM",
+  status: "Not Checked In",
 };
 
-const weeklyStats = [
-  { label: 'Hours Worked', value: '32h' },
-  { label: 'Jobs', value: '6' },
-  { label: 'Rating', value: '4.9' },
+const WEEKLY_STATS = [
+  { label: "Hours Worked", value: "32h", icon: Clock, color: "#9B9CF8" },
+  { label: "Jobs Completed", value: "8", icon: Calendar, color: "#7CE577" },
+  {
+    label: "This Week Earnings",
+    value: "৳8,500",
+    icon: DollarSign,
+    color: "#FEB4C5",
+  },
+  { label: "Rating", value: "4.8★", icon: TrendingUp, color: "#FFD54F" },
 ];
 
-const upcomingJobs = [
-  { id: 'JOB-4522', patient: 'Selina Rahman', date: 'Tomorrow', time: '8:00 PM - 6:00 AM', location: 'Gulshan 1' },
-  { id: 'JOB-4523', patient: 'Rahim Uddin', date: 'Thu, Dec 12', time: '10:00 AM - 4:00 PM', location: 'Dhanmondi' },
+const UPCOMING_JOBS = [
+  {
+    patient: "Mr. Karim Ahmed",
+    date: "Tomorrow",
+    time: "10:00 AM - 6:00 PM",
+    location: "Gulshan",
+  },
+  {
+    patient: "Mrs. Nasrin Begum",
+    date: "Dec 28",
+    time: "2:00 PM - 8:00 PM",
+    location: "Uttara",
+  },
+  {
+    patient: "Mr. Salam Mia",
+    date: "Dec 29",
+    time: "9:00 AM - 5:00 PM",
+    location: "Banani",
+  },
 ];
 
 export default function CaregiverDashboardPage() {
   const router = useRouter();
+  const [greeting, setGreeting] = useState("Good Morning");
+  const [userName] = useState("Ayesha");
+
+  useEffect(() => {
+    const currentHour = new Date().getHours();
+    if (currentHour < 12) {
+      setGreeting("Good Morning");
+    } else if (currentHour < 18) {
+      setGreeting("Good Afternoon");
+    } else {
+      setGreeting("Good Evening");
+    }
+  }, []);
 
   return (
     <>
       <UniversalNav userRole="caregiver" showBack={false} />
-      <div className="min-h-screen pb-24 md:pt-14">
-        <div className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <p className="text-sm" style={{ color: '#848484' }}>Tuesday, Dec 10</p>
-            <h1 className="text-2xl font-semibold" style={{ color: '#535353' }}>Hi, Shaila</h1>
-            <p className="text-sm" style={{ color: '#848484' }}>You have 1 job today</p>
-          </div>
-          <button className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(255, 255, 255, 0.5)' }}>
-            <Bell className="w-5 h-5" style={{ color: '#535353' }} />
-          </button>
-        </div>
-
-        {/* Today's Job Card */}
-        <div className="finance-card p-5 mb-5">
+      <div
+        className="min-h-screen pb-24"
+        style={{ backgroundColor: "#F5F7FA" }}
+      >
+        {/* Header */}
+        <div className="finance-card p-6 mb-4">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-xs uppercase tracking-wide mb-1" style={{ color: '#848484' }}>Today&apos;s Visit</p>
-              <h2 className="text-xl font-semibold" style={{ color: '#535353' }}>{todaysJob.patient}</h2>
+              <p className="text-sm" style={{ color: "#848484" }}>
+                {greeting} 👋
+              </p>
+              <h1 style={{ color: "#535353" }}>{userName}</h1>
             </div>
-            <span className="px-3 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(124,229,119,0.15)', color: '#2E7D32' }}>On Time</span>
-          </div>
-          <p className="text-sm mb-3" style={{ color: '#848484' }}>{todaysJob.package}</p>
-          <div className="space-y-2 text-sm mb-5" style={{ color: '#535353' }}>
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4" style={{ color: '#848484' }} /> {todaysJob.time}
-            </div>
-            <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4" style={{ color: '#848484' }} /> {todaysJob.location}
+            <div className="flex items-center gap-3">
+              <button className="w-10 h-10 rounded-full finance-card flex items-center justify-center">
+                <Bell className="w-5 h-5" style={{ color: "#535353" }} />
+              </button>
+              <button
+                onClick={() => router.push("/caregiver/messages")}
+                className="w-10 h-10 rounded-full finance-card flex items-center justify-center"
+              >
+                <Menu className="w-5 h-5" style={{ color: "#535353" }} />
+              </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          {/* Quick Actions */}
+          <div className="grid grid-cols-2 gap-3">
             <Button
-              onClick={() => router.push('/caregiver/checkin')}
-              className="w-full"
+              onClick={() => router.push("/caregiver/jobs")}
+              className="py-3"
               style={{
-                background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #A8E063 0%, #7CE577 100%)',
-                boxShadow: '0px 4px 18px rgba(124, 229, 119, 0.35)',
-                color: 'white',
-                border: 'none'
+                background:
+                  "radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FEB4C5 0%, #DB869A 100%)",
+                color: "white",
               }}
             >
-              <CheckCircle2 className="w-4 h-4 mr-2" /> Check In
+              <Calendar className="w-4 h-4 mr-2" />
+              My Jobs
             </Button>
             <Button
+              onClick={() => router.push("/caregiver/earnings")}
               variant="outline"
-              className="w-full bg-white/50 border-white/50"
-              style={{ color: '#535353' }}
+              className="py-3"
+              style={{
+                color: "#535353",
+                borderColor: "rgba(132, 132, 132, 0.2)",
+              }}
             >
-              <Navigation className="w-4 h-4 mr-2" /> Navigate
+              <DollarSign className="w-4 h-4 mr-2" />
+              Earnings
             </Button>
+          </div>
+        </div>
+
+        {/* Today's Schedule Card */}
+        <div className="px-6 mb-4">
+          <h2 className="mb-3" style={{ color: "#535353" }}>
+            Today's Schedule
+          </h2>
+          <div className="finance-card p-5">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center"
+                    style={{ background: "rgba(254, 180, 197, 0.2)" }}
+                  >
+                    <User className="w-6 h-6" style={{ color: "#FEB4C5" }} />
+                  </div>
+                  <div>
+                    <h3 style={{ color: "#535353" }}>{TODAYS_JOB.patient}</h3>
+                    <p className="text-sm" style={{ color: "#848484" }}>
+                      {TODAYS_JOB.age} years old
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4" style={{ color: "#848484" }} />
+                    <span className="text-sm" style={{ color: "#535353" }}>
+                      {TODAYS_JOB.time}
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <MapPin
+                      className="w-4 h-4 mt-0.5"
+                      style={{ color: "#848484" }}
+                    />
+                    <span className="text-sm" style={{ color: "#535353" }}>
+                      {TODAYS_JOB.address}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Conditions */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {TODAYS_JOB.conditions.map((condition) => (
+                    <span
+                      key={condition}
+                      className="px-3 py-1 rounded-full text-xs"
+                      style={{
+                        background: "rgba(254, 180, 197, 0.2)",
+                        color: "#FEB4C5",
+                      }}
+                    >
+                      {condition}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                onClick={() => router.push("/caregiver/checkin")}
+                className="w-full py-3"
+                style={{
+                  background:
+                    "radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FEB4C5 0%, #DB869A 100%)",
+                  color: "white",
+                }}
+              >
+                Check In
+              </Button>
+              <Button
+                onClick={() => router.push("/caregiver/jobs")}
+                variant="outline"
+                className="w-full py-3"
+                style={{
+                  color: "#535353",
+                  borderColor: "rgba(132, 132, 132, 0.2)",
+                }}
+              >
+                View Details
+              </Button>
+            </div>
           </div>
         </div>
 
         {/* Weekly Stats */}
-        <div className="grid grid-cols-3 gap-3 mb-5">
-          {weeklyStats.map((stat) => (
-            <div key={stat.label} className="finance-card p-4 text-center">
-              <p className="text-xs mb-1" style={{ color: '#848484' }}>{stat.label}</p>
-              <p className="text-xl font-semibold" style={{ color: '#535353' }}>{stat.value}</p>
-            </div>
-          ))}
+        <div className="px-6 mb-4">
+          <h2 className="mb-3" style={{ color: "#535353" }}>
+            This Week
+          </h2>
+          <div className="grid grid-cols-2 gap-3">
+            {WEEKLY_STATS.map((stat, index) => (
+              <div key={index} className="finance-card p-4">
+                <div
+                  className="w-10 h-10 rounded-[14px] flex items-center justify-center mb-3"
+                  style={{
+                    background: `${stat.color}20`,
+                  }}
+                >
+                  <stat.icon
+                    className="w-5 h-5"
+                    style={{ color: stat.color }}
+                  />
+                </div>
+                <p className="text-sm mb-1" style={{ color: "#848484" }}>
+                  {stat.label}
+                </p>
+                <p className="text-xl" style={{ color: "#535353" }}>
+                  {stat.value}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Upcoming Jobs */}
-        <div className="finance-card p-5 mb-5">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold" style={{ color: '#535353' }}>Upcoming Jobs</h3>
-            <Link href="/caregiver/jobs" className="text-sm hover:underline" style={{ color: '#7CE577' }}>View All</Link>
+        <div className="px-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 style={{ color: "#535353" }}>Upcoming Jobs</h2>
+            <button
+              onClick={() => router.push("/caregiver/jobs")}
+              style={{ color: "#FEB4C5" }}
+              className="text-sm"
+            >
+              View All
+            </button>
           </div>
           <div className="space-y-3">
-            {upcomingJobs.map((job) => (
-              <div key={job.id} className="p-4 rounded-lg" style={{ background: 'rgba(255, 255, 255, 0.5)' }}>
-                <div className="flex items-center justify-between mb-1">
-                  <p className="font-medium" style={{ color: '#535353' }}>{job.patient}</p>
-                  <span className="text-xs" style={{ color: '#848484' }}>{job.date}</span>
+            {UPCOMING_JOBS.map((job, index) => (
+              <div key={index} className="finance-card p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 style={{ color: "#535353" }}>{job.patient}</h3>
+                  <span
+                    className="text-xs px-2 py-1 rounded-full"
+                    style={{
+                      background: "rgba(254, 180, 197, 0.2)",
+                      color: "#FEB4C5",
+                    }}
+                  >
+                    {job.date}
+                  </span>
                 </div>
-                <p className="text-sm mb-1" style={{ color: '#848484' }}>{job.time}</p>
-                <div className="flex items-center gap-1 text-xs" style={{ color: '#535353' }}>
-                  <MapPin className="w-3 h-3" style={{ color: '#848484' }} /> {job.location}
+                <div
+                  className="flex items-center gap-4 text-sm"
+                  style={{ color: "#848484" }}
+                >
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-4 h-4" />
+                    <span>{job.time}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <MapPin className="w-4 h-4" />
+                    <span>{job.location}</span>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Pending Earnings */}
-        <div className="finance-card p-5 mb-16 flex items-center justify-between">
-          <div>
-            <p className="text-xs mb-1" style={{ color: '#848484' }}>Pending Earnings</p>
-            <p className="text-2xl font-semibold" style={{ color: '#535353' }}>৳8,900</p>
-          </div>
-          <Button
-            onClick={() => router.push('/caregiver/earnings')}
-            variant="outline"
-            className="bg-white/50 border-white/50"
-            style={{ color: '#535353' }}
+        {/* Bottom Navigation */}
+        <div className="fixed bottom-0 left-0 right-0 finance-card p-4 flex items-center justify-around">
+          <button
+            onClick={() => router.push("/caregiver/dashboard")}
+            className="flex flex-col items-center gap-1"
+            style={{ color: "#FEB4C5" }}
           >
-            <DollarSign className="w-4 h-4 mr-2" /> View
-          </Button>
+            <Heart className="w-6 h-6 fill-current" />
+            <span className="text-xs">Home</span>
+          </button>
+          <button
+            onClick={() => router.push("/caregiver/jobs")}
+            className="flex flex-col items-center gap-1"
+            style={{ color: "#848484" }}
+          >
+            <Calendar className="w-6 h-6" />
+            <span className="text-xs">Jobs</span>
+          </button>
+          <button
+            onClick={() => router.push("/caregiver/care-logs")}
+            className="flex flex-col items-center gap-1"
+            style={{ color: "#848484" }}
+          >
+            <Clock className="w-6 h-6" />
+            <span className="text-xs">Logs</span>
+          </button>
+          <button
+            onClick={() => router.push("/messages")}
+            className="flex flex-col items-center gap-1"
+            style={{ color: "#848484" }}
+          >
+            <MessageCircle className="w-6 h-6" />
+            <span className="text-xs">Messages</span>
+          </button>
+          <button
+            onClick={() => router.push("/caregiver/dashboard")}
+            className="flex flex-col items-center gap-1"
+            style={{ color: "#848484" }}
+          >
+            <Menu className="w-6 h-6" />
+            <span className="text-xs">More</span>
+          </button>
         </div>
       </div>
-    </div>
     </>
   );
 }

@@ -1,18 +1,19 @@
-import { Activity, Pill, FileText, AlertTriangle, Plus } from "lucide-react";
+import { Activity, Pill, FileText, AlertTriangle, Plus, ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { useState } from "react";
 
 interface CareLogInterfaceProps {
-  patientName: string;
-  onAddLog: (log: any) => void;
-  onBack: () => void;
+  patientName?: string;
+  onAddLog?: (log: any) => void;
+  onBack?: () => void;
+  onNavigate?: (page: string) => void;
 }
 
 type LogType = 'vitals' | 'medication' | 'activity' | 'incident' | null;
 
-export function CareLogInterface({ patientName, onAddLog, onBack }: CareLogInterfaceProps) {
+export function CareLogInterface({ patientName = "Patient", onAddLog, onBack, onNavigate }: CareLogInterfaceProps) {
   const [selectedType, setSelectedType] = useState<LogType>(null);
 
   // Vitals state
@@ -71,7 +72,18 @@ export function CareLogInterface({ patientName, onAddLog, onBack }: CareLogInter
 
   return (
     <div className="min-h-screen pb-6">
-      <div className="p-6">
+      {/* Back Button */}
+      <div className="px-6 pt-6">
+        <button
+          onClick={() => onBack?.() || onNavigate?.('toc')}
+          className="w-10 h-10 rounded-full flex items-center justify-center mb-4"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+        >
+          <ArrowLeft className="w-5 h-5" style={{ color: '#535353' }} />
+        </button>
+      </div>
+
+      <div className="px-6 pb-6">
         <h1 className="mb-2" style={{ color: '#535353' }}>Care Logs</h1>
         <p className="mb-6" style={{ color: '#848484' }}>{patientName}</p>
 

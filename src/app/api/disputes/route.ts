@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
       case UserRole.COMPANY:
         // Companies can see disputes for their jobs
         const company = await prisma.companies.findUnique({
-          where: { user_id: user.id },
+          where: { userId: user.id },
         });
         
         if (company) {
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
     if (search) {
       where.OR = [
         { description: { contains: search, mode: 'insensitive' } },
-        { job: { patient: { name: { contains: search, mode: 'insensitive' } } } },
+        { jobs: { patients: { name: { contains: search, mode: 'insensitive' } } } },
       ];
     }
 
@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
         skip,
         take: limit,
         include: {
-          raisedByUser: {
+          users_disputes_raised_byTousers: {
             select: {
               id: true,
               name: true,
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
               role: true,
             },
           },
-          againstUser: {
+          users_disputes_againstTousers: {
             select: {
               id: true,
               name: true,
@@ -92,33 +92,33 @@ export async function GET(request: NextRequest) {
               role: true,
             },
           },
-          job: {
+          jobs: {
             select: {
               id: true,
-              patient: {
+              patients: {
                 select: {
                   id: true,
                   name: true,
                 },
               },
-              company: {
+              companies: {
                 select: {
                   id: true,
                   company_name: true,
                 },
               },
-              package: {
+              packages: {
                 select: {
                   id: true,
                   name: true,
                 },
               },
-              startDate: true,
-              endDate: true,
+              start_date: true,
+              end_date: true,
             },
           },
         },
-        orderBy: { created_at: 'desc' },
+          orderBy: { createdAt: 'desc' },
       }),
       prisma.disputes.count({ where }),
     ]);
@@ -181,15 +181,15 @@ export async function POST(request: NextRequest) {
     const job = await prisma.jobs.findUnique({
       where: { id: jobId },
       include: {
-        guardian: {
+          users: {
           select: {
             id: true,
           },
         },
         assignments: {
-          include: { caregivers: {
+          include: { caregivers_assignments_caregiver_idTocaregivers: {
               select: {
-                user_id: true,
+                userId: true,
               },
             },
           },
@@ -207,7 +207,7 @@ export async function POST(request: NextRequest) {
     // Check if user can raise dispute for this job
     let canRaiseDispute = false;
     
-    if (user.role === UserRole.GUARDIAN && job.guardian.id === user.id) {
+    if (user.role === UserRole.GUARDIAN && job.users.id === user.id) {
       canRaiseDispute = true;
     } else if (user.role === UserRole.CAREGIVER) {
       canRaiseDispute = job.assignments.some(
@@ -225,7 +225,7 @@ export async function POST(request: NextRequest) {
     // Check if dispute already exists for this job and user
     const existingDispute = await prisma.disputes.findFirst({
       where: {
-        jobId,
+        job_id: jobId,
         raised_by: user.id,
         against,
         status: {
@@ -244,16 +244,16 @@ export async function POST(request: NextRequest) {
     // Create dispute
     const dispute = await prisma.disputes.create({
       data: {
-        jobId,
+        job_id: jobId,
         raised_by: user.id,
         against,
-        disputeType,
+        dispute_type: disputeType,
         description,
-        evidenceUrls,
+        evidence_urls: evidenceUrls,
         status: 'OPEN',
       },
       include: {
-        raisedByUser: {
+        users_disputes_raised_byTousers: {
           select: {
             id: true,
             name: true,
@@ -261,7 +261,7 @@ export async function POST(request: NextRequest) {
             role: true,
           },
         },
-        againstUser: {
+        users_disputes_againstTousers: {
           select: {
             id: true,
             name: true,
@@ -269,29 +269,29 @@ export async function POST(request: NextRequest) {
             role: true,
           },
         },
-        job: {
+        jobs: {
           select: {
             id: true,
-            patient: {
+            patients: {
               select: {
                 id: true,
                 name: true,
               },
             },
-            company: {
+            companies: {
               select: {
                 id: true,
                 company_name: true,
               },
             },
-            package: {
+            packages: {
               select: {
                 id: true,
                 name: true,
               },
             },
-            startDate: true,
-            endDate: true,
+            start_date: true,
+            end_date: true,
           },
         },
       },

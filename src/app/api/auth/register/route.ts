@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
       where: {
         OR: [
           { phone: formatPhoneNumber(phone) },
-          ...(email && [{ email }]),
+          ...(email ? [{ email }] : []),
         ],
       },
     });
@@ -152,12 +152,15 @@ export async function POST(request: NextRequest) {
         
         await tx.companies.create({
           data: {
-            user_id: newUser.id,
+            userId: newUser.id,
             company_name: validatedData.companyName,
-            trade_license: validatedData.trade_license,
+            trade_license: validatedData.tradeLicense,
             address: validatedData.companyAddress,
             contact_person: validatedData.contactPerson,
-            companyType: validatedData.companyType,
+            contact_phone: formattedPhone,
+            contact_email: email,
+            payout_method: 'BANK_TRANSFER',
+            payout_account: '',
           },
         });
         
@@ -181,7 +184,10 @@ export async function POST(request: NextRequest) {
         
         await tx.caregivers.create({
           data: {
-            user_id: newUser.id,
+            userId: newUser.id,
+            nid_url: '',
+            photo_url: '',
+            address: '',
             nid: validatedData.nidNumber,
             date_of_birth: new Date(validatedData.dateOfBirth),
             gender: 'OTHER', // Default value
@@ -202,21 +208,14 @@ export async function POST(request: NextRequest) {
           role,
           phone: formattedPhone,
           email,
-          passwordHash,
+          password_hash: passwordHash,
           name: validatedData.name,
           kyc_status: 'VERIFIED', // Guardians don't need verification
           is_active: true,
         },
       });
       
-      // Create guardian profile
-      await prisma.guardians.create({
-        data: {
-          user_id: user.id,
-          address: validatedData.address,
-          emergencyContact: validatedData.emergencyContact,
-        },
-      });
+      // Guardian profile is managed via patients table - no separate guardian model
     } else if (role === UserRole.PATIENT) {
       // Create patient user
       user = await prisma.users.create({
@@ -224,7 +223,7 @@ export async function POST(request: NextRequest) {
           role,
           phone: formattedPhone,
           email,
-          passwordHash,
+          password_hash: passwordHash,
           name: validatedData.name,
           kyc_status: 'VERIFIED', // Patients don't need verification
           is_active: true,
@@ -235,14 +234,28 @@ export async function POST(request: NextRequest) {
       await prisma.patients.create({
         data: {
           user_id: user.id,
+          guardian_id: user.id, // Patients require guardian_id
+          name: validatedData.name,
+          address: '',
+          emergency_contact_name: validatedData.name,
+          emergency_contact_phone: formattedPhone,
           date_of_birth: new Date(validatedData.dateOfBirth),
           blood_group: validatedData.bloodGroup,
           allergies: validatedData.allergies,
-          medicalConditions: validatedData.medicalConditions,
+          primaryConditions: validatedData.medicalConditions ? [validatedData.medicalConditions] : undefined,
           gender: 'OTHER', // Default value
         },
       });
     }
+    
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Failed to create user account' },
+        { status: 500 }
+      );
+    }
+    
+    const createdUser = user;
     
     // Generate and send OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -251,7 +264,7 @@ export async function POST(request: NextRequest) {
     // Store OTP in database (you might want to use Redis for this in production)
     await prisma.verification_codes.create({
       data: {
-        user_id: user.id,
+        userId: createdUser.id,
         code: otp,
         type: 'PHONE_VERIFICATION',
         expiresAt: otpExpiry,
@@ -269,11 +282,11 @@ export async function POST(request: NextRequest) {
     // Log user registration
     await prisma.audit_logs.create({
       data: {
-        actor_id: user.id,
-        actor_role: user.role,
+        actor_id: createdUser.id,
+        actor_role: createdUser.role,
         action_type: 'USER_REGISTERED',
         entity_type: 'USER',
-        entity_id: user.id,
+        entity_id: createdUser.id,
         ip_address: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown" || request.headers.get('x-forwarded-for') || 'Unknown',
         user_agent: request.headers.get('user-agent') || 'Unknown',
       },
@@ -282,14 +295,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        id: user.id,
-        role: user.role,
-        phone: user.phone,
-        email: user.email,
-        name: user.name,
-        kyc_status: user.kycStatus,
-        is_active: user.is_active,
-        created_at: user.createdAt,
+        id: createdUser.id,
+        role: createdUser.role,
+        phone: createdUser.phone,
+        email: createdUser.email,
+        name: createdUser.name,
+        kyc_status: createdUser.kyc_status,
+        is_active: createdUser.is_active,
+        created_at: createdUser.created_at,
       },
       message: 'Registration successful. Please verify your phone number.',
       requiresOTP: true,

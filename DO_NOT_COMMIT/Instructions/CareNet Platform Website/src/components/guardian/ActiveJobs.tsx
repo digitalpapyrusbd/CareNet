@@ -1,4 +1,4 @@
-import { Briefcase, Calendar, Clock, MapPin, User, DollarSign, Phone, MessageSquare } from "lucide-react";
+import { Briefcase, Calendar, Clock, MapPin, User, DollarSign, Phone, MessageSquare, ArrowLeft } from "lucide-react";
 import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
 
@@ -17,7 +17,7 @@ interface Job {
 }
 
 interface ActiveJobsProps {
-  onNavigate: (page: string) => void;
+  onNavigate?: (page: string) => void;
 }
 
 export function ActiveJobs({ onNavigate }: ActiveJobsProps) {
@@ -52,8 +52,19 @@ export function ActiveJobs({ onNavigate }: ActiveJobsProps) {
 
   return (
     <div className="min-h-screen bg-background pb-24">
+      {/* Back Button */}
+      <div className="px-6 pt-6">
+        <button
+          onClick={() => onNavigate?.('toc')}
+          className="w-10 h-10 rounded-full flex items-center justify-center mb-4"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+        >
+          <ArrowLeft className="w-5 h-5" style={{ color: '#535353' }} />
+        </button>
+      </div>
+
       {/* Header */}
-      <div className="px-6 pt-6 pb-4">
+      <div className="px-6 pb-4">
         <h1 className="mb-1">Active Jobs</h1>
         <p className="text-sm text-muted-foreground">Track ongoing caregiving services</p>
       </div>

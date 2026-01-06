@@ -4,15 +4,37 @@ import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, CheckCircle, XCircle, AlertCircle, Edit, Ban, MessageSquare, FileText } from "lucide-react";
+import {
+  ArrowLeft,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Edit,
+  Ban,
+  MessageSquare,
+  FileText,
+} from "lucide-react";
 import { toast } from "sonner";
 
 interface Caregiver {
@@ -75,7 +97,7 @@ export default function CaregiverDetailPage() {
   const params = useParams();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const caregiverId = params.id as string;
+  const caregiverId = (params?.id || "") as string;
 
   const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
@@ -83,36 +105,108 @@ export default function CaregiverDetailPage() {
   const [rejectionReason, setRejectionReason] = useState("");
 
   // Fetch caregiver data
-  const { data: caregiver, isLoading, error } = useQuery<Caregiver>({
+  const {
+    data: caregiver,
+    isLoading,
+    error,
+  } = useQuery<Caregiver>({
     queryKey: ["caregiver", caregiverId],
     queryFn: async () => {
       // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'caregivers/[id]/page.tsx:88',message:'Starting caregiver fetch',data:{caregiverId,endpoint:`/api/caregivers/${caregiverId}`},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      fetch(
+        "http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            location: "caregivers/[id]/page.tsx:88",
+            message: "Starting caregiver fetch",
+            data: { caregiverId, endpoint: `/api/caregivers/${caregiverId}` },
+            timestamp: Date.now(),
+            sessionId: "debug-session",
+            runId: "run1",
+            hypothesisId: "A",
+          }),
+        },
+      ).catch(() => {});
       // #endregion
-      
+
       const response = await fetch(`/api/caregivers/${caregiverId}`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
       });
-      
+
       // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'caregivers/[id]/page.tsx:95',message:'API response received',data:{status:response.status,ok:response.ok,hasAuthToken:!!localStorage.getItem('authToken')},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+      fetch(
+        "http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            location: "caregivers/[id]/page.tsx:95",
+            message: "API response received",
+            data: {
+              status: response.status,
+              ok: response.ok,
+              hasAuthToken: !!localStorage.getItem("authToken"),
+            },
+            timestamp: Date.now(),
+            sessionId: "debug-session",
+            runId: "run1",
+            hypothesisId: "B",
+          }),
+        },
+      ).catch(() => {});
       // #endregion
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'caregivers/[id]/page.tsx:100',message:'API error response',data:{status:response.status,errorData},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+        fetch(
+          "http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              location: "caregivers/[id]/page.tsx:100",
+              message: "API error response",
+              data: { status: response.status, errorData },
+              timestamp: Date.now(),
+              sessionId: "debug-session",
+              runId: "run1",
+              hypothesisId: "C",
+            }),
+          },
+        ).catch(() => {});
         // #endregion
         throw new Error(errorData.error || "Failed to fetch caregiver");
       }
-      
+
       const result = await response.json();
       // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'caregivers/[id]/page.tsx:107',message:'Parsed response',data:{hasData:!!result.data,hasSuccess:result.success,caregiverId:result.data?.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+      fetch(
+        "http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            location: "caregivers/[id]/page.tsx:107",
+            message: "Parsed response",
+            data: {
+              hasData: !!result.data,
+              hasSuccess: result.success,
+              caregiverId: result.data?.id,
+            },
+            timestamp: Date.now(),
+            sessionId: "debug-session",
+            runId: "run1",
+            hypothesisId: "D",
+          }),
+        },
+      ).catch(() => {});
       // #endregion
-      
+
       return result.data;
     },
   });
@@ -184,8 +278,12 @@ export default function CaregiverDetailPage() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Error Loading Caregiver</h2>
-          <p className="text-gray-600 mb-4">{error?.message || "Caregiver not found"}</p>
+          <h2 className="text-xl font-semibold mb-2">
+            Error Loading Caregiver
+          </h2>
+          <p className="text-gray-600 mb-4">
+            {error?.message || "Caregiver not found"}
+          </p>
           <Button onClick={() => router.push("/admin/caregivers")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Caregivers
@@ -215,7 +313,11 @@ export default function CaregiverDetailPage() {
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.push("/admin/caregivers")}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.push("/admin/caregivers")}
+          >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
@@ -223,7 +325,10 @@ export default function CaregiverDetailPage() {
             <p className="text-gray-600">Caregiver Profile</p>
           </div>
         </div>
-        <Badge variant={getStatusBadgeVariant(caregiver.status)} className="text-sm px-4 py-2">
+        <Badge
+          variant={getStatusBadgeVariant(caregiver.status)}
+          className="text-sm px-4 py-2"
+        >
           {caregiver.status}
         </Badge>
       </div>
@@ -246,7 +351,9 @@ export default function CaregiverDetailPage() {
                   <CardTitle className="text-2xl">{fullName}</CardTitle>
                   <CardDescription>{caregiver.email}</CardDescription>
                   {caregiver.agency && (
-                    <p className="text-sm text-gray-600 mt-1">Agency: {caregiver.agency.name}</p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Agency: {caregiver.agency.name}
+                    </p>
                   )}
                 </div>
               </div>
@@ -254,29 +361,45 @@ export default function CaregiverDetailPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">Phone Number</Label>
+                  <Label className="text-sm font-medium text-gray-500">
+                    Phone Number
+                  </Label>
                   <p className="mt-1">{caregiver.phoneNumber || "N/A"}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">Date of Birth</Label>
+                  <Label className="text-sm font-medium text-gray-500">
+                    Date of Birth
+                  </Label>
                   <p className="mt-1">
-                    {caregiver.dateOfBirth ? new Date(caregiver.dateOfBirth).toLocaleDateString() : "N/A"}
+                    {caregiver.dateOfBirth
+                      ? new Date(caregiver.dateOfBirth).toLocaleDateString()
+                      : "N/A"}
                   </p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">Gender</Label>
+                  <Label className="text-sm font-medium text-gray-500">
+                    Gender
+                  </Label>
                   <p className="mt-1">{caregiver.gender || "N/A"}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">Experience</Label>
-                  <p className="mt-1">{caregiver.experience ? `${caregiver.experience} years` : "N/A"}</p>
+                  <Label className="text-sm font-medium text-gray-500">
+                    Experience
+                  </Label>
+                  <p className="mt-1">
+                    {caregiver.experience
+                      ? `${caregiver.experience} years`
+                      : "N/A"}
+                  </p>
                 </div>
               </div>
 
               <Separator />
 
               <div>
-                <Label className="text-sm font-medium text-gray-500">Address</Label>
+                <Label className="text-sm font-medium text-gray-500">
+                  Address
+                </Label>
                 <p className="mt-1">
                   {caregiver.address && caregiver.city && caregiver.state
                     ? `${caregiver.address}, ${caregiver.city}, ${caregiver.state} ${caregiver.zipCode || ""} ${caregiver.country || ""}`
@@ -288,7 +411,9 @@ export default function CaregiverDetailPage() {
                 <>
                   <Separator />
                   <div>
-                    <Label className="text-sm font-medium text-gray-500">Bio</Label>
+                    <Label className="text-sm font-medium text-gray-500">
+                      Bio
+                    </Label>
                     <p className="mt-1 text-gray-700">{caregiver.bio}</p>
                   </div>
                 </>
@@ -300,19 +425,29 @@ export default function CaregiverDetailPage() {
           <Card>
             <CardHeader>
               <CardTitle>Professional Details</CardTitle>
-              <CardDescription>Skills, certifications, and qualifications</CardDescription>
+              <CardDescription>
+                Skills, certifications, and qualifications
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">Hourly Rate</Label>
+                  <Label className="text-sm font-medium text-gray-500">
+                    Hourly Rate
+                  </Label>
                   <p className="mt-1 text-lg font-semibold">
-                    {caregiver.hourlyRate ? `$${caregiver.hourlyRate}/hr` : "Not set"}
+                    {caregiver.hourlyRate
+                      ? `$${caregiver.hourlyRate}/hr`
+                      : "Not set"}
                   </p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">Availability</Label>
-                  <p className="mt-1">{caregiver.availability || "Not specified"}</p>
+                  <Label className="text-sm font-medium text-gray-500">
+                    Availability
+                  </Label>
+                  <p className="mt-1">
+                    {caregiver.availability || "Not specified"}
+                  </p>
                 </div>
               </div>
 
@@ -320,7 +455,9 @@ export default function CaregiverDetailPage() {
 
               {caregiver.languages && caregiver.languages.length > 0 && (
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">Languages</Label>
+                  <Label className="text-sm font-medium text-gray-500">
+                    Languages
+                  </Label>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {caregiver.languages.map((lang: string, index: number) => (
                       <Badge key={index} variant="outline">
@@ -333,7 +470,9 @@ export default function CaregiverDetailPage() {
 
               {caregiver.skills && caregiver.skills.length > 0 && (
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">Skills</Label>
+                  <Label className="text-sm font-medium text-gray-500">
+                    Skills
+                  </Label>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {caregiver.skills.map((skill: string, index: number) => (
                       <Badge key={index} variant="secondary">
@@ -344,24 +483,31 @@ export default function CaregiverDetailPage() {
                 </div>
               )}
 
-              {caregiver.certifications && caregiver.certifications.length > 0 && (
-                <div>
-                  <Label className="text-sm font-medium text-gray-500">Certifications</Label>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {caregiver.certifications.map((cert: string, index: number) => (
-                      <Badge key={index} variant="default">
-                        {cert}
-                      </Badge>
-                    ))}
+              {caregiver.certifications &&
+                caregiver.certifications.length > 0 && (
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">
+                      Certifications
+                    </Label>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {caregiver.certifications.map(
+                        (cert: string, index: number) => (
+                          <Badge key={index} variant="default">
+                            {cert}
+                          </Badge>
+                        ),
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {caregiver.education && (
                 <>
                   <Separator />
                   <div>
-                    <Label className="text-sm font-medium text-gray-500">Education</Label>
+                    <Label className="text-sm font-medium text-gray-500">
+                      Education
+                    </Label>
                     <p className="mt-1">{caregiver.education}</p>
                   </div>
                 </>
@@ -372,17 +518,31 @@ export default function CaregiverDetailPage() {
                   <Separator />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-sm font-medium text-gray-500">Background Check</Label>
+                      <Label className="text-sm font-medium text-gray-500">
+                        Background Check
+                      </Label>
                       <p className="mt-1">
-                        <Badge variant={caregiver.backgroundCheckStatus === "PASSED" ? "default" : "secondary"}>
+                        <Badge
+                          variant={
+                            caregiver.backgroundCheckStatus === "PASSED"
+                              ? "default"
+                              : "secondary"
+                          }
+                        >
                           {caregiver.backgroundCheckStatus}
                         </Badge>
                       </p>
                     </div>
                     {caregiver.backgroundCheckDate && (
                       <div>
-                        <Label className="text-sm font-medium text-gray-500">Check Date</Label>
-                        <p className="mt-1">{new Date(caregiver.backgroundCheckDate).toLocaleDateString()}</p>
+                        <Label className="text-sm font-medium text-gray-500">
+                          Check Date
+                        </Label>
+                        <p className="mt-1">
+                          {new Date(
+                            caregiver.backgroundCheckDate,
+                          ).toLocaleDateString()}
+                        </p>
                       </div>
                     )}
                   </div>
@@ -412,13 +572,18 @@ export default function CaregiverDetailPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Client Reviews</CardTitle>
-                  <CardDescription>Feedback from previous clients</CardDescription>
+                  <CardDescription>
+                    Feedback from previous clients
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {reviews.length > 0 ? (
                     <div className="space-y-4">
                       {reviews.map((review: Review) => (
-                        <div key={review.id} className="border-b last:border-b-0 pb-4 last:pb-0">
+                        <div
+                          key={review.id}
+                          className="border-b last:border-b-0 pb-4 last:pb-0"
+                        >
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
                               <Avatar className="h-8 w-8">
@@ -429,19 +594,26 @@ export default function CaregiverDetailPage() {
                               </Avatar>
                               <div>
                                 <p className="font-medium text-sm">
-                                  {review.client.firstName} {review.client.lastName}
+                                  {review.client.firstName}{" "}
+                                  {review.client.lastName}
                                 </p>
                                 <p className="text-xs text-gray-500">
-                                  {new Date(review.createdAt).toLocaleDateString()}
+                                  {new Date(
+                                    review.createdAt,
+                                  ).toLocaleDateString()}
                                 </p>
                               </div>
                             </div>
                             <div className="flex items-center gap-1">
                               <span className="text-yellow-500">★</span>
-                              <span className="font-semibold">{review.rating.toFixed(1)}</span>
+                              <span className="font-semibold">
+                                {review.rating.toFixed(1)}
+                              </span>
                             </div>
                           </div>
-                          <p className="text-sm text-gray-700">{review.comment}</p>
+                          <p className="text-sm text-gray-700">
+                            {review.comment}
+                          </p>
                         </div>
                       ))}
                     </div>
@@ -456,26 +628,41 @@ export default function CaregiverDetailPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Documents & Certifications</CardTitle>
-                  <CardDescription>Uploaded documents and verification files</CardDescription>
+                  <CardDescription>
+                    Uploaded documents and verification files
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
                     <p className="text-sm text-gray-600">
-                      Background Check: <span className="font-medium">{caregiver.backgroundCheckStatus || "Pending"}</span>
+                      Background Check:{" "}
+                      <span className="font-medium">
+                        {caregiver.backgroundCheckStatus || "Pending"}
+                      </span>
                     </p>
-                    {caregiver.certifications && caregiver.certifications.length > 0 && (
-                      <div>
-                        <p className="text-sm text-gray-600">Certifications:</p>
-                        <ul className="list-disc list-inside mt-1">
-                          {caregiver.certifications.map((cert: string, index: number) => (
-                            <li key={index} className="text-sm text-gray-700">
-                              {cert}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    <p className="text-sm text-gray-500 mt-4">Document files should be stored and displayed here.</p>
+                    {caregiver.certifications &&
+                      caregiver.certifications.length > 0 && (
+                        <div>
+                          <p className="text-sm text-gray-600">
+                            Certifications:
+                          </p>
+                          <ul className="list-disc list-inside mt-1">
+                            {caregiver.certifications.map(
+                              (cert: string, index: number) => (
+                                <li
+                                  key={index}
+                                  className="text-sm text-gray-700"
+                                >
+                                  {cert}
+                                </li>
+                              ),
+                            )}
+                          </ul>
+                        </div>
+                      )}
+                    <p className="text-sm text-gray-500 mt-4">
+                      Document files should be stored and displayed here.
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -485,12 +672,16 @@ export default function CaregiverDetailPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Admin Notes</CardTitle>
-                  <CardDescription>Internal notes and verification details</CardDescription>
+                  <CardDescription>
+                    Internal notes and verification details
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {caregiver.verificationNotes ? (
                     <div className="bg-gray-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-700">{caregiver.verificationNotes}</p>
+                      <p className="text-sm text-gray-700">
+                        {caregiver.verificationNotes}
+                      </p>
                     </div>
                   ) : (
                     <p className="text-sm text-gray-500">No notes available</p>
@@ -512,24 +703,32 @@ export default function CaregiverDetailPage() {
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Rating</span>
                 <div className="flex items-center gap-1">
-                  <span className="text-2xl font-bold">{caregiver.rating?.toFixed(1) || "N/A"}</span>
+                  <span className="text-2xl font-bold">
+                    {caregiver.rating?.toFixed(1) || "N/A"}
+                  </span>
                   <span className="text-yellow-500">★</span>
                 </div>
               </div>
               <Separator />
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Total Reviews</span>
-                <span className="text-2xl font-bold">{caregiver.totalReviews || 0}</span>
+                <span className="text-2xl font-bold">
+                  {caregiver.totalReviews || 0}
+                </span>
               </div>
               <Separator />
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Completed Jobs</span>
-                <span className="text-2xl font-bold">{caregiver.completedJobs || 0}</span>
+                <span className="text-2xl font-bold">
+                  {caregiver.completedJobs || 0}
+                </span>
               </div>
               <Separator />
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Hourly Rate</span>
-                <span className="text-2xl font-bold">${caregiver.hourlyRate || 0}</span>
+                <span className="text-2xl font-bold">
+                  ${caregiver.hourlyRate || 0}
+                </span>
               </div>
             </CardContent>
           </Card>
@@ -542,18 +741,29 @@ export default function CaregiverDetailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center gap-2">
-                <Badge variant={getStatusBadgeVariant(caregiver.verificationStatus)} className="text-sm">
+                <Badge
+                  variant={getStatusBadgeVariant(caregiver.verificationStatus)}
+                  className="text-sm"
+                >
                   {caregiver.verificationStatus}
                 </Badge>
               </div>
 
               {caregiver.status === "PENDING" && (
                 <div className="space-y-2">
-                  <Button onClick={() => setVerifyDialogOpen(true)} className="w-full" variant="default">
+                  <Button
+                    onClick={() => setVerifyDialogOpen(true)}
+                    className="w-full"
+                    variant="default"
+                  >
                     <CheckCircle className="mr-2 h-4 w-4" />
                     Verify Caregiver
                   </Button>
-                  <Button onClick={() => setRejectDialogOpen(true)} className="w-full" variant="destructive">
+                  <Button
+                    onClick={() => setRejectDialogOpen(true)}
+                    className="w-full"
+                    variant="destructive"
+                  >
                     <XCircle className="mr-2 h-4 w-4" />
                     Reject Caregiver
                   </Button>
@@ -561,7 +771,11 @@ export default function CaregiverDetailPage() {
               )}
 
               {caregiver.status === "VERIFIED" && (
-                <Button onClick={() => setRejectDialogOpen(true)} className="w-full" variant="outline">
+                <Button
+                  onClick={() => setRejectDialogOpen(true)}
+                  className="w-full"
+                  variant="outline"
+                >
                   <Ban className="mr-2 h-4 w-4" />
                   Suspend Caregiver
                 </Button>
@@ -572,11 +786,15 @@ export default function CaregiverDetailPage() {
               <div className="text-sm space-y-2">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Created:</span>
-                  <span className="font-medium">{new Date(caregiver.createdAt).toLocaleDateString()}</span>
+                  <span className="font-medium">
+                    {new Date(caregiver.createdAt).toLocaleDateString()}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Updated:</span>
-                  <span className="font-medium">{new Date(caregiver.updatedAt).toLocaleDateString()}</span>
+                  <span className="font-medium">
+                    {new Date(caregiver.updatedAt).toLocaleDateString()}
+                  </span>
                 </div>
               </div>
             </CardContent>
@@ -590,7 +808,8 @@ export default function CaregiverDetailPage() {
           <DialogHeader>
             <DialogTitle>Verify Caregiver</DialogTitle>
             <DialogDescription>
-              Confirm that you want to verify this caregiver. Add any notes about the verification.
+              Confirm that you want to verify this caregiver. Add any notes
+              about the verification.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -606,7 +825,10 @@ export default function CaregiverDetailPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setVerifyDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setVerifyDialogOpen(false)}
+            >
               Cancel
             </Button>
             <Button onClick={handleVerify} disabled={verifyMutation.isPending}>
@@ -622,7 +844,8 @@ export default function CaregiverDetailPage() {
           <DialogHeader>
             <DialogTitle>Reject Caregiver</DialogTitle>
             <DialogDescription>
-              Provide a reason for rejecting this caregiver. This will be communicated to them.
+              Provide a reason for rejecting this caregiver. This will be
+              communicated to them.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -638,7 +861,10 @@ export default function CaregiverDetailPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setRejectDialogOpen(false)}
+            >
               Cancel
             </Button>
             <Button

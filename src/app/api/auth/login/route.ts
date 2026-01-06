@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
       }
       
       // Verify MFA code
-      const verified = speakeasy.totp.verify({
+      const verified = (speakeasy.totp as any).verify({
         secret: user.mfa_secret,
         encoding: 'base32',
         token: validatedData.mfaCode,
@@ -154,9 +154,11 @@ export async function POST(request: NextRequest) {
     await kv.del(rateLimitKey);
     
     // Get device info
+    const userAgent = request.headers.get('user-agent');
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip");
     const deviceInfo = validatedData.deviceInfo || {
-      userAgent: request.headers.get('user-agent') || 'Unknown',
-      ip: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown" || request.headers.get('x-forwarded-for') || 'Unknown',
+      userAgent: userAgent || 'Unknown',
+      ip: ip || 'Unknown',
       platform: request.headers.get('sec-ch-ua-platform') || 'Unknown',
       deviceId: crypto.randomUUID(),
     };
@@ -166,9 +168,14 @@ export async function POST(request: NextRequest) {
       userId: user.id,
       userRole: user.role,
       phone: user.phone,
-      email: user.email,
+      email: user.email || undefined,
       name: user.name,
-      deviceInfo,
+      deviceInfo: {
+        userAgent: deviceInfo.userAgent || 'Unknown',
+        ip: deviceInfo.ip || 'Unknown',
+        platform: deviceInfo.platform,
+        deviceId: deviceInfo.deviceId,
+      },
       rememberMe: validatedData.rememberMe,
     });
     

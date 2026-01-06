@@ -1,13 +1,14 @@
-import { Pill, Clock, Check, Calendar, AlertCircle } from "lucide-react";
+import { Pill, Clock, Check, Bell, ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 
 interface MedicationScheduleProps {
-  patientName: string;
-  onMarkTaken: (medId: string) => void;
-  onSetReminder: (medId: string) => void;
+  patientName?: string;
+  onMarkTaken?: (id: string) => void;
+  onSetReminder?: (id: string) => void;
+  onNavigate?: (page: string) => void;
 }
 
-export function MedicationSchedule({ patientName, onMarkTaken, onSetReminder }: MedicationScheduleProps) {
+export function MedicationSchedule({ patientName = "Patient", onMarkTaken, onSetReminder, onNavigate }: MedicationScheduleProps) {
   const todaySchedule = [
     {
       id: "1",
@@ -59,6 +60,15 @@ export function MedicationSchedule({ patientName, onMarkTaken, onSetReminder }: 
   return (
     <div className="min-h-screen pb-6">
       <div className="p-6">
+        {/* Back Button */}
+        <button
+          onClick={() => onNavigate?.('toc')}
+          className="w-10 h-10 rounded-full flex items-center justify-center mb-4"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+        >
+          <ArrowLeft className="w-5 h-5" style={{ color: '#535353' }} />
+        </button>
+
         <h1 className="mb-6" style={{ color: '#535353' }}>My Medications</h1>
 
         {/* Weekly Progress */}

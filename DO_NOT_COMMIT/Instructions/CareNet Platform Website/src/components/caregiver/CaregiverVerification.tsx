@@ -1,13 +1,14 @@
-import { Check, Clock, AlertCircle, Upload, Calendar, FileText, Shield } from "lucide-react";
+import { Check, Clock, AlertCircle, Upload, Calendar, FileText, Shield, ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 
 interface CaregiverVerificationProps {
-  currentStep: 1 | 2 | 3 | 4 | 5 | 6;
-  onNavigateToStep: (step: number) => void;
+  currentStep?: 1 | 2 | 3 | 4 | 5 | 6;
+  onNavigateToStep?: (step: number) => void;
   onComplete?: () => void;
+  onNavigate?: (page: string) => void;
 }
 
-export function CaregiverVerification({ currentStep, onNavigateToStep, onComplete }: CaregiverVerificationProps) {
+export function CaregiverVerification({ currentStep = 1, onNavigateToStep, onComplete, onNavigate }: CaregiverVerificationProps) {
   const steps = [
     { 
       id: 1, 
@@ -72,6 +73,15 @@ export function CaregiverVerification({ currentStep, onNavigateToStep, onComplet
 
   return (
     <div className="min-h-screen p-6">
+      {/* Back Button */}
+      <button
+        onClick={() => onNavigate?.('toc')}
+        className="w-10 h-10 rounded-full flex items-center justify-center mb-6"
+        style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+      >
+        <ArrowLeft className="w-5 h-5" style={{ color: '#535353' }} />
+      </button>
+
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-8 text-center">

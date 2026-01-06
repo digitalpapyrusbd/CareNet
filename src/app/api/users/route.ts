@@ -252,7 +252,7 @@ export async function POST(request: NextRequest) {
           role,
           phone,
           email,
-          passwordHash,
+          password_hash: passwordHash,
           name,
           language,
           kyc_status: 'PENDING',
@@ -276,7 +276,7 @@ export async function POST(request: NextRequest) {
           role,
           phone,
           email,
-          passwordHash,
+          password_hash: passwordHash,
           name,
           language,
           kyc_status: role === UserRole.CAREGIVER ? 'PENDING' : 'VERIFIED', // Caregivers need verification

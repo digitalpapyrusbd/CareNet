@@ -34,9 +34,12 @@ export async function POST(request: NextRequest) {
 
     // Initialize Nagad gateway
     const nagadGateway = new NagadPaymentGateway({
-      merchantId: process.env.NAGAD_MERCHANT_ID || '',
-      merchantKey: process.env.NAGAD_MERCHANT_KEY || '',
-      isProduction: process.env.NODE_ENV === 'production',
+      username: process.env.NAGAD_USERNAME || '',
+      password: process.env.NAGAD_PASSWORD || '',
+      appKey: process.env.NAGAD_APP_KEY || '',
+      appSecret: process.env.NAGAD_APP_SECRET || '',
+      baseUrl: process.env.NAGAD_BASE_URL || 'https://api.mynagad.com/v2/checkout',
+      sandbox: process.env.NODE_ENV !== 'production',
     });
 
     // Check if gateway is properly configured
@@ -54,10 +57,10 @@ export async function POST(request: NextRequest) {
         currency: validatedData.currency,
         method: 'NAGAD',
         status: 'PENDING',
-        user_id: user.id,
+        userId: user.id,
         job_id: validatedData.jobId,
         transaction_id: '', // Will be filled after Nagad response
-        gatewayResponse: null,
+        gatewayResponse: undefined,
         created_at: new Date(),
         updated_at: new Date(),
       },
@@ -94,7 +97,7 @@ export async function POST(request: NextRequest) {
       payment: {
         id: payment.id,
         amount: payment.amount,
-        currency: payment.currency,
+        currency: validatedData.currency,
         status: payment.status,
         transactionId: nagadPayment.payment_ref_id,
         paymentURL,
@@ -140,9 +143,12 @@ export async function GET(request: NextRequest) {
 
     // Initialize Nagad gateway
     const nagadGateway = new NagadPaymentGateway({
-      merchantId: process.env.NAGAD_MERCHANT_ID || '',
-      merchantKey: process.env.NAGAD_MERCHANT_KEY || '',
-      isProduction: process.env.NODE_ENV === 'production',
+      username: process.env.NAGAD_USERNAME || '',
+      password: process.env.NAGAD_PASSWORD || '',
+      appKey: process.env.NAGAD_APP_KEY || '',
+      appSecret: process.env.NAGAD_APP_SECRET || '',
+      baseUrl: process.env.NAGAD_BASE_URL || 'https://api.mynagad.com/v2/checkout',
+      sandbox: process.env.NODE_ENV !== 'production',
     });
 
     // Query payment status from Nagad
@@ -158,10 +164,9 @@ export async function GET(request: NextRequest) {
             email: true,
           },
         },
-        job: {
+        jobs: {
           select: {
             id: true,
-            title: true,
           },
         },
       },

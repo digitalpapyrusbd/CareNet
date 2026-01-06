@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     const notifications = await prisma.notifications.findMany({
       where,
       orderBy: {
-        created_at: 'desc',
+        createdAt: 'desc',
       },
       skip: (page - 1) * limit,
       take: limit,

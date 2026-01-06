@@ -1,75 +1,268 @@
-﻿'use client';
+"use client";
 
-import { UniversalNav } from '@/components/layout/UniversalNav';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Activity, Heart, Thermometer, Droplets, Wind } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { UniversalNav } from "@/components/layout/UniversalNav";
 
-import React, { useState } from 'react';
-import Layout from '@/components/layout/Layout';
-import { Button } from '@/components/ui';
-import { Input } from '@/components/ui/input';
+export default function VitalsLogPage() {
+  const router = useRouter();
+  const [bloodPressureSystolic, setBloodPressureSystolic] = useState("");
+  const [bloodPressureDiastolic, setBloodPressureDiastolic] = useState("");
+  const [heartRate, setHeartRate] = useState("");
+  const [temperature, setTemperature] = useState("");
+  const [oxygenSaturation, setOxygenSaturation] = useState("");
+  const [respiratoryRate, setRespiratoryRate] = useState("");
+  const [notes, setNotes] = useState("");
+  const [time, setTime] = useState("");
 
-export default function CaregiverVitalsLogPage() {
-  const [form, setForm] = useState({
-    systolic: '128',
-    diastolic: '82',
-    heartRate: '76',
-    temp: '98.4',
-    oxygen: '98',
-    glucose: '108',
-  });
-
-  const update = (key: keyof typeof form, value: string) => setForm((prev) => ({ ...prev, [key]: value }));
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // TODO: Implement vitals log submission API call
+    // Example: await apiCall('/api/care-logs/vitals', { method: 'POST', body: vitalsData });
+    router.back();
+  };
 
   return (
     <>
       <UniversalNav userRole="caregiver" showBack={true} />
-      <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-rose-50 to-pink-100 dark:from-gray-900 dark:to-rose-950 px-4 py-10 pb-24 md:pt-14">
-        <div className="max-w-3xl mx-auto finance-card p-8">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center"
-              style={{ background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FFB3C1 0%, #FF8FA3 100%)' }}>
-              <span className="text-xl"></span>
+      <div
+        className="min-h-screen pb-24 p-6"
+        style={{ backgroundColor: "#F5F7FA" }}
+      >
+        <div className="max-w-2xl mx-auto">
+          <div className="finance-card p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center"
+                style={{
+                  background:
+                    "radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FEB4C5 0%, #DB869A 100%)",
+                  boxShadow: "0px 4px 18px rgba(240, 161, 180, 0.35)",
+                }}
+              >
+                <Activity className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold" style={{ color: "#535353" }}>
+                  Log Vital Signs
+                </h1>
+                <p style={{ color: "#848484" }}>Record patient's vital signs</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm" style={{ color: '#848484' }}>Care Log</p>
-              <h1 className="text-2xl font-semibold" style={{ color: '#535353' }}>Vitals  Anwar Hossain</h1>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              { label: 'Systolic BP (mmHg)', key: 'systolic', placeholder: '120' },
-              { label: 'Diastolic BP (mmHg)', key: 'diastolic', placeholder: '80' },
-              { label: 'Heart Rate (bpm)', key: 'heartRate', placeholder: '72' },
-              { label: 'Temperature (F)', key: 'temp', placeholder: '98.6' },
-              { label: 'Oxygen Saturation (%)', key: 'oxygen', placeholder: '98' },
-              { label: 'Blood Glucose (mg/dL)', key: 'glucose', placeholder: '110' },
-            ].map(({ label, key, placeholder }) => (
-              <div key={key}>
-                <label className="text-sm font-medium" style={{ color: '#535353' }}>{label}</label>
-                <Input
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Blood Pressure */}
+              <div>
+                <label
+                  className="mb-2 font-medium flex items-center gap-2"
+                  style={{ color: "#535353" }}
+                >
+                  <Heart className="w-4 h-4" />
+                  Blood Pressure (mmHg)
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <input
+                      type="number"
+                      value={bloodPressureSystolic}
+                      onChange={(e) => setBloodPressureSystolic(e.target.value)}
+                      placeholder="Systolic"
+                      className="w-full p-3 rounded-lg border"
+                      style={{
+                        borderColor: "rgba(132, 132, 132, 0.2)",
+                        color: "#535353",
+                      }}
+                    />
+                    <p className="text-xs mt-1" style={{ color: "#848484" }}>
+                      Systolic (top number)
+                    </p>
+                  </div>
+                  <div>
+                    <input
+                      type="number"
+                      value={bloodPressureDiastolic}
+                      onChange={(e) =>
+                        setBloodPressureDiastolic(e.target.value)
+                      }
+                      placeholder="Diastolic"
+                      className="w-full p-3 rounded-lg border"
+                      style={{
+                        borderColor: "rgba(132, 132, 132, 0.2)",
+                        color: "#535353",
+                      }}
+                    />
+                    <p className="text-xs mt-1" style={{ color: "#848484" }}>
+                      Diastolic (bottom number)
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Heart Rate */}
+              <div>
+                <label
+                  className="mb-2 font-medium flex items-center gap-2"
+                  style={{ color: "#535353" }}
+                >
+                  <Activity className="w-4 h-4" />
+                  Heart Rate (bpm)
+                </label>
+                <input
                   type="number"
-                  value={form[key as keyof typeof form]}
-                  onChange={(e) => update(key as keyof typeof form, e.target.value)}
-                  placeholder={placeholder}
-                  className="mt-2 bg-white/70 border-white/60"
+                  value={heartRate}
+                  onChange={(e) => setHeartRate(e.target.value)}
+                  placeholder="e.g., 72"
+                  className="w-full p-3 rounded-lg border"
+                  style={{
+                    borderColor: "rgba(132, 132, 132, 0.2)",
+                    color: "#535353",
+                  }}
                 />
               </div>
-            ))}
-          </div>
 
-          <div className="mt-8 flex flex-col sm:flex-row gap-3">
-            <Button variant="outline" className="flex-1 bg-white/60 border-white/60" style={{ color: '#535353' }}>
-              Cancel
-            </Button>
-            <Button className="flex-1" style={{ background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FFB3C1 0%, #FF8FA3 100%)', color: 'white' }}>
-              Save Vitals
-            </Button>
+              {/* Temperature */}
+              <div>
+                <label
+                  className="mb-2 font-medium flex items-center gap-2"
+                  style={{ color: "#535353" }}
+                >
+                  <Thermometer className="w-4 h-4" />
+                  Temperature (°F)
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={temperature}
+                  onChange={(e) => setTemperature(e.target.value)}
+                  placeholder="e.g., 98.6"
+                  className="w-full p-3 rounded-lg border"
+                  style={{
+                    borderColor: "rgba(132, 132, 132, 0.2)",
+                    color: "#535353",
+                  }}
+                />
+              </div>
+
+              {/* Oxygen Saturation */}
+              <div>
+                <label
+                  className="mb-2 font-medium flex items-center gap-2"
+                  style={{ color: "#535353" }}
+                >
+                  <Droplets className="w-4 h-4" />
+                  Oxygen Saturation (SpO2 %)
+                </label>
+                <input
+                  type="number"
+                  value={oxygenSaturation}
+                  onChange={(e) => setOxygenSaturation(e.target.value)}
+                  placeholder="e.g., 98"
+                  className="w-full p-3 rounded-lg border"
+                  style={{
+                    borderColor: "rgba(132, 132, 132, 0.2)",
+                    color: "#535353",
+                  }}
+                />
+              </div>
+
+              {/* Respiratory Rate */}
+              <div>
+                <label
+                  className="mb-2 font-medium flex items-center gap-2"
+                  style={{ color: "#535353" }}
+                >
+                  <Wind className="w-4 h-4" />
+                  Respiratory Rate (breaths/min)
+                </label>
+                <input
+                  type="number"
+                  value={respiratoryRate}
+                  onChange={(e) => setRespiratoryRate(e.target.value)}
+                  placeholder="e.g., 16"
+                  className="w-full p-3 rounded-lg border"
+                  style={{
+                    borderColor: "rgba(132, 132, 132, 0.2)",
+                    color: "#535353",
+                  }}
+                />
+              </div>
+
+              {/* Time */}
+              <div>
+                <label
+                  className="block mb-2 font-medium"
+                  style={{ color: "#535353" }}
+                >
+                  Time Recorded *
+                </label>
+                <input
+                  type="time"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  required
+                  className="w-full p-3 rounded-lg border"
+                  style={{
+                    borderColor: "rgba(132, 132, 132, 0.2)",
+                    color: "#535353",
+                  }}
+                />
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label
+                  className="block mb-2 font-medium"
+                  style={{ color: "#535353" }}
+                >
+                  Notes (Optional)
+                </label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Any observations or concerns..."
+                  className="w-full p-3 rounded-lg border"
+                  style={{
+                    borderColor: "rgba(132, 132, 132, 0.2)",
+                    color: "#535353",
+                    minHeight: "100px",
+                  }}
+                  rows={4}
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button
+                  type="button"
+                  onClick={() => router.back()}
+                  variant="outline"
+                  className="flex-1"
+                  style={{
+                    color: "#535353",
+                    borderColor: "rgba(132, 132, 132, 0.2)",
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="flex-1"
+                  style={{
+                    background:
+                      "radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FEB4C5 0%, #DB869A 100%)",
+                    color: "white",
+                    boxShadow: "0px 4px 18px rgba(240, 161, 180, 0.35)",
+                  }}
+                >
+                  <Activity className="w-4 h-4 mr-2" />
+                  Log Vitals
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
-    </Layout>
     </>
-
   );
 }

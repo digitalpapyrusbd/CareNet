@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 
 export class CreateServiceZoneDto {
-  company_id: string;
+  agency_id: string;
   zone_name: string;
   region_code?: string;
   boundary_geojson: any;
@@ -20,8 +20,7 @@ export class ServiceZonesService {
   async create(data: CreateServiceZoneDto) {
     const zone = await this.prisma.service_zones.create({
       data: {
-        company_id: data.company_id,
-        agency_id: data.company_id, // Use the same ID for both fields
+        agency_id: data.agency_id,
         zone_name: data.zone_name,
         region_code: data.region_code || 'BD',
         boundary_geojson: data.boundary_geojson,

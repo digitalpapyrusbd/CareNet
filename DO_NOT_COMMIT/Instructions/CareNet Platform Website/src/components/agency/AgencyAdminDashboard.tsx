@@ -1,22 +1,36 @@
-import { Users, Briefcase, DollarSign, Star, Plus, Package, Calendar, TrendingUp } from "lucide-react";
+import {
+  Users,
+  Briefcase,
+  Package,
+  DollarSign,
+  TrendingUp,
+  Star,
+  AlertCircle,
+  Calendar,
+  BarChart3,
+  ArrowLeft,
+  Plus,
+} from "lucide-react";
 import { Button } from "../ui/button";
 
 interface AgencyAdminDashboardProps {
-  agencyName: string;
-  onCreatePackage: () => void;
-  onAddCaregiver: () => void;
-  onViewJobs: () => void;
-  onViewCaregivers: () => void;
-  onViewFinance: () => void;
+  agencyName?: string;
+  onCreatePackage?: () => void;
+  onAddCaregiver?: () => void;
+  onViewJobs?: () => void;
+  onViewCaregivers?: () => void;
+  onViewFinance?: () => void;
+  onNavigate?: (page: string) => void;
 }
 
 export function AgencyAdminDashboard({
-  agencyName,
+  agencyName = "CareNet Agency",
   onCreatePackage,
   onAddCaregiver,
   onViewJobs,
   onViewCaregivers,
-  onViewFinance
+  onViewFinance,
+  onNavigate
 }: AgencyAdminDashboardProps) {
   const kpis = {
     caregivers: 24,
@@ -41,6 +55,15 @@ export function AgencyAdminDashboard({
     <div className="min-h-screen pb-6">
       {/* Header */}
       <div className="p-6">
+        {/* Back Button */}
+        <button
+          onClick={() => onNavigate?.('toc')}
+          className="w-10 h-10 rounded-full flex items-center justify-center mb-4"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+        >
+          <ArrowLeft className="w-5 h-5" style={{ color: '#535353' }} />
+        </button>
+
         <div className="mb-6">
           <h1 style={{ color: '#535353' }}>{agencyName}</h1>
           <p style={{ color: '#848484' }}>Agency Dashboard</p>

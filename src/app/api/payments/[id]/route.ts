@@ -36,7 +36,7 @@ export async function GET(
       case UserRole.COMPANY:
         // Companies can see payments for their jobs
         const company = await prisma.companies.findUnique({
-          where: { user_id: user.id },
+          where: { userId: user.id },
         });
         
         if (company) {
@@ -51,7 +51,7 @@ export async function GET(
     const payment = await prisma.payments.findFirst({
       where,
       include: {
-        payer: {
+        users: {
           select: {
             id: true,
             name: true,
@@ -59,22 +59,22 @@ export async function GET(
             email: true,
           },
         },
-        job: {
+          jobs: {
           select: {
             id: true,
-            patient: {
+            patients: {
               select: {
                 id: true,
                 name: true,
               },
             },
-            company: {
+            companies: {
               select: {
                 id: true,
                 company_name: true,
               },
             },
-            package: {
+            packages: {
               select: {
                 id: true,
                 name: true,
@@ -162,7 +162,7 @@ export async function POST(
         paid_at: action === 'approve' ? new Date() : null,
       },
       include: {
-        payer: {
+        users: {
           select: {
             id: true,
             name: true,
@@ -170,22 +170,22 @@ export async function POST(
             email: true,
           },
         },
-        job: {
+          jobs: {
           select: {
             id: true,
-            patient: {
+            patients: {
               select: {
                 id: true,
                 name: true,
               },
             },
-            company: {
+            companies: {
               select: {
                 id: true,
                 company_name: true,
               },
             },
-            package: {
+            packages: {
               select: {
                 id: true,
                 name: true,
@@ -202,7 +202,7 @@ export async function POST(
     // If payment is approved, update job status to ACTIVE
     if (action === 'approve') {
       await prisma.jobs.update({
-        where: { id: payment.jobId },
+        where: { id: payment.job_id },
         data: { status: 'ACTIVE' },
       });
     }

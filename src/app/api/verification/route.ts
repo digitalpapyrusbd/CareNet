@@ -8,13 +8,13 @@ import { z } from 'zod';
 const verifyCompanySchema = z.object({
   companyId: z.string(),
   isVerified: z.boolean(),
-  verificationNotes: z.string().optional(),
+  verification_notes: z.string().optional(),
 });
 
 const verifyCaregiverSchema = z.object({
   caregiverId: z.string(),
   isVerified: z.boolean(),
-  verificationNotes: z.string().optional(),
+  verification_notes: z.string().optional(),
 });
 
 // Get all pending verifications
@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
               email: true,
             },
           },
-          company: {
+          companies: {
             select: {
               id: true,
               company_name: true,
@@ -146,8 +146,7 @@ export async function POST(request: NextRequest) {
         where: { id: validatedData.companyId },
         data: {
           is_verified: validatedData.isVerified,
-          verification_notes: validatedData.verificationNotes,
-        },
+                  },
         include: { users: {
             select: {
               id: true,
@@ -166,8 +165,7 @@ export async function POST(request: NextRequest) {
         where: { id: validatedData.caregiverId },
         data: {
           is_verified: validatedData.isVerified,
-          verification_notes: validatedData.verificationNotes,
-          backgroundCheckDate: validatedData.isVerified ? new Date() : null,
+                    background_check_date: validatedData.isVerified ? new Date() : null,
           background_check_status: validatedData.isVerified ? 'CLEARED' : 'FLAGGED',
         },
         include: { users: {
@@ -178,7 +176,7 @@ export async function POST(request: NextRequest) {
               email: true,
             },
           },
-          company: {
+          companies: {
             select: {
               id: true,
               company_name: true,
@@ -205,10 +203,9 @@ export async function POST(request: NextRequest) {
           : (validatedData as any).caregiverId,
         changes: {
           is_verified: validatedData.isVerified,
-          verification_notes: validatedData.verificationNotes,
-        },
-        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
-        userAgent: request.headers.get('user-agent') || 'unknown',
+                  },
+        ip_address: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
+          user_agent: request.headers.get('user-agent') || 'unknown',
         timestamp: new Date(),
       },
     });

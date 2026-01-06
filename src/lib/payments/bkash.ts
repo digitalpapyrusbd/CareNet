@@ -15,7 +15,7 @@ type TxRecord = {
   currency: string
   reference?: string
   status: 'PENDING' | 'SUCCESS' | 'FAILED'
-  createdAt: number
+        created_at: number
 }
 
 const transactions = new Map<string, TxRecord>()
@@ -29,7 +29,7 @@ export async function createCheckout({ amount, currency = 'BDT', reference }: Bk
   const prov = await prisma.provider_transactions.create({
     data: {
       provider: 'bkash',
-      provider_tx_id: txId,
+        transaction_id: txId,
       status: 'PENDING',
       amount: amount as any,
       currency,
@@ -48,7 +48,7 @@ export async function createCheckout({ amount, currency = 'BDT', reference }: Bk
     currency,
     reference: reference || txId,
     status: 'PENDING',
-    createdAt: Date.now(),
+        created_at: Date.now(),
   }
   transactions.set(txId, rec)
   return {
@@ -63,7 +63,7 @@ export async function createCheckout({ amount, currency = 'BDT', reference }: Bk
 
 export async function verifyPayment(transactionId: string) {
   // Update provider transaction record in DB
-  const prov = await prisma.provider_transactions.findUnique({ where: { provider_tx_id: transaction_id } })
+  const prov = await prisma.provider_transactions.findUnique({ where: { transaction_id: transactionId } })
   if (!prov) return { transactionId, status: 'NOT_FOUND' }
 
   const updated = await prisma.provider_transactions.update({ where: { id: prov.id }, data: { status: 'SUCCESS' } })
@@ -88,11 +88,11 @@ export async function verifyPayment(transactionId: string) {
 }
 
 export async function getTransaction(transactionId: string) {
-  return prisma.provider_transactions.findUnique({ where: { provider_tx_id: transaction_id }, include: { logs: true } })
+  return prisma.provider_transactions.findUnique({ where: { transaction_id: transactionId }, include: { logs: true } })
 }
 
 export async function listTransactions() {
-  return prisma.provider_transactions.findMany({ orderBy: { created_at: 'desc' } })
+  return prisma.provider_transactions.findMany({ orderBy: { createdAt: 'desc' } })
 }
 
 export default {

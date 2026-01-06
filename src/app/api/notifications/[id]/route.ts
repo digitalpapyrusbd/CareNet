@@ -22,7 +22,7 @@ export async function GET(
     const notification = await prisma.notifications.findFirst({
       where: {
         id: notificationId,
-        user_id: currentUser.id,
+        userId: currentUser.id,
       },
     });
 
@@ -73,7 +73,7 @@ export async function PATCH(
     const notification = await prisma.notifications.findFirst({
       where: {
         id: notificationId,
-        user_id: currentUser.id,
+        userId: currentUser.id,
       },
     });
 
@@ -130,7 +130,7 @@ export async function DELETE(
     const notification = await prisma.notifications.findFirst({
       where: {
         id: notificationId,
-        user_id: currentUser.id,
+        userId: currentUser.id,
       },
     });
 

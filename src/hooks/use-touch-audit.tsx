@@ -38,7 +38,7 @@ export function useTouchTargetAudit() {
     elements.forEach((element) => {
       const rect = element.getBoundingClientRect();
       const computedStyle = window.getComputedStyle(element);
-      
+
       // Get actual clickable area including padding
       const paddingTop = parseFloat(computedStyle.paddingTop);
       const paddingBottom = parseFloat(computedStyle.paddingBottom);
@@ -72,7 +72,7 @@ export function useTouchTargetAudit() {
 
     while (current && current !== document.body) {
       let selector = current.tagName.toLowerCase();
-      
+
       if (current.id) {
         selector += `#${current.id}`;
       } else if (current.className) {
@@ -94,7 +94,7 @@ export function useTouchTargetAudit() {
       if (!isValid && element instanceof HTMLElement) {
         element.style.outline = '2px solid red';
         element.style.outlineOffset = '2px';
-        
+
         // Add tooltip
         const tooltip = document.createElement('div');
         tooltip.textContent = 'Touch target too small';
@@ -118,7 +118,7 @@ export function useTouchTargetAudit() {
       if (element instanceof HTMLElement) {
         element.style.outline = '';
         element.style.outlineOffset = '';
-        
+
         // Remove tooltips
         const tooltips = element.querySelectorAll('div');
         tooltips.forEach((tooltip) => {
@@ -154,16 +154,62 @@ export function TouchTargetAuditPanel() {
   } = useTouchTargetAudit();
 
   const [isOpen, setIsOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'error'>('idle');
 
   useEffect(() => {
+    // Mark as mounted to prevent hydration mismatch
+    setIsMounted(true);
+
     // Auto-audit on mount in development
     if (process.env.NODE_ENV === 'development') {
       auditTouchTargets();
     }
   }, []);
 
-  if (process.env.NODE_ENV !== 'development') {
-    return null; // Only show in development
+  const copyAuditResults = async () => {
+    const pageUrl = window.location.href;
+    const timestamp = new Date().toLocaleString();
+    const invalidResults = results.filter((r) => !r.isValid);
+
+    let report = `🔍 TOUCH TARGET AUDIT REPORT\n`;
+    report += `${'='.repeat(50)}\n\n`;
+    report += `📍 Page: ${pageUrl}\n`;
+    report += `📅 Date: ${timestamp}\n\n`;
+    report += `📊 SUMMARY\n`;
+    report += `${'-'.repeat(30)}\n`;
+    report += `Total Elements: ${totalCount}\n`;
+    report += `✅ Valid (≥48×48px): ${totalCount - invalidCount}\n`;
+    report += `❌ Invalid (<48×48px): ${invalidCount}\n\n`;
+
+    if (invalidResults.length > 0) {
+      report += `⚠️ INVALID ELEMENTS\n`;
+      report += `${'-'.repeat(30)}\n`;
+      invalidResults.forEach((result, index) => {
+        report += `\n${index + 1}. Size: ${result.width}×${result.height}px\n`;
+        report += `   Path: ${result.path}\n`;
+      });
+    } else {
+      report += `✅ All touch targets meet WCAG 2.5.5 requirements!\n`;
+    }
+
+    report += `\n${'='.repeat(50)}\n`;
+    report += `Minimum required: 48×48px (WCAG 2.5.5)\n`;
+
+    try {
+      await navigator.clipboard.writeText(report);
+      setCopyStatus('copied');
+      setTimeout(() => setCopyStatus('idle'), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+      setCopyStatus('error');
+      setTimeout(() => setCopyStatus('idle'), 2000);
+    }
+  };
+
+  // Don't render on server or in production
+  if (!isMounted || process.env.NODE_ENV !== 'development') {
+    return null;
   }
 
   return (
@@ -171,7 +217,7 @@ export function TouchTargetAuditPanel() {
       {/* Floating Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-4 right-4 z-[9999] bg-purple-600 text-white p-3 rounded-full shadow-lg hover:bg-purple-700 transition-colors"
+        className="fixed bottom-4 right-4 z-[9999] bg-purple-600 text-white w-14 h-14 rounded-full shadow-lg hover:bg-purple-700 transition-colors flex items-center justify-center"
         title="Touch Target Audit"
       >
         <svg
@@ -198,7 +244,8 @@ export function TouchTargetAuditPanel() {
               <h3 className="font-semibold text-lg">Touch Target Audit</h3>
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-white hover:text-gray-200"
+                className="text-white hover:text-gray-200 w-12 h-12 flex items-center justify-center -mr-2"
+                aria-label="Close audit panel"
               >
                 ✕
               </button>
@@ -237,24 +284,40 @@ export function TouchTargetAuditPanel() {
             <button
               onClick={auditTouchTargets}
               disabled={isAuditing}
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 disabled:opacity-50 text-sm font-medium"
+              className="w-full bg-blue-600 text-white h-12 px-4 rounded hover:bg-blue-700 disabled:opacity-50 text-sm font-bold uppercase tracking-wide"
             >
               {isAuditing ? 'Auditing...' : '🔍 Run Audit'}
             </button>
             <div className="flex gap-2">
               <button
                 onClick={highlightInvalidTargets}
-                className="flex-1 bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 text-sm"
+                className="flex-1 bg-red-600 text-white h-12 px-4 rounded hover:bg-red-700 text-sm font-bold"
               >
-                Highlight Issues
+                Highlight
               </button>
               <button
                 onClick={clearHighlights}
-                className="flex-1 bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-700 text-sm"
+                className="flex-1 bg-gray-600 text-white h-12 px-4 rounded hover:bg-gray-700 text-sm font-bold"
               >
                 Clear
               </button>
             </div>
+            <button
+              onClick={copyAuditResults}
+              disabled={results.length === 0}
+              className={`w-full h-12 px-4 rounded text-sm font-bold uppercase tracking-wide transition-colors ${copyStatus === 'copied'
+                  ? 'bg-green-600 text-white'
+                  : copyStatus === 'error'
+                    ? 'bg-red-600 text-white'
+                    : 'bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50'
+                }`}
+            >
+              {copyStatus === 'copied'
+                ? '✅ Copied!'
+                : copyStatus === 'error'
+                  ? '❌ Failed'
+                  : '📋 Copy Results'}
+            </button>
           </div>
 
           {/* Results List */}

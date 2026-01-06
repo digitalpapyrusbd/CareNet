@@ -141,7 +141,7 @@ export async function GET(request: NextRequest) {
         ] = await Promise.all([
           // User growth over time
           prisma.users.groupBy({
-            by: ['createdAt'],
+            by: ['created_at'],
             where: {
               created_at: { gte: startDate },
             },
@@ -156,7 +156,7 @@ export async function GET(request: NextRequest) {
           
           // Users by KYC status
           prisma.users.groupBy({
-            by: ['kycStatus'],
+            by: ['kyc_status'],
             _count: { id: true },
           }),
           
@@ -202,7 +202,7 @@ export async function GET(request: NextRequest) {
           
           // Jobs by company (top 10)
           prisma.jobs.groupBy({
-            by: ['companyId'],
+            by: ['company_id'],
             where: {
               created_at: { gte: startDate },
             },
@@ -235,7 +235,7 @@ export async function GET(request: NextRequest) {
           
           // Top packages
           prisma.jobs.groupBy({
-            by: ['packageId'],
+            by: ['package_id'],
             where: {
               created_at: { gte: startDate },
             },
@@ -379,7 +379,7 @@ export async function GET(request: NextRequest) {
             },
             _avg: {
               resolved_at: true,
-              createdAt: true,
+              created_at: true,
             },
           }),
           

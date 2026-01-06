@@ -1,19 +1,27 @@
-import { Camera, FileText, Star, Check, Send } from "lucide-react";
+import { Camera, FileText, Star, Check, Send, ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import { useState } from "react";
 
 interface CheckOutFlowProps {
-  jobId: string;
-  patientName: string;
-  checkInTime: string;
-  onComplete: (data: any) => void;
-  onCancel: () => void;
+  jobId?: string;
+  patientName?: string;
+  checkInTime?: string;
+  onComplete?: (data: any) => void;
+  onCancel?: () => void;
+  onNavigate?: (page: string) => void;
 }
 
 type Step = 'photo' | 'summary' | 'confirmation';
 
-export function CheckOutFlow({ jobId, patientName, checkInTime, onComplete, onCancel }: CheckOutFlowProps) {
+export function CheckOutFlow({ 
+  jobId = "1", 
+  patientName = "Patient", 
+  checkInTime = "9:00 AM", 
+  onComplete, 
+  onCancel, 
+  onNavigate 
+}: CheckOutFlowProps) {
   const [currentStep, setCurrentStep] = useState<Step>('photo');
   const [photo, setPhoto] = useState<File | null>(null);
   const [shiftSummary, setShiftSummary] = useState("");
@@ -46,6 +54,17 @@ export function CheckOutFlow({ jobId, patientName, checkInTime, onComplete, onCa
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6">
+      {/* Back Button */}
+      <div className="w-full max-w-md mb-4">
+        <button
+          onClick={() => onCancel?.() || onNavigate?.('toc')}
+          className="w-10 h-10 rounded-full flex items-center justify-center"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+        >
+          <ArrowLeft className="w-5 h-5" style={{ color: '#535353' }} />
+        </button>
+      </div>
+
       {/* Step: Photo Capture */}
       {currentStep === 'photo' && (
         <div className="w-full max-w-md">

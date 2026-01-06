@@ -1,48 +1,399 @@
-﻿'use client';
+"use client";
 
-import { UniversalNav } from '@/components/layout/UniversalNav';
+import { useState } from "react";
+import {
+  MapPin,
+  Camera,
+  Check,
+  AlertTriangle,
+  Navigation,
+  ArrowLeft,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, MapPin } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+interface CheckInPageProps {
+  patientName?: string;
+  expectedLocation?: {
+    lat: number;
+    lng: number;
+    address: string;
+  };
+  onComplete?: () => void;
+}
 
-export default function CheckInPage() {
-  const router = useRouter();
+type Step = "location" | "location-mismatch" | "photo" | "confirmation";
+
+export default function CheckInPage({
+  patientName = "Mrs. Fatima Rahman",
+  expectedLocation = {
+    lat: 23.7,
+    lng: 90.4,
+    address: "Dhaka, Bangladesh",
+  },
+  onComplete,
+}: CheckInPageProps) {
+  const [currentStep, setCurrentStep] = useState<Step>("location");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [locationMatch, setLocationMatch] = useState<boolean | null>(null);
+  const [mismatchNote, setMismatchNote] = useState("");
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [checkInTime, setCheckInTime] = useState("");
+
+  const verifyLocation = () => {
+    setIsVerifying(true);
+    setTimeout(() => {
+      // Simulate location check - in real app, this would use actual GPS
+      const isMatch = Math.random() > 0.3; // 70% chance of match
+      setLocationMatch(isMatch);
+      setIsVerifying(false);
+
+      if (isMatch) {
+        setCurrentStep("photo");
+      } else {
+        setCurrentStep("location-mismatch");
+      }
+    }, 2000);
+  };
+
+  const handleLocationMismatchProceed = () => {
+    if (mismatchNote.trim()) {
+      setCurrentStep("photo");
+    }
+  };
+
+  const handlePhotoCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setPhoto(file);
+      const now = new Date();
+      setCheckInTime(
+        now.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      );
+      setCurrentStep("confirmation");
+    }
+  };
+
+  const handleCancel = () => {
+    window.history.back();
+  };
+
+  const handleComplete = () => {
+    onComplete?.();
+  };
 
   return (
-    <>
-      <UniversalNav userRole="caregiver" showBack={true} />
-      <div className="min-h-screen pb-6 pb-24 md:pt-14">
-      <div className="p-6">
-        <Button
-          variant="ghost"
-          onClick={() => router.back()}
-          className="mb-4 hover:bg-white/30"
-          style={{ color: '#535353' }}
+    <div
+      className="min-h-screen flex flex-col items-center justify-center p-6"
+      style={{ backgroundColor: "#F5F7FA" }}
+    >
+      {/* Back Button */}
+      <div className="w-full max-w-md mb-4">
+        <button
+          onClick={handleCancel}
+          className="w-10 h-10 rounded-full flex items-center justify-center"
+          style={{ backgroundColor: "rgba(255, 255, 255, 0.6)" }}
         >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
-
-        <div className="mb-6">
-          <h1 className="mb-2" style={{ color: '#535353' }}>Check In</h1>
-          <p style={{ color: '#848484' }}>Check in to start care session</p>
-        </div>
-
-        <div className="finance-card p-6">
-          <div 
-            className="w-12 h-12 rounded-full flex items-center justify-center mb-4"
-            style={{
-              background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FFB3C1 0%, #FF8FA3 100%)'
-            }}
-          >
-            <MapPin className="w-6 h-6 text-white" />
-          </div>
-          <p style={{ color: '#535353' }}>Content for Check In</p>
-        </div>
+          <ArrowLeft className="w-5 h-5" style={{ color: "#535353" }} />
+        </button>
       </div>
-    </div>
-    </>
 
+      {/* Step 1: Location Verification */}
+      {currentStep === "location" && (
+        <div className="w-full max-w-md">
+          <div className="flex justify-center mb-6">
+            <div
+              className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4"
+              style={{
+                background: isVerifying
+                  ? "radial-gradient(143.86% 887.35% at -10.97% -22.81%, #8EC5FC 0%, #5B9FFF 100%)"
+                  : "radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FFB3C1 0%, #FF8FA3 100%)",
+                boxShadow: "0px 4px 18px rgba(255, 143, 163, 0.35)",
+              }}
+            >
+              {isVerifying ? (
+                <Navigation className="w-10 h-10 text-white animate-pulse" />
+              ) : (
+                <MapPin className="w-10 h-10 text-white" />
+              )}
+            </div>
+          </div>
+
+          <div className="finance-card p-8 text-center">
+            <h2 className="mb-4" style={{ color: "#535353" }}>
+              {isVerifying ? "Verifying Location..." : "Check In"}
+            </h2>
+
+            <p className="mb-6" style={{ color: "#848484" }}>
+              {isVerifying
+                ? "Please wait while we verify your location"
+                : `Ready to check in for ${patientName}?`}
+            </p>
+
+            <div className="finance-card p-4 mb-6 text-left">
+              <p className="text-sm mb-2" style={{ color: "#848484" }}>
+                Expected Location:
+              </p>
+              <p className="text-sm" style={{ color: "#535353" }}>
+                {expectedLocation.address}
+              </p>
+            </div>
+
+            {!isVerifying && (
+              <div className="space-y-3">
+                <Button
+                  onClick={verifyLocation}
+                  className="w-full"
+                  style={{
+                    background:
+                      "radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FFB3C1 0%, #FF8FA3 100%)",
+                    color: "white",
+                  }}
+                >
+                  <MapPin className="w-5 h-5 mr-2" />
+                  Verify Location
+                </Button>
+                <Button
+                  onClick={handleCancel}
+                  variant="outline"
+                  className="w-full"
+                  style={{
+                    color: "#535353",
+                    borderColor: "rgba(132, 132, 132, 0.2)",
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            )}
+
+            {isVerifying && (
+              <div className="flex justify-center">
+                <div
+                  className="animate-spin rounded-full h-8 w-8 border-b-2"
+                  style={{ borderColor: "#FFB3C1" }}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Step 2: Location Mismatch */}
+      {currentStep === "location-mismatch" && (
+        <div className="w-full max-w-md">
+          <div className="flex justify-center mb-6">
+            <div
+              className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4"
+              style={{
+                background:
+                  "radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FFD180 0%, #FFB74D 100%)",
+                boxShadow: "0px 4px 18px rgba(255, 211, 128, 0.35)",
+              }}
+            >
+              <AlertTriangle className="w-10 h-10 text-white" />
+            </div>
+          </div>
+
+          <div className="finance-card p-8">
+            <h2 className="mb-4 text-center" style={{ color: "#535353" }}>
+              Location Mismatch
+            </h2>
+
+            <p className="mb-6 text-center" style={{ color: "#848484" }}>
+              Your current location doesn't match expected job location. Please
+              provide a note to proceed.
+            </p>
+
+            <div className="space-y-4 mb-6">
+              <div>
+                <label
+                  className="text-sm mb-2 block"
+                  style={{ color: "#535353" }}
+                >
+                  Reason for location mismatch *
+                </label>
+                <Textarea
+                  value={mismatchNote}
+                  onChange={(e) => setMismatchNote(e.target.value)}
+                  placeholder="E.g., Patient temporarily at different location, GPS error, etc."
+                  className="bg-white/50 border-white/50 min-h-24"
+                  style={{ color: "#535353" }}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <Button
+                onClick={handleLocationMismatchProceed}
+                disabled={!mismatchNote.trim()}
+                className="w-full"
+                style={{
+                  background: !mismatchNote.trim()
+                    ? "rgba(132, 132, 132, 0.3)"
+                    : "radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FFB3C1 0%, #FF8FA3 100%)",
+                  color: "white",
+                  boxShadow: !mismatchNote.trim()
+                    ? "none"
+                    : "0px 4px 18px rgba(255, 143, 163, 0.35)",
+                  cursor: !mismatchNote.trim() ? "not-allowed" : "pointer",
+                }}
+              >
+                Proceed with Override
+              </Button>
+              <Button
+                onClick={handleCancel}
+                variant="outline"
+                className="w-full"
+                style={{
+                  color: "#535353",
+                  borderColor: "rgba(132, 132, 132, 0.2)",
+                }}
+              >
+                Cancel Check-In
+              </Button>
+            </div>
+
+            <div
+              className="mt-6 p-3 rounded-lg"
+              style={{ background: "rgba(255, 211, 128, 0.1)" }}
+            >
+              <p className="text-xs" style={{ color: "#848484" }}>
+                Note: This override will be logged and reviewed by guardian and
+                platform moderators.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Step 3: Photo Capture */}
+      {currentStep === "photo" && (
+        <div className="w-full max-w-md">
+          <div className="flex justify-center mb-6">
+            <div
+              className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4"
+              style={{
+                background:
+                  "radial-gradient(143.86% 887.35% at -10.97% -22.81%, #8EC5FC 0%, #5B9FFF 100%)",
+                boxShadow: "0px 4px 18px rgba(142, 197, 252, 0.35)",
+              }}
+            >
+              <Camera className="w-10 h-10 text-white" />
+            </div>
+          </div>
+
+          <div className="finance-card p-8 text-center">
+            <h2 className="mb-4" style={{ color: "#535353" }}>
+              Capture Arrival Photo
+            </h2>
+
+            <p className="mb-6" style={{ color: "#848484" }}>
+              Take a photo to confirm your arrival at the location
+            </p>
+
+            <label className="flex flex-col items-center justify-center gap-3 p-12 rounded-2xl border-2 border-dashed cursor-pointer hover:bg-white/30 transition-colors mb-6 relative">
+              <Camera className="w-16 h-16" style={{ color: "#848484" }} />
+              <span style={{ color: "#535353" }}>Tap to capture photo</span>
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handlePhotoCapture}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+            </label>
+
+            <p className="text-xs mt-3" style={{ color: "#848484" }}>
+              PDF, JPG, PNG (Max 5MB)
+            </p>
+
+            <Button
+              onClick={handleCancel}
+              variant="outline"
+              className="w-full"
+              style={{
+                color: "#535353",
+                borderColor: "rgba(132, 132, 132, 0.2)",
+              }}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Step 4: Confirmation */}
+      {currentStep === "confirmation" && (
+        <div className="w-full max-w-md">
+          <div className="flex justify-center mb-6">
+            <div
+              className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4"
+              style={{
+                background:
+                  "radial-gradient(143.86% 887.35% at -10.97% -22.81%, #A8E063 0%, #7CE577 100%)",
+                boxShadow: "0px 4px 18px rgba(124, 229, 119, 0.35)",
+              }}
+            >
+              <Check className="w-10 h-10 text-white" />
+            </div>
+          </div>
+
+          <div className="finance-card p-8 text-center">
+            <h2 className="mb-4" style={{ color: "#535353" }}>
+              Check-In Successful!
+            </h2>
+
+            <p className="mb-6" style={{ color: "#848484" }}>
+              You've successfully checked in for {patientName}
+            </p>
+
+            <div className="finance-card p-6 mb-6">
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <span style={{ color: "#848484" }}>Check-in Time:</span>
+                  <span style={{ color: "#535353" }}>{checkInTime}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span style={{ color: "#848484" }}>Location:</span>
+                  <span
+                    className="flex items-center gap-1"
+                    style={{ color: "#7CE577" }}
+                  >
+                    <Check className="w-4 h-4" />
+                    Verified
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span style={{ color: "#848484" }}>Photo:</span>
+                  <span
+                    className="flex items-center gap-1"
+                    style={{ color: "#7CE577" }}
+                  >
+                    <Check className="w-4 h-4" />
+                    Captured
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <Button
+              onClick={handleComplete}
+              className="w-full"
+              style={{
+                background:
+                  "radial-gradient(143.86% 887.35% at -10.97% -22.81%, #A8E063 0%, #7CE577 100%)",
+                color: "white",
+              }}
+            >
+              Start Care Session
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

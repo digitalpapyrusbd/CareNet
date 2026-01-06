@@ -304,7 +304,7 @@ async function handleCreateDispute(body: any, user: any) {
       );
     }
 
-    const escrow = await escrowService.createDispute({
+    const escrow = await escrowService.disputeEscrow({
       escrowId: validatedData.escrowId,
       reason: validatedData.reason,
       description: validatedData.description,
@@ -347,7 +347,7 @@ async function checkEscrowPermission(userId: string, userRole: string, escrow: a
   }
 
   // Guardian can view escrows for their jobs
-  if (userRole === 'GUARDIAN' && escrow.job?.guardianId === userId) {
+  if (userRole === 'GUARDIAN' && escrow.job?.guardian_id === userId) {
     return true;
   }
 
@@ -390,12 +390,12 @@ async function checkReleaseEscrowPermission(userId: string, userRole: string, es
   }
 
   // Guardians can release escrows for their jobs
-  if (userRole === 'GUARDIAN' && escrow.job?.guardianId === userId) {
+  if (userRole === 'GUARDIAN' && escrow.jobs?.guardian_id === userId) {
     return true;
   }
 
   // Companies can release escrows for their jobs
-  if (userRole === 'COMPANY' && escrow.job?.companyId === userId) {
+  if (userRole === 'COMPANY' && escrow.jobs?.company_id === userId) {
     return true;
   }
 
@@ -422,17 +422,20 @@ async function checkDisputeEscrowPermission(userId: string, userRole: string, es
   }
 
   // Guardians can create disputes for their jobs
-  if (userRole === 'GUARDIAN' && escrow.job?.guardianId === userId) {
+  if (userRole === 'GUARDIAN' && escrow.jobs?.guardian_id === userId) {
     return true;
   }
 
   // Caregivers can create disputes for their assigned jobs
-  if (userRole === 'CAREGIVER' && escrow.job?.caregiverId === userId) {
-    return true;
+  if (userRole === 'CAREGIVER') {
+    const isAssigned = escrow.jobs?.assignments?.some(
+      (assignment: any) => assignment.caregiver_id === userId
+    );
+    if (isAssigned) return true;
   }
 
   // Companies can create disputes for their jobs
-  if (userRole === 'COMPANY' && escrow.job?.companyId === userId) {
+  if (userRole === 'COMPANY' && escrow.jobs?.company_id === userId) {
     return true;
   }
 

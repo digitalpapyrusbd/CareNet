@@ -1,12 +1,13 @@
-import { DollarSign, TrendingUp, Calendar, Download, Eye } from "lucide-react";
+import { DollarSign, TrendingUp, Calendar, Download, Eye, ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 
 interface EarningsSummaryProps {
-  onGenerateInvoice: () => void;
-  onWithdraw: () => void;
+  onGenerateInvoice?: () => void;
+  onWithdraw?: () => void;
+  onNavigate?: (page: string) => void;
 }
 
-export function EarningsSummary({ onGenerateInvoice, onWithdraw }: EarningsSummaryProps) {
+export function EarningsSummary({ onGenerateInvoice, onWithdraw, onNavigate }: EarningsSummaryProps) {
   const earnings = {
     thisMonth: 24000,
     lastMonth: 32000,
@@ -24,6 +25,15 @@ export function EarningsSummary({ onGenerateInvoice, onWithdraw }: EarningsSumma
   return (
     <div className="min-h-screen pb-6">
       <div className="p-6">
+        {/* Back Button */}
+        <button
+          onClick={() => onNavigate?.('toc')}
+          className="w-10 h-10 rounded-full flex items-center justify-center mb-4"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+        >
+          <ArrowLeft className="w-5 h-5" style={{ color: '#535353' }} />
+        </button>
+
         <h1 className="mb-6" style={{ color: '#535353' }}>Earnings</h1>
 
         {/* Balance Card */}

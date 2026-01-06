@@ -1,119 +1,207 @@
-import { FileText, Upload, CheckCircle, XCircle } from "lucide-react";
-import { Button } from "../ui/button";
-import { useState } from "react";
+import { useState } from 'react';
+import { ArrowLeft, Upload, CheckCircle, XCircle, Clock, FileText } from 'lucide-react';
+import { Button } from '../ui/button';
 
 interface VerificationCertificatesProps {
-  onSubmit: (files: File[]) => void;
-  onSkip: () => void;
-  status?: 'pending' | 'approved' | 'rejected';
-  feedback?: string;
+  onNavigate?: (page: string) => void;
+  onBack?: () => void;
 }
 
-export function VerificationCertificates({ onSubmit, onSkip, status, feedback }: VerificationCertificatesProps) {
-  const [files, setFiles] = useState<File[]>([]);
+export function VerificationCertificates({ onNavigate, onBack }: VerificationCertificatesProps) {
+  const [status] = useState<'submitted' | 'under-review' | 'approved' | 'needs-resubmission'>('under-review');
+  const [certificates, setCertificates] = useState<string[]>([
+    'Basic Life Support Certificate.pdf',
+    'First Aid Training.pdf'
+  ]);
+  const [feedback] = useState('Your certificates are being reviewed by our team. This usually takes 2-3 hours.');
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setFiles(Array.from(e.target.files));
+  const handleAddCertificate = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const newCerts = Array.from(files).map(f => f.name);
+      setCertificates(prev => [...prev, ...newCerts]);
     }
   };
 
+  const getStatusConfig = () => {
+    switch (status) {
+      case 'approved':
+        return {
+          icon: CheckCircle,
+          color: '#7CE577',
+          bg: 'rgba(124, 229, 119, 0.1)',
+          label: 'Approved',
+          message: 'Your certificates have been verified successfully!'
+        };
+      case 'needs-resubmission':
+        return {
+          icon: XCircle,
+          color: '#FF6B6B',
+          bg: 'rgba(255, 107, 107, 0.1)',
+          label: 'Needs Resubmission',
+          message: 'Please upload clearer images of your certificates.'
+        };
+      case 'under-review':
+        return {
+          icon: Clock,
+          color: '#FEB4C5',
+          bg: 'rgba(254, 180, 197, 0.1)',
+          label: 'Under Review',
+          message: 'Your certificates are being reviewed. Estimated time: 2-3 hours.'
+        };
+      default:
+        return {
+          icon: FileText,
+          color: '#848484',
+          bg: 'rgba(132, 132, 132, 0.1)',
+          label: 'Submitted',
+          message: 'Your certificates have been submitted.'
+        };
+    }
+  };
+
+  const statusConfig = getStatusConfig();
+  const StatusIcon = statusConfig.icon;
+
   return (
-    <div className="min-h-screen pb-6">
-      <div className="p-6 max-w-2xl mx-auto">
-        <div className="mb-6">
-          <h1 className="mb-2" style={{ color: '#535353' }}>Step 1: Certificates</h1>
-          <p style={{ color: '#848484' }}>Upload your medical certifications and training certificates</p>
+    <div className="min-h-screen flex flex-col p-6">
+      {/* Header */}
+      <div className="mb-8">
+        <Button
+          variant="ghost"
+          onClick={() => onBack?.()}
+          className="mb-6 hover:bg-white/30"
+          style={{ color: '#535353' }}
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back
+        </Button>
+
+        <div className="text-center mb-6">
+          <div
+            className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4"
+            style={{
+              background: statusConfig.bg,
+            }}
+          >
+            <StatusIcon className="w-10 h-10" style={{ color: statusConfig.color }} />
+          </div>
+          <h1 className="mb-2" style={{ color: '#535353' }}>Certificate Verification</h1>
+          <p style={{ color: '#848484' }}>{statusConfig.label}</p>
+        </div>
+      </div>
+
+      {/* Status Message */}
+      <div className="finance-card p-5 mb-6" style={{ background: statusConfig.bg }}>
+        <p className="text-center" style={{ color: '#535353' }}>
+          {statusConfig.message}
+        </p>
+      </div>
+
+      {/* Feedback (if needs resubmission) */}
+      {status === 'needs-resubmission' && (
+        <div className="finance-card p-4 mb-6" style={{ background: 'rgba(255, 107, 107, 0.1)' }}>
+          <p className="text-sm mb-2" style={{ color: '#535353' }}>
+            <strong>Moderator Feedback:</strong>
+          </p>
+          <p className="text-sm" style={{ color: '#848484' }}>
+            {feedback}
+          </p>
+        </div>
+      )}
+
+      {/* Uploaded Certificates */}
+      <div className="flex-1">
+        <h2 className="mb-3" style={{ color: '#535353' }}>Uploaded Certificates</h2>
+        <div className="space-y-3 mb-6">
+          {certificates.map((cert, index) => (
+            <div key={index} className="finance-card p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center"
+                  style={{ background: 'rgba(254, 180, 197, 0.1)' }}
+                >
+                  <FileText className="w-5 h-5" style={{ color: '#FEB4C5' }} />
+                </div>
+                <div>
+                  <p className="text-sm" style={{ color: '#535353' }}>{cert}</p>
+                  <p className="text-xs" style={{ color: '#848484' }}>Uploaded</p>
+                </div>
+              </div>
+              {status === 'approved' && (
+                <CheckCircle className="w-5 h-5" style={{ color: '#7CE577' }} />
+              )}
+            </div>
+          ))}
         </div>
 
-        {status && (
-          <div className="finance-card p-4 mb-6" style={{
-            borderLeft: `4px solid ${status === 'approved' ? '#7CE577' : status === 'rejected' ? '#FF6B7A' : '#FFD180'}`
-          }}>
-            <div className="flex items-center gap-3 mb-2">
-              {status === 'approved' && <CheckCircle className="w-5 h-5" style={{ color: '#7CE577' }} />}
-              {status === 'rejected' && <XCircle className="w-5 h-5" style={{ color: '#FF6B7A' }} />}
-              <p style={{ color: '#535353' }}>
-                {status === 'approved' && 'Certificates Approved'}
-                {status === 'rejected' && 'Certificates Rejected'}
-                {status === 'pending' && 'Under Review'}
+        {/* Upload More / Resubmit */}
+        {(status === 'needs-resubmission' || status === 'submitted') && (
+          <div className="relative">
+            <div
+              className="finance-card p-6 text-center cursor-pointer"
+              style={{ background: 'rgba(254, 180, 197, 0.1)' }}
+            >
+              <Upload className="w-8 h-8 mx-auto mb-2" style={{ color: '#FEB4C5' }} />
+              <p className="text-sm" style={{ color: '#535353' }}>
+                {status === 'needs-resubmission' ? 'Upload New Certificates' : 'Add More Certificates'}
+              </p>
+              <p className="text-xs mt-1" style={{ color: '#848484' }}>
+                PDF, JPG, PNG (Max 5MB each)
               </p>
             </div>
-            {feedback && <p className="text-sm" style={{ color: '#848484' }}>{feedback}</p>}
-          </div>
-        )}
-
-        <div className="finance-card p-6 mb-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center"
-              style={{ background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #8EC5FC 0%, #5B9FFF 100%)' }}>
-              <FileText className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h3 style={{ color: '#535353' }}>Required Documents</h3>
-              <p className="text-sm" style={{ color: '#848484' }}>PDF or Image files (max 5MB each)</p>
-            </div>
-          </div>
-
-          <ul className="space-y-2 mb-6 text-sm" style={{ color: '#535353' }}>
-            <li className="flex items-start gap-2">
-              <span className="w-1.5 h-1.5 rounded-full mt-1.5" style={{ background: '#5B9FFF' }} />
-              Medical training certificate
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="w-1.5 h-1.5 rounded-full mt-1.5" style={{ background: '#5B9FFF' }} />
-              First aid certification (if applicable)
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="w-1.5 h-1.5 rounded-full mt-1.5" style={{ background: '#5B9FFF' }} />
-              Specialized care certifications
-            </li>
-          </ul>
-
-          <div className="border-2 border-dashed rounded-lg p-8 text-center"
-            style={{ borderColor: 'rgba(255, 255, 255, 0.5)', background: 'rgba(255, 255, 255, 0.3)' }}>
-            <Upload className="w-12 h-12 mx-auto mb-3" style={{ color: '#848484' }} />
-            <p className="mb-2" style={{ color: '#535353' }}>Drop files here or click to browse</p>
             <input
               type="file"
               multiple
               accept=".pdf,.jpg,.jpeg,.png"
-              onChange={handleFileChange}
-              className="hidden"
-              id="file-upload"
+              onChange={handleAddCertificate}
+              className="absolute inset-0 opacity-0 cursor-pointer"
             />
-            <label htmlFor="file-upload">
-              <Button type="button" variant="outline" className="bg-white/50 border-white/50"
-                onClick={() => document.getElementById('file-upload')?.click()}>
-                Select Files
-              </Button>
-            </label>
           </div>
+        )}
 
-          {files.length > 0 && (
-            <div className="mt-4 space-y-2">
-              {files.map((file, index) => (
-                <div key={index} className="flex items-center justify-between p-3 rounded-lg"
-                  style={{ background: 'rgba(124, 229, 119, 0.1)' }}>
-                  <span className="text-sm" style={{ color: '#535353' }}>{file.name}</span>
-                  <CheckCircle className="w-4 h-4" style={{ color: '#7CE577' }} />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="flex gap-3">
-          <Button onClick={onSkip} variant="outline" className="flex-1 bg-white/50 border-white/50">
-            Skip for Now
-          </Button>
-          <Button onClick={() => onSubmit(files)} disabled={files.length === 0} className="flex-1"
-            style={{ background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FFB3C1 0%, #FF8FA3 100%)', color: 'white' }}>
-            Submit Certificates
-          </Button>
+        {/* Info */}
+        <div className="finance-card p-4 mt-6" style={{ background: 'rgba(254, 180, 197, 0.1)' }}>
+          <p className="text-sm" style={{ color: '#848484' }}>
+            💡 <strong>Accepted Certificates:</strong>
+          </p>
+          <ul className="text-xs mt-2 space-y-1" style={{ color: '#848484' }}>
+            <li>• Basic Life Support (BLS)</li>
+            <li>• First Aid Training</li>
+            <li>• Caregiver Certification</li>
+            <li>• Nursing Diploma/Degree</li>
+            <li>• Specialized Training (Dementia, Palliative, etc.)</li>
+          </ul>
         </div>
       </div>
+
+      {/* Action Button */}
+      {status === 'needs-resubmission' && (
+        <Button
+          onClick={() => onNavigate?.('caregiver-pending-verification')}
+          className="w-full py-6 mt-6"
+          style={{
+            background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FEB4C5 0%, #DB869A 100%)',
+            color: 'white',
+            boxShadow: '0px 4px 18px rgba(240, 161, 180, 0.4)'
+          }}
+        >
+          Resubmit Certificates
+        </Button>
+      )}
+
+      {status === 'approved' && (
+        <Button
+          onClick={() => onNavigate?.('caregiver-pending-verification')}
+          className="w-full py-6 mt-6"
+          style={{
+            background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #7CE577 0%, #5FB865 100%)',
+            color: 'white'
+          }}
+        >
+          Continue to Next Step
+        </Button>
+      )}
     </div>
   );
 }
-

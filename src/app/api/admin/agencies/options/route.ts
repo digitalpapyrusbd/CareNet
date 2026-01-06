@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const agencies = await prisma.companies.findMany({
-      select: { id: true, agency_name: true },
+      select: { id: true, company_name: true },
         orderBy: { company_name: 'asc' },
       take: 200,
     });

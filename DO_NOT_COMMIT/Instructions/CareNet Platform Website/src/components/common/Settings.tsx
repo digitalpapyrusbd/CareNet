@@ -1,9 +1,9 @@
-import { User, Bell, Lock, Globe, CreditCard, Shield, Smartphone, Moon, Sun, Volume2, Eye } from "lucide-react";
+import { User, Bell, Lock, Globe, CreditCard, Shield, Smartphone, Moon, Sun, Volume2, Eye, ArrowLeft } from "lucide-react";
 import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
 
 interface SettingsProps {
-  onNavigate: (page: string) => void;
+  onNavigate?: (page: string) => void;
 }
 
 export function Settings({ onNavigate }: SettingsProps) {
@@ -42,8 +42,19 @@ export function Settings({ onNavigate }: SettingsProps) {
 
   return (
     <div className="min-h-screen bg-background pb-24">
+      {/* Back Button */}
+      <div className="px-6 pt-6">
+        <button
+          onClick={() => onNavigate?.('toc')}
+          className="w-10 h-10 rounded-full flex items-center justify-center mb-4"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+        >
+          <ArrowLeft className="w-5 h-5" style={{ color: '#535353' }} />
+        </button>
+      </div>
+
       {/* Header */}
-      <div className="px-6 pt-6 pb-4">
+      <div className="px-6 pb-4">
         <h1 className="mb-1">Settings</h1>
         <p className="text-sm text-muted-foreground">Manage your account preferences</p>
       </div>
@@ -79,7 +90,7 @@ export function Settings({ onNavigate }: SettingsProps) {
                   <Card
                     key={item.label}
                     className="modern-card p-0 border-0 cursor-pointer hover:scale-[1.01] active:scale-[0.99] transition-all"
-                    onClick={() => onNavigate(item.page)}
+                    onClick={() => onNavigate && onNavigate(item.page)}
                   >
                     <div className="flex items-center gap-4 p-4">
                       <div className="w-10 h-10 btn-icon-neumorphic flex-shrink-0">

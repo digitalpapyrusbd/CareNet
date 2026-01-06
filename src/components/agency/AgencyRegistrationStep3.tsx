@@ -12,7 +12,7 @@ interface AgencyRegistrationStep3Props {
 
 export function AgencyRegistrationStep3({ onContinue, onBack }: AgencyRegistrationStep3Props) {
   const [formData, setFormData] = useState({
-    companyName: "",
+    agencyName: "",
     tradeLicenseNumber: "",
     tin: "",
     contactPerson: "",
@@ -41,8 +41,8 @@ export function AgencyRegistrationStep3({ onContinue, onBack }: AgencyRegistrati
           <div>
             <Label style={{ color: '#535353' }}>Company Name *</Label>
             <Input
-              value={formData.companyName}
-              onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+              value={formData.agencyName}
+              onChange={(e) => setFormData({ ...formData, agencyName: e.target.value })}
               placeholder="Enter company name"
               className="mt-2 bg-white/50 border-white/50"
               style={{ color: '#535353' }}
@@ -148,12 +148,12 @@ export function AgencyRegistrationStep3({ onContinue, onBack }: AgencyRegistrati
           </Button>
           <Button
             onClick={() => onContinue(formData)}
-            disabled={!formData.companyName || !formData.tradeLicenseNumber || !formData.contactPerson || !formData.contactPhone || !formData.address || !formData.area || !formData.zone}
+            disabled={!formData.agencyName || !formData.tradeLicenseNumber || !formData.contactPerson || !formData.contactPhone || !formData.address || !formData.area || !formData.zone}
             className="flex-1"
             style={{
               background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #8EC5FC 0%, #5B9FFF 100%)',
               color: 'white',
-              opacity: (!formData.companyName || !formData.tradeLicenseNumber || !formData.contactPerson || !formData.contactPhone || !formData.address || !formData.area || !formData.zone) ? 0.5 : 1
+              opacity: (!formData.agencyName || !formData.tradeLicenseNumber || !formData.contactPerson || !formData.contactPhone || !formData.address || !formData.area || !formData.zone) ? 0.5 : 1
             }}
           >
             Continue <ArrowRight className="w-4 h-4 ml-2" />

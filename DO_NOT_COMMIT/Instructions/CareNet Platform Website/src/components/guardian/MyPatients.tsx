@@ -1,4 +1,4 @@
-import { User, Plus, Calendar, MapPin, Phone, Mail, Edit, Trash2, ArrowUpRight } from "lucide-react";
+import { User, Plus, Calendar, MapPin, Phone, Mail, Edit, Trash2, ArrowUpRight, ArrowLeft } from "lucide-react";
 import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
 
@@ -16,7 +16,7 @@ interface Patient {
 }
 
 interface MyPatientsProps {
-  onNavigate: (page: string) => void;
+  onNavigate?: (page: string) => void;
 }
 
 export function MyPatients({ onNavigate }: MyPatientsProps) {
@@ -56,8 +56,19 @@ export function MyPatients({ onNavigate }: MyPatientsProps) {
 
   return (
     <div className="min-h-screen bg-background pb-24">
+      {/* Back Button */}
+      <div className="px-6 pt-6">
+        <button
+          onClick={() => onNavigate?.('toc')}
+          className="w-10 h-10 rounded-full flex items-center justify-center mb-4"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+        >
+          <ArrowLeft className="w-5 h-5" style={{ color: '#535353' }} />
+        </button>
+      </div>
+
       {/* Header with Add Button */}
-      <div className="px-6 pt-6 pb-4">
+      <div className="px-6 pb-4">
         <div className="flex items-center justify-between mb-2">
           <div>
             <h1 className="mb-1">My Patients</h1>
@@ -99,7 +110,7 @@ export function MyPatients({ onNavigate }: MyPatientsProps) {
           <Card
             key={patient.id}
             className="modern-card p-5 border-0 cursor-pointer hover:scale-[1.01] active:scale-[0.99] transition-all"
-            onClick={() => onNavigate(`patient-detail-${patient.id}`)}
+            onClick={() => onNavigate && onNavigate(`patient-detail-${patient.id}`)}
           >
             <div className="flex items-start gap-4 mb-4">
               {/* Avatar */}

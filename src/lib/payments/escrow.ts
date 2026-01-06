@@ -2,10 +2,10 @@
 // Persists escrow records and ledger entries in the local database.
 import prisma from '@/lib/db'
 
-export async function holdFunds(orderId: string | undefined, amount: number, currency = 'BDT') {
+export async function holdFunds(orderId: string | undefined, amount: number, currency = 'BDT', userId?: string) {
   const created = await prisma.escrow_records.create({
     data: {
-      external_ref: orderId ?? undefined,
+      user_id: userId || 'system', // TODO: Get actual userId from context
       amount: amount as any,
       currency,
       status: 'HELD',
@@ -15,10 +15,9 @@ export async function holdFunds(orderId: string | undefined, amount: number, cur
   // ledger entry
   await prisma.escrow_ledger.create({
     data: {
-      escrow_id: created.id,
-      action: 'HOLD',
+      escrow_record_id: created.id,
+      transaction_type: 'HOLD',
       amount: amount as any,
-      note: orderId ? `Hold for ${orderId}` : 'Hold funds',
     },
   })
 
@@ -36,10 +35,9 @@ export async function releaseEscrow(escrowId: string) {
 
   await prisma.escrow_ledger.create({
     data: {
-      escrow_id: escrowId,
-      action: 'RELEASE',
+      escrow_record_id: escrowId,
+      transaction_type: 'RELEASE',
       amount: updated.amount as any,
-      note: 'Released to provider/payer',
     },
   })
 
@@ -58,10 +56,9 @@ export async function refundEscrow(escrowId: string, amount?: number) {
 
   await prisma.escrow_ledger.create({
     data: {
-      escrow_id: escrowId,
-      action: 'REFUND',
+      escrow_record_id: escrowId,
+      transaction_type: 'REFUND',
       amount: refundAmount as any,
-      note: 'Refund processed',
     },
   })
 
@@ -69,11 +66,11 @@ export async function refundEscrow(escrowId: string, amount?: number) {
 }
 
 export async function getEscrow(escrowId: string) {
-  return prisma.escrow_records.findUnique({ where: { id: escrowId }, include: { ledger_entries: true } })
+  return prisma.escrow_records.findUnique({ where: { id: escrowId }, include: { escrow_ledger: true } })
 }
 
 export async function listEscrows() {
-  return prisma.escrow_records.findMany({ include: { ledger_entries: true }, orderBy: { created_at: 'desc' } })
+  return prisma.escrow_records.findMany({ include: { escrow_ledger: true }, orderBy: { created_at: 'desc' } })
 }
 
 export default { holdFunds, releaseEscrow, refundEscrow, getEscrow, listEscrows }

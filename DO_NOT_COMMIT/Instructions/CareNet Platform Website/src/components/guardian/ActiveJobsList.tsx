@@ -1,13 +1,14 @@
-import { Search, Filter, Calendar, User, MapPin, AlertCircle, CheckCircle } from "lucide-react";
+import { Search, Filter, Calendar, User, MapPin, AlertCircle, CheckCircle, ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { useState } from "react";
 
 interface ActiveJobsListProps {
-  onSelectJob: (jobId: string) => void;
+  onSelectJob?: (jobId: string) => void;
+  onNavigate?: (page: string) => void;
 }
 
-export function ActiveJobsList({ onSelectJob }: ActiveJobsListProps) {
+export function ActiveJobsList({ onSelectJob, onNavigate }: ActiveJobsListProps) {
   const [activeTab, setActiveTab] = useState<'active' | 'completed' | 'disputed'>('active');
 
   const jobs = {
@@ -70,6 +71,15 @@ export function ActiveJobsList({ onSelectJob }: ActiveJobsListProps) {
     <div className="min-h-screen">
       {/* Header */}
       <div className="p-6">
+        {/* Back Button */}
+        <button
+          onClick={() => onNavigate?.('toc')}
+          className="w-10 h-10 rounded-full flex items-center justify-center mb-4"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+        >
+          <ArrowLeft className="w-5 h-5" style={{ color: '#535353' }} />
+        </button>
+
         <h1 className="mb-4" style={{ color: '#535353' }}>My Jobs</h1>
 
         {/* Search */}
@@ -119,7 +129,7 @@ export function ActiveJobsList({ onSelectJob }: ActiveJobsListProps) {
         {activeTab === 'active' && jobs.active.map((job) => (
           <button
             key={job.id}
-            onClick={() => onSelectJob(job.id)}
+            onClick={() => onSelectJob?.(job.id)}
             className="w-full finance-card p-4 hover:shadow-lg transition-all text-left"
           >
             <div className="flex items-start justify-between mb-3">
@@ -179,7 +189,7 @@ export function ActiveJobsList({ onSelectJob }: ActiveJobsListProps) {
         {activeTab === 'completed' && jobs.completed.map((job) => (
           <button
             key={job.id}
-            onClick={() => onSelectJob(job.id)}
+            onClick={() => onSelectJob?.(job.id)}
             className="w-full finance-card p-4 hover:shadow-lg transition-all text-left"
           >
             <div className="flex items-start justify-between mb-3">

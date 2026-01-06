@@ -1,0 +1,15 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"playwright.reuseBrowser": true,
+		"playwright.showTrace": true,
+		"testing.automaticallyOpenPeekView": "failureInVisibleDocument",
+		"testing.followRunningTest": true,
+		"simpleBrowser.focusLockIndicator.enabled": true,
+		"testing.automaticallyOpenTestResults": "neverOpen"
+	}
+}

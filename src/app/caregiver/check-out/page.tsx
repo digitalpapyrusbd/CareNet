@@ -1,233 +1,271 @@
-﻿'use client';
+"use client";
 
-import { UniversalNav } from '@/components/layout/UniversalNav';
+import { useState } from "react";
+import {
+  ArrowLeft,
+  Clock,
+  FileText,
+  Check,
+  Send,
+  AlertTriangle,
+  User,
+  Calendar,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { UniversalNav } from "@/components/layout/UniversalNav";
 
-import { useRouter } from 'next/navigation';
-import { Camera, FileText, Check, Send } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { useState } from 'react';
-
-type Step = 'photo' | 'summary' | 'confirmation';
-
-export default function CheckOutPage() {
-  const router = useRouter();
-  const [currentStep, setCurrentStep] = useState<Step>('photo');
-  const [photo, setPhoto] = useState<File | null>(null);
-  const [shiftSummary, setShiftSummary] = useState('');
-  const checkInTime = '2:00 PM';
-  const checkOutTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-  const patientName = 'Mrs. Fatima Ahmed';
-
-  const handlePhotoCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setPhoto(e.target.files[0]);
-      setCurrentStep('summary');
-    }
+export default function CaregiverCheckOutPage() {
+  const [step, setStep] = useState<"summary" | "location" | "confirmation">("summary");
+  const [notes, setNotes] = useState("");
+  const [locationVerified, setLocationVerified] = useState(false);
+  
+  const jobDetails = {
+    patient: "Mrs. Nasrin Begum",
+    jobType: "Full-Time Care",
+    checkInTime: "09:00 AM",
+    patientCondition: "Good spirits",
+    location: "Uttara, Dhaka",
+    jobDuration: "8 hours",
   };
 
-  const calculateDuration = () => {
-    return '6h 30m';
+  const handleVerifyLocation = () => {
+    setLocationVerified(true);
+  };
+
+  const handleConfirmCheckOut = () => {
+    console.log("Confirming check-out", { step, notes, locationVerified });
+    window.location.href = "/caregiver/dashboard";
+  };
+
+  const handleBack = () => {
+    window.history.back();
   };
 
   return (
-    <>
-      <UniversalNav userRole="caregiver" showBack={true} />
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 pb-24 md:pt-14">
-      {currentStep === 'photo' && (
-        <div className="w-full max-w-md">
-          <div className="flex justify-center mb-6">
-            <div 
-              className="w-20 h-20 rounded-full flex items-center justify-center"
-              style={{
-                background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #8EC5FC 0%, #5B9FFF 100%)',
-                boxShadow: '0px 4px 18px rgba(142, 197, 252, 0.35)'
-              }}
-            >
-              <Camera className="w-10 h-10 text-white" />
-            </div>
+    <div className="min-h-screen pb-24" style={{ backgroundColor: "#F5F7FA" }}>
+      {/* Header */}
+      <div className="finance-card p-6 mb-4">
+        <Button
+          variant="ghost"
+          onClick={handleBack}
+          className="mb-6 hover:bg-white/30"
+          style={{ color: "#535353" }}
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back
+        </Button>
+
+        <div className="text-center">
+          <div
+            className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4"
+            style={{
+              background:
+                "radial-gradient(143.86% 887.35% at -10.97% -22.81%, #7CE577 0%, #5FB865 100%)",
+              boxShadow: "0px 4px 18px rgba(124, 229, 119, 0.35)",
+            }}
+          >
+            <Check className="w-10 h-10 text-white" />
           </div>
-
-          <div className="finance-card p-8 text-center">
-            <h2 className="mb-4" style={{ color: '#535353' }}>Check-Out Photo</h2>
-            <p className="mb-6" style={{ color: '#848484' }}>
-              Take a photo to confirm your departure
-            </p>
-
-            <label
-              className="flex flex-col items-center justify-center gap-3 p-8 rounded-lg border-2 border-dashed cursor-pointer hover:bg-white/30 transition-colors mb-6"
-              style={{ borderColor: 'rgba(255, 255, 255, 0.5)', background: 'rgba(255, 255, 255, 0.3)' }}
-            >
-              <Camera className="w-12 h-12" style={{ color: '#848484' }} />
-              <span style={{ color: '#535353' }}>Tap to capture photo</span>
-              <input
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={handlePhotoCapture}
-                className="hidden"
-              />
-            </label>
-
-            <Button
-              onClick={() => router.back()}
-              variant="outline"
-              className="w-full bg-white/50 border-white/50"
-              style={{ color: '#535353' }}
-            >
-              Cancel
-            </Button>
-          </div>
+          <h1 className="mb-2" style={{ color: "#535353" }}>
+            Check-Out
+          </h1>
+          <p style={{ color: "#848484" }}>
+            Confirm your departure and log care activities
+          </p>
         </div>
-      )}
+      </div>
 
-      {currentStep === 'summary' && (
-        <div className="w-full max-w-md">
-          <div className="flex justify-center mb-6">
-            <div 
-              className="w-20 h-20 rounded-full flex items-center justify-center"
-              style={{
-                background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #B8A7FF 0%, #8B7AE8 100%)',
-                boxShadow: '0px 4px 18px rgba(184, 167, 255, 0.35)'
-              }}
+      {/* Shift Summary */}
+      <div className="px-6 mb-6">
+        <div className="finance-card p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div
+              className="w-12 h-12 rounded-full flex items-center justify-center"
+              style={{ background: "rgba(254, 180, 197, 0.2)" }}
             >
-              <FileText className="w-10 h-10 text-white" />
+              <Clock className="w-6 h-6" style={{ color: "#FEB4C5" }} />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-lg" style={{ color: "#535353" }}>
+                Shift Summary
+              </h2>
+              <p className="text-sm" style={{ color: "#848484" }}>
+                {jobDetails.patient} - {jobDetails.jobType}
+              </p>
             </div>
           </div>
 
-          <div className="finance-card p-8">
-            <h2 className="mb-4" style={{ color: '#535353' }}>Shift Summary</h2>
-            <p className="mb-6" style={{ color: '#848484' }}>
-              Provide a brief summary of the care session with {patientName}
-            </p>
-
-            <div className="mb-6">
-              <Textarea
-                value={shiftSummary}
-                onChange={(e) => setShiftSummary(e.target.value)}
-                placeholder="Patient was in good spirits today. All medications administered on time. Completed afternoon walk and meal assistance..."
-                className="bg-white/50 border-white/50 min-h-32"
-                style={{ color: '#535353' }}
-              />
-            </div>
-
-            <div className="finance-card p-4 mb-6">
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span style={{ color: '#848484' }}>Check-In:</span>
-                  <span style={{ color: '#535353' }}>{checkInTime}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span style={{ color: '#848484' }}>Check-Out:</span>
-                  <span style={{ color: '#535353' }}>{checkOutTime}</span>
-                </div>
-                <div className="flex justify-between pt-2 border-t" style={{ borderColor: 'rgba(255, 255, 255, 0.5)' }}>
-                  <span style={{ color: '#848484' }}>Duration:</span>
-                  <span style={{ color: '#7CE577' }}>{calculateDuration()}</span>
-                </div>
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between p-4 rounded-xl" style={{ background: "rgba(254, 180, 197, 0.05)" }}>
+                <p className="text-sm" style={{ color: "#848484" }}>Check-In Time</p>
+                <p className="font-medium" style={{ color: "#535353" }}>{jobDetails.checkInTime}</p>
+              </div>
+              <div className="flex items-center justify-between p-4 rounded-xl" style={{ background: "rgba(254, 180, 197, 0.05)" }}>
+                <p className="text-sm" style={{ color: "#848484" }}>Job Duration</p>
+                <p className="font-medium" style={{ color: "#535353" }}>{jobDetails.jobDuration}</p>
               </div>
             </div>
 
-            <div className="flex gap-3">
-              <Button
-                onClick={() => setCurrentStep('photo')}
-                variant="outline"
-                className="flex-1 bg-white/50 border-white/50"
-                style={{ color: '#535353' }}
-              >
-                Back
-              </Button>
-              <Button
-                onClick={() => setCurrentStep('confirmation')}
-                disabled={!shiftSummary.trim()}
-                className="flex-1"
-                style={{
-                  background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FFB3C1 0%, #FF8FA3 100%)',
-                  color: 'white',
-                  opacity: !shiftSummary.trim() ? 0.5 : 1
-                }}
-              >
-                Continue
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {currentStep === 'confirmation' && (
-        <div className="w-full max-w-md">
-          <div className="flex justify-center mb-6">
-            <div 
-              className="w-20 h-20 rounded-full flex items-center justify-center"
-              style={{
-                background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #A8E063 0%, #7CE577 100%)',
-                boxShadow: '0px 4px 18px rgba(124, 229, 119, 0.35)'
-              }}
-            >
-              <Check className="w-10 h-10 text-white" />
-            </div>
-          </div>
-
-          <div className="finance-card p-8 text-center">
-            <h2 className="mb-4" style={{ color: '#535353' }}>Ready to Check-Out?</h2>
-            <p className="mb-6" style={{ color: '#848484' }}>
-              Please review your shift details before completing check-out
-            </p>
-
-            <div className="finance-card p-6 mb-6 text-left">
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span style={{ color: '#848484' }}>Patient:</span>
-                  <span style={{ color: '#535353' }}>{patientName}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span style={{ color: '#848484' }}>Duration:</span>
-                  <span style={{ color: '#535353' }}>{calculateDuration()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span style={{ color: '#848484' }}>Photo:</span>
-                  <span className="flex items-center gap-1" style={{ color: '#7CE577' }}>
-                    <Check className="w-4 h-4" />
-                    Captured
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span style={{ color: '#848484' }}>Summary:</span>
-                  <span className="flex items-center gap-1" style={{ color: '#7CE577' }}>
-                    <Check className="w-4 h-4" />
-                    Provided
-                  </span>
-                </div>
+            <div className="space-y-2 mt-4">
+              <div className="flex items-center justify-between p-4 rounded-xl" style={{ background: "rgba(254, 180, 197, 0.05)" }}>
+                <p className="text-sm" style={{ color: "#848484" }}>Patient Condition</p>
+                <p className="font-medium" style={{ color: "#535353" }}>{jobDetails.patientCondition}</p>
+              </div>
+              <div className="flex items-center justify-between p-4 rounded-xl" style={{ background: "rgba(254, 180, 197, 0.05)" }}>
+                <p className="text-sm" style={{ color: "#848484" }}>Location</p>
+                <p className="font-medium" style={{ color: "#535353" }}>{jobDetails.location}</p>
               </div>
             </div>
-
-            <div className="flex gap-3">
-              <Button
-                onClick={() => setCurrentStep('summary')}
-                variant="outline"
-                className="flex-1 bg-white/50 border-white/50"
-                style={{ color: '#535353' }}
-              >
-                Edit
-              </Button>
-              <Button
-                onClick={() => router.push('/caregiver/dashboard')}
-                className="flex-1"
-                style={{
-                  background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #A8E063 0%, #7CE577 100%)',
-                  color: 'white'
-                }}
-              >
-                <Send className="w-5 h-5 mr-2" />
-                Complete Check-Out
-              </Button>
-            </div>
           </div>
         </div>
-      )}
+      </div>
+
+      {/* Care Activities Log */}
+      <div className="px-6 mb-6">
+        <div className="finance-card p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div
+              className="w-12 h-12 rounded-full flex items-center justify-center"
+              style={{ background: "rgba(254, 180, 197, 0.2)" }}
+            >
+              <FileText className="w-6 h-6" style={{ color: "#FEB4C5" }} />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-lg" style={{ color: "#535353" }}>
+                Care Activities Log
+              </h2>
+              <p className="text-sm" style={{ color: "#848484" }}>
+                Log care activities performed during your shift
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Enter care activities summary..."
+              rows={5}
+              className="w-full px-4 py-3 rounded-xl bg-white/60 border-white/60 outline-none resize-none"
+              style={{ color: "#535353" }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Location Verification */}
+      <div className="px-6 mb-6">
+        <div className="finance-card p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div
+              className="w-12 h-12 rounded-full flex items-center justify-center"
+              style={{ background: "rgba(254, 180, 197, 0.2)" }}
+            >
+              <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: "#7CE577" }}>
+                <Check className="w-4 h-4 text-white" />
+              </div>
+            </div>
+            <div className="flex-1">
+              <h2 className="text-lg" style={{ color: "#535353" }}>
+                Verify Current Location
+              </h2>
+              <p className="text-sm" style={{ color: "#848484" }}>
+                Confirm your current location matches job site
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-3 mt-4">
+            <div className="flex items-center gap-3">
+              <User className="w-5 h-5" style={{ color: "#FEB4C5" }} />
+              <span className="text-sm" style={{ color: "#535353" }}>
+                Your current location:
+              </span>
+              <p className="font-medium" style={{ color: "#535353" }}>
+                {jobDetails.location}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Calendar className="w-5 h-5" style={{ color: "#FEB4C5" }} />
+              <span className="text-sm" style={{ color: "#535353" }}>
+                Check-Out Time:
+              </span>
+              <p className="font-medium" style={{ color: "#535353" }}>
+                {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 p-4 rounded-xl text-center" style={{ background: "rgba(124, 229, 119, 0.1)" }}>
+            {locationVerified ? (
+              <div className="flex items-center gap-3">
+                <Check className="w-5 h-5" style={{ color: "#7CE577" }} />
+                <span className="font-medium" style={{ color: "#7CE577" }}>
+                  Location verified
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <AlertTriangle className="w-5 h-5" style={{ color: "#FEB4C5" }} />
+                <Button
+                  onClick={handleVerifyLocation}
+                  className="px-4 py-2"
+                  style={{
+                    background:
+                      "radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FEB4C5 0%, #DB869A 100%)",
+                    color: "white",
+                  }}
+                >
+                  Verify Location
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="px-6 pb-6">
+        <div className="flex gap-3">
+          <Button
+            onClick={handleBack}
+            variant="outline"
+            className="flex-1"
+            style={{
+              color: "#535353",
+              borderColor: "rgba(132, 132, 132, 0.2)",
+            }}
+          >
+            Back
+          </Button>
+          <Button
+            onClick={handleConfirmCheckOut}
+            className="flex-1 py-4"
+            style={{
+              background: !locationVerified
+                ? "rgba(132, 132, 132, 0.3)"
+                : "radial-gradient(143.86% 887.35% at -10.97% -22.81%, #7CE577 0%, #5FB865 100%)",
+              color: !locationVerified ? "#848484" : "white",
+              boxShadow: !locationVerified ? "none" : "0px 4px 18px rgba(124, 229, 119, 0.35)",
+              cursor: !locationVerified ? "not-allowed" : "pointer",
+            }}
+          >
+            <Check className="w-5 h-5 mr-2" />
+            Complete Check-Out
+          </Button>
+        </div>
+
+        <div className="mt-4 p-4 rounded-xl" style={{ background: "rgba(254, 180, 197, 0.05)" }}>
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5" style={{ color: "#FEB4C5" }} />
+            <p className="text-sm" style={{ color: "#535353" }}>
+              Complete all steps and verify your location before checking out
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
-    </>
-
   );
 }
-

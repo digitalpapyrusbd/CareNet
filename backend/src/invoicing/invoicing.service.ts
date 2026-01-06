@@ -12,7 +12,7 @@ export class InvoicingService {
       where: { id: createInvoiceDto.job_id },
       include: {
         packages: true,
-        companies: true,
+        agencies: true,
       },
     });
 
@@ -30,17 +30,17 @@ export class InvoicingService {
 
     // Mapping based on Schema InvoiceType
     if (createInvoiceDto.type === InvoiceType.AGENCY_TO_GUARDIAN) {
-      issuerId = job.agency_id || job.company_id || '';
+      issuerId = job.agency_id || '';
       recipientId = job.guardian_id;
     } else if (createInvoiceDto.type === InvoiceType.PLATFORM_COMMISSION) {
       issuerId = 'PLATFORM'; // Or specific admin ID
-      recipientId = job.agency_id || job.company_id || '';
+      recipientId = job.agency_id || '';
     } else if (createInvoiceDto.type === InvoiceType.CAREGIVER_TO_AGENCY) {
       const assignment = await this.prisma.assignments.findFirst({
         where: { job_id: job.id },
       });
       issuerId = assignment?.caregiver_id || '';
-      recipientId = job.agency_id || job.company_id || '';
+      recipientId = job.agency_id || '';
     } else {
       // Fallback or other types like SUBSCRIPTION
       issuerId = 'PLATFORM';
@@ -222,7 +222,7 @@ export class InvoicingService {
             job_id: jobId,
             invoice_type: InvoiceType.CAREGIVER_TO_AGENCY,
             issuer_id: assignment.caregiver_id,
-            recipient_id: job.agency_id || job.company_id || '',
+            recipient_id: job.agency_id || '',
             amount: perCaregiverAmount,
             status: InvoiceStatus.PENDING,
             due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),

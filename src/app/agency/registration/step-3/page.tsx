@@ -11,10 +11,10 @@ import { useRouter } from 'next/navigation';
 
 export default function AgencyRegistrationStep3Page() {
   const router = useRouter();
-  const [form, setForm] = useState({ companyName: '', tradeLicense: '', tin: '', contactPerson: '', contactPhone: '', address: '', area: 'Gulshan' });
+  const [form, setForm] = useState({ agencyName: '', tradeLicense: '', tin: '', contactPerson: '', contactPhone: '', address: '', area: 'Gulshan' });
 
   const update = (key: keyof typeof form, value: string) => setForm((prev) => ({ ...prev, [key]: value }));
-  const canContinue = form.companyName && form.tradeLicense && form.contactPerson && form.contactPhone && form.address;
+  const canContinue = form.agencyName && form.tradeLicense && form.contactPerson && form.contactPhone && form.address;
 
   return (
     <>
@@ -23,12 +23,12 @@ export default function AgencyRegistrationStep3Page() {
       <div className="min-h-screen bg-gradient-to-br from-violet-50 to-purple-100 dark:from-gray-900 dark:to-violet-950 px-4 py-10 pb-24 md:pt-14">
         <div className="max-w-3xl mx-auto finance-card p-8">
           <p className="text-sm mb-2" style={{ color: '#848484' }}>Step 3 of 5</p>
-          <h1 className="text-2xl font-semibold mb-4" style={{ color: '#535353' }}>Company Details</h1>
+          <h1 className="text-2xl font-semibold mb-4" style={{ color: '#535353' }}>Agency Details</h1>
 
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium" style={{ color: '#535353' }}>Company/Agency Name *</label>
-              <Input value={form.companyName} onChange={(e) => update('companyName', e.target.value)} className="mt-2 bg-white/60 border-white/60" placeholder="e.g., SafeHands Care Services" />
+              <label className="text-sm font-medium" style={{ color: '#535353' }}>Agency Name *</label>
+              <Input value={form.agencyName} onChange={(e) => update('agencyName', e.target.value)} className="mt-2 bg-white/60 border-white/60" placeholder="e.g., SafeHands Care Services" />
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">

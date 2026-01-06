@@ -288,12 +288,12 @@ export class VerificationService {
         });
       }
 
-      // If agency, mark company as verified
+      // If agency, mark agency as verified
       if (
         user.role === UserRole.AGENCY_ADMIN ||
         user.role === UserRole.AGENCY_MANAGER
       ) {
-        await this.prisma.companies.updateMany({
+        await this.prisma.agencies.updateMany({
           where: { userId },
           data: { is_verified: true },
         });

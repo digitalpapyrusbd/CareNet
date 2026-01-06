@@ -48,7 +48,7 @@ export async function moderateContent(actor: any, contentId: string, action: 're
 
 export async function listAuditLogs(limit = 50) {
   try {
-    const logs = await prisma.audit_logs.findMany({ take: limit, orderBy: { created_at: 'desc' } } as any);
+    const logs = await prisma.audit_logs.findMany({ take: limit, orderBy: { createdAt: 'desc' } } as any);
     return { status: 200, data: logs };
   } catch (err: any) {
     return { status: 500, error: 'server_error', details: err?.message };

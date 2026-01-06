@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Heart } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -161,15 +161,12 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col items-center justify-center p-6">
       {/* Logo Section */}
       <div className="w-full max-w-md mb-8 text-center">
-        <div
-          className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4"
-          style={{
-            background:
-              "radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FFB3C1 0%, #FF8FA3 100%)",
-            boxShadow: "0px 4px 18px rgba(255, 143, 163, 0.35)",
-          }}
-        >
-          <Heart className="w-10 h-10 text-white fill-current" />
+        <div className="mb-4 flex items-center justify-center">
+          <img
+            src="/logo_only.png"
+            alt="CareNet Logo"
+            className="h-12 sm:h-16 md:h-20 lg:h-24 w-auto max-w-[80vw] object-contain"
+          />
         </div>
         <h1 className="mb-2" style={{ color: "#535353" }}>
           CareNet

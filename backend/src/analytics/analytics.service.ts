@@ -30,15 +30,15 @@ export class AnalyticsService {
     };
   }
 
-  async getCompanyStats(companyId: string) {
-    const company = await this.prisma.companies.findUnique({
-      where: { id: companyId },
+  async getAgencyStats(agencyId: string) {
+    const agency = await this.prisma.agencies.findUnique({
+      where: { id: agencyId },
     });
 
-    // Logic to count company's caregivers, jobs, etc.
+    // Logic to count agency's caregivers, jobs, etc.
     const [caregivers, jobs] = await Promise.all([
-      this.prisma.caregivers.count({ where: { company_id: companyId } }),
-      this.prisma.jobs.count({ where: { company_id: companyId } }),
+      this.prisma.caregivers.count({ where: { agency_id: agencyId } }),
+      this.prisma.jobs.count({ where: { agency_id: agencyId } }),
     ]);
 
     return {
@@ -51,8 +51,8 @@ export class AnalyticsService {
     return this.getAdminStats();
   }
 
-  async getCompanyAnalytics(id: string) {
-    return this.getCompanyStats(id);
+  async getAgencyAnalytics(id: string) {
+    return this.getAgencyStats(id);
   }
 
   async getRevenueBreakdown() {

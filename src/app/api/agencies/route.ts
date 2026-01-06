@@ -154,7 +154,7 @@ export async function GET(request: NextRequest) {
         take: limit,
         select: {
           id: true,
-          agency_name: true,
+          company_name: true,
           contact_person: true,
           contact_email: true,
           contact_phone: true,
@@ -246,7 +246,7 @@ export async function POST(request: NextRequest) {
     // Check if user already has an agency
     if (currentUser.role === UserRole.COMPANY) {
       const existingAgency = await prisma.companies.findUnique({
-        where: { user_id: currentUser.id },
+        where: { userId: currentUser.id },
       });
 
       if (existingAgency) {
@@ -272,7 +272,7 @@ export async function POST(request: NextRequest) {
     // Create agency
     const agency = await prisma.companies.create({
       data: {
-        user_id: currentUser.id,
+        userId: currentUser.id,
         company_name: validatedData.agencyName,
         trade_license: validatedData.tradeLicense,
         tin: validatedData.tin,
@@ -628,7 +628,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         where,
         skip,
         take: limit,
-        orderBy: { created_at: 'desc' },
+        orderBy: { createdAt: 'desc' },
       }),
       prisma.packages.count({ where }),
     ]);
@@ -763,7 +763,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         where,
         skip,
         take: limit,
-        orderBy: { created_at: 'desc' },
+        orderBy: { createdAt: 'desc' },
       }),
       prisma.service_zones.count({ where }),
     ]);

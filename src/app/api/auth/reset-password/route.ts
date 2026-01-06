@@ -371,7 +371,7 @@ export async function PATCH(request: NextRequest) {
       await tx.users.update({
         where: { id: user.id },
         data: {
-          passwordHash,
+          password_hash: passwordHash,
           last_login_at: new Date(), // Update last login on password reset
         },
       });

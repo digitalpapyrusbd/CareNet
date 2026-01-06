@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       }
       
       // Verify the TOTP code
-      const verified = speakeasy.totp.verify({
+      const verified = (speakeasy.totp as any).verify({
         secret: updatedUser.mfa_secret,
         encoding: 'base32',
         token: validatedData.verifyCode,

@@ -33,27 +33,27 @@ export function PerformanceMonitoring() {
 
             // Initialize Web Vitals tracking
             if (typeof window !== 'undefined') {
-              import('web-vitals').then(({ onCLS, onFID, onFCP, onLCP, onTTFB, onINP }) => {
-                onCLS(sendToAnalytics);
-                onFID(sendToAnalytics);
-                onFCP(sendToAnalytics);
-                onLCP(sendToAnalytics);
-                onTTFB(sendToAnalytics);
-                onINP(sendToAnalytics);
-              });
+              // Use a try-catch to handle missing web-vitals dependency gracefully
+              try {
+                import('web-vitals').then(({ onCLS, onFID, onFCP, onLCP, onTTFB, onINP }) => {
+                  onCLS(sendToAnalytics);
+                  onFID(sendToAnalytics);
+                  onFCP(sendToAnalytics);
+                  onLCP(sendToAnalytics);
+                  onTTFB(sendToAnalytics);
+                  onINP(sendToAnalytics);
+                }).catch((error) => {
+                  console.warn('Web Vitals library not available:', error);
+                });
+              } catch (error) {
+                console.warn('Failed to load Web Vitals:', error);
+              }
             }
           `,
         }}
       />
 
-      {/* Preload critical fonts */}
-      <link
-        rel="preload"
-        href="/fonts/inter-var.woff2"
-        as="font"
-        type="font/woff2"
-        crossOrigin="anonymous"
-      />
+      {/* Fonts are loaded via next/font/google (Inter) - no local preload needed */}
 
       {/* DNS Prefetch for API */}
       <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_API_URL || ''} />

@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
       case UserRole.COMPANY:
         // Companies can see payments for their jobs
         const company = await prisma.companies.findUnique({
-          where: { user_id: user.id },
+          where: { userId: user.id },
         });
         
         if (company) {
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
     if (search) {
       where.OR = [
         { invoiceNumber: { contains: search, mode: 'insensitive' } },
-        { transactionId: { contains: search, mode: 'insensitive' } },
+        { transaction_id: { contains: search, mode: 'insensitive' } },
       ];
     }
 
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
         skip,
         take: limit,
         include: {
-          payer: {
+          users: {
             select: {
               id: true,
               name: true,
@@ -82,10 +82,10 @@ export async function GET(request: NextRequest) {
               email: true,
             },
           },
-          job: {
+              jobs: {
             select: {
               id: true,
-              patient: {
+              patients: {
                 select: {
                   id: true,
                   name: true,
@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
                   company_name: true,
                 },
               },
-              package: {
+              packages: {
                 select: {
                   id: true,
                   name: true,
@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const {
-      jobId,
+      job_id: jobId,
       amount,
       method,
       transactionId,
@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
     const job = await prisma.jobs.findUnique({
       where: { id: jobId },
       include: {
-        guardian: {
+        users: {
           select: {
             id: true,
           },
@@ -188,7 +188,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Guardians can only pay for their own jobs
-    if (user.role === UserRole.GUARDIAN && job.guardian.id !== user.id) {
+    if (user.role === UserRole.GUARDIAN && job.users.id !== user.id) {
       return NextResponse.json(
         { error: 'Access denied' },
         { status: 403 }
@@ -197,7 +197,7 @@ export async function POST(request: NextRequest) {
 
     // Check if payment already exists for this transaction
     const existingPayment = await prisma.payments.findUnique({
-      where: { transactionId },
+      where: { transaction_id: transactionId },
     });
 
     if (existingPayment) {
@@ -210,7 +210,7 @@ export async function POST(request: NextRequest) {
     // Create payment
     const payment = await prisma.payments.create({
       data: {
-        jobId,
+        job_id: jobId,
         payer_id: user.id,
         amount: parseFloat(amount),
         method,
@@ -219,7 +219,7 @@ export async function POST(request: NextRequest) {
         status: 'PENDING' as const,
       },
       include: {
-        payer: {
+        users: {
           select: {
             id: true,
             name: true,
@@ -227,22 +227,22 @@ export async function POST(request: NextRequest) {
             email: true,
           },
         },
-        job: {
+              jobs: {
           select: {
             id: true,
-            patient: {
+            patients: {
               select: {
                 id: true,
                 name: true,
               },
             },
-            company: {
+            companies: {
               select: {
                 id: true,
                 company_name: true,
               },
             },
-            package: {
+            packages: {
               select: {
                 id: true,
                 name: true,

@@ -234,21 +234,21 @@ export class FCMService {
       // Upsert device token
       await this.prisma.user_devices.upsert({
         where: {
-          device_id: deviceInfo.device_id,
+          device_id: deviceInfo.deviceId,
         },
         update: {
-          fcmToken,
+          fcm_token: fcmToken,
           is_active: true,
-          lastSeenAt: new Date(),
-          appVersion: deviceInfo.appVersion,
+          last_seen_at: new Date(),
+          app_version: deviceInfo.appVersion,
         },
         create: {
           user_id,
-          deviceId: deviceInfo.deviceId,
-          fcmToken,
+          device_id: deviceInfo.deviceId,
+          fcm_token: fcmToken,
           platform: deviceInfo.platform,
-          isActive: true,
-          appVersion: deviceInfo.appVersion,
+          is_active: true,
+          app_version: deviceInfo.appVersion,
         },
       });
 

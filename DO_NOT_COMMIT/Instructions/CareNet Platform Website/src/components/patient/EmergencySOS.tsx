@@ -1,24 +1,27 @@
-import { AlertCircle, Phone, MapPin, Heart, X } from "lucide-react";
+import { AlertTriangle, Phone, MapPin, X, ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface EmergencySOSProps {
-  patientName: string;
-  emergencyContacts: Array<{
-    id: string;
-    name: string;
-    relation: string;
-    phone: string;
-  }>;
-  caregiver?: {
-    name: string;
-    phone: string;
-  };
-  onCancel: () => void;
-  onConfirmEmergency: () => void;
+  patientName?: string;
+  emergencyContacts?: Array<{ name: string; relation: string; phone: string }>;
+  caregiver?: { name: string; phone: string };
+  onCancel?: () => void;
+  onConfirmEmergency?: () => void;
+  onNavigate?: (page: string) => void;
 }
 
-export function EmergencySOS({ patientName, emergencyContacts, caregiver, onCancel, onConfirmEmergency }: EmergencySOSProps) {
+export function EmergencySOS({ 
+  patientName = "Patient", 
+  emergencyContacts = [
+    { name: "Dr. Ahmed Hassan", relation: "Doctor", phone: "+880 1712-345678" },
+    { name: "Mr. Kamal Rahman", relation: "Family Guardian", phone: "+880 1712-345679" }
+  ], 
+  caregiver = { name: "Rashida Begum", phone: "+880 1712-345680" }, 
+  onCancel, 
+  onConfirmEmergency,
+  onNavigate 
+}: EmergencySOSProps) {
   const [countdown, setCountdown] = useState(5);
   const [isActivated, setIsActivated] = useState(false);
 
@@ -71,7 +74,7 @@ export function EmergencySOS({ patientName, emergencyContacts, caregiver, onCanc
             </p>
             <ul className="space-y-2 text-sm" style={{ color: '#535353' }}>
               {emergencyContacts.slice(0, 3).map((contact) => (
-                <li key={contact.id} className="flex items-center gap-2">
+                <li key={contact.name} className="flex items-center gap-2">
                   <Phone className="w-4 h-4" style={{ color: '#848484' }} />
                   {contact.name} ({contact.relation})
                 </li>
@@ -146,7 +149,7 @@ export function EmergencySOS({ patientName, emergencyContacts, caregiver, onCanc
             </p>
             <ul className="space-y-2">
               {emergencyContacts.slice(0, 3).map((contact) => (
-                <li key={contact.id} className="flex items-center justify-between text-sm">
+                <li key={contact.name} className="flex items-center justify-between text-sm">
                   <span style={{ color: '#535353' }}>{contact.name}</span>
                   <span style={{ color: '#848484' }}>{contact.relation}</span>
                 </li>

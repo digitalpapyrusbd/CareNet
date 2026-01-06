@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { UniversalNav } from '@/components/layout/UniversalNav';
 
@@ -103,21 +103,123 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Moderator Submissions */}
+        {/* Bills Section */}
         <div className="finance-card p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 style={{ color: '#535353' }}>Moderator Submissions</h3>
+            <h3 style={{ color: '#535353' }}>Bills</h3>
             <button
-              onClick={() => router.push('/admin/moderators')}
+              onClick={() => router.push('/admin/billing')}
               className="text-sm"
               style={{ color: '#5B9FFF' }}
             >
-              View All
+              View All Bills
             </button>
           </div>
 
           <div className="space-y-3">
             <div className="flex items-center justify-between p-3 rounded-lg" style={{ background: 'rgba(255, 255, 255, 0.5)' }}>
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-10 h-10 rounded-full flex items-center justify-center"
+                  style={{
+                    background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FFB3C1 0%, #FF8FA3 100%)'
+                  }}
+                >
+                  <DollarSign className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p style={{ color: '#535353' }}>Agency Payment Commission</p>
+                  <p className="text-sm" style={{ color: '#848484' }}>Commission on payment to agency</p>
+                </div>
+              </div>
+              <span 
+                className="px-3 py-1 rounded-full"
+                style={{ background: '#FFB3C1', color: 'white' }}
+              >
+                ৳45,000
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between p-3 rounded-lg" style={{ background: 'rgba(255, 255, 255, 0.5)' }}>
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-10 h-10 rounded-full flex items-center justify-center"
+                  style={{
+                    background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #8EC5FC 0%, #5B9FFF 100%)'
+                  }}
+                >
+                  <DollarSign className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p style={{ color: '#535353' }}>Caregiver Payment Commission</p>
+                  <p className="text-sm" style={{ color: '#848484' }}>Commission on payment to caregiver</p>
+                </div>
+              </div>
+              <span 
+                className="px-3 py-1 rounded-full"
+                style={{ background: '#8EC5FC', color: 'white' }}
+              >
+                ৳23,500
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between p-3 rounded-lg" style={{ background: 'rgba(255, 255, 255, 0.5)' }}>
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-10 h-10 rounded-full flex items-center justify-center"
+                  style={{
+                    background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #A8E063 0%, #7CE577 100%)'
+                  }}
+                >
+                  <DollarSign className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p style={{ color: '#535353' }}>Caregiver Receipt Commission</p>
+                  <p className="text-sm" style={{ color: '#848484' }}>Commission on payment receipt by caregiver</p>
+                </div>
+              </div>
+              <span 
+                className="px-3 py-1 rounded-full"
+                style={{ background: '#7CE577', color: 'white' }}
+              >
+                ৳12,800
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between p-3 rounded-lg" style={{ background: 'rgba(255, 255, 255, 0.5)' }}>
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-10 h-10 rounded-full flex items-center justify-center"
+                  style={{
+                    background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FFD180 0%, #FFB74D 100%)'
+                  }}
+                >
+                  <DollarSign className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p style={{ color: '#535353' }}>Shop Service/Product Commission</p>
+                  <p className="text-sm" style={{ color: '#848484' }}>Commission on any service/product sold by shops</p>
+                </div>
+              </div>
+              <span 
+                className="px-3 py-1 rounded-full"
+                style={{ background: '#FFD180', color: 'white' }}
+              >
+                ৳8,200
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Notifications */}
+        <div className="finance-card p-6 mb-6">
+          <h3 className="mb-4" style={{ color: '#535353' }}>Notifications</h3>
+          <div className="space-y-3">
+            <div 
+              className="flex items-center justify-between p-3 rounded-lg cursor-pointer hover:shadow-lg transition-all"
+              style={{ background: 'rgba(255, 255, 255, 0.5)' }}
+              onClick={() => router.push('/admin/verification/caregivers')}
+            >
               <div className="flex items-center gap-3">
                 <div 
                   className="w-10 h-10 rounded-full flex items-center justify-center"
@@ -140,7 +242,11 @@ export default function AdminDashboardPage() {
               </span>
             </div>
 
-            <div className="flex items-center justify-between p-3 rounded-lg" style={{ background: 'rgba(255, 255, 255, 0.5)' }}>
+            <div 
+              className="flex items-center justify-between p-3 rounded-lg cursor-pointer hover:shadow-lg transition-all"
+              style={{ background: 'rgba(255, 255, 255, 0.5)' }}
+              onClick={() => router.push('/admin/disputes')}
+            >
               <div className="flex items-center gap-3">
                 <div 
                   className="w-10 h-10 rounded-full flex items-center justify-center"
@@ -163,7 +269,11 @@ export default function AdminDashboardPage() {
               </span>
             </div>
 
-            <div className="flex items-center justify-between p-3 rounded-lg" style={{ background: 'rgba(255, 255, 255, 0.5)' }}>
+            <div 
+              className="flex items-center justify-between p-3 rounded-lg cursor-pointer hover:shadow-lg transition-all"
+              style={{ background: 'rgba(255, 255, 255, 0.5)' }}
+              onClick={() => router.push('/admin/tickets')}
+            >
               <div className="flex items-center gap-3">
                 <div 
                   className="w-10 h-10 rounded-full flex items-center justify-center"
@@ -192,21 +302,77 @@ export default function AdminDashboardPage() {
         <div className="finance-card p-6 mb-6">
           <h3 className="mb-4" style={{ color: '#535353' }}>Platform Statistics</h3>
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm mb-1" style={{ color: '#848484' }}>Caregivers</p>
-              <p className="text-2xl" style={{ color: '#535353' }}>{platformStats.caregivers}</p>
+            <div 
+              className="p-4 rounded-lg cursor-pointer hover:shadow-lg transition-all"
+              style={{ background: 'rgba(255, 255, 255, 0.5)' }}
+              onClick={() => router.push('/admin/caregivers')}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div 
+                  className="w-10 h-10 rounded-full flex items-center justify-center"
+                  style={{
+                    background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FFB3C1 0%, #FF8FA3 100%)'
+                  }}
+                >
+                  <Users className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-2xl" style={{ color: '#535353' }}>{platformStats.caregivers}</span>
+              </div>
+              <p className="text-sm" style={{ color: '#848484' }}>Caregivers</p>
             </div>
-            <div>
-              <p className="text-sm mb-1" style={{ color: '#848484' }}>Agencies</p>
-              <p className="text-2xl" style={{ color: '#535353' }}>{platformStats.agencies}</p>
+            <div 
+              className="p-4 rounded-lg cursor-pointer hover:shadow-lg transition-all"
+              style={{ background: 'rgba(255, 255, 255, 0.5)' }}
+              onClick={() => router.push('/admin/agencies')}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div 
+                  className="w-10 h-10 rounded-full flex items-center justify-center"
+                  style={{
+                    background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #8EC5FC 0%, #5B9FFF 100%)'
+                  }}
+                >
+                  <Users className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-2xl" style={{ color: '#535353' }}>{platformStats.agencies}</span>
+              </div>
+              <p className="text-sm" style={{ color: '#848484' }}>Agencies</p>
             </div>
-            <div>
-              <p className="text-sm mb-1" style={{ color: '#848484' }}>Guardians</p>
-              <p className="text-2xl" style={{ color: '#535353' }}>{platformStats.guardians}</p>
+            <div 
+              className="p-4 rounded-lg cursor-pointer hover:shadow-lg transition-all"
+              style={{ background: 'rgba(255, 255, 255, 0.5)' }}
+              onClick={() => router.push('/admin/users')}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div 
+                  className="w-10 h-10 rounded-full flex items-center justify-center"
+                  style={{
+                    background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #A8E063 0%, #7CE577 100%)'
+                  }}
+                >
+                  <Users className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-2xl" style={{ color: '#535353' }}>{platformStats.guardians}</span>
+              </div>
+              <p className="text-sm" style={{ color: '#848484' }}>Guardians</p>
             </div>
-            <div>
-              <p className="text-sm mb-1" style={{ color: '#848484' }}>Patients</p>
-              <p className="text-2xl" style={{ color: '#535353' }}>{platformStats.patients}</p>
+            <div 
+              className="p-4 rounded-lg cursor-pointer hover:shadow-lg transition-all"
+              style={{ background: 'rgba(255, 255, 255, 0.5)' }}
+              onClick={() => router.push('/admin/users')}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div 
+                  className="w-10 h-10 rounded-full flex items-center justify-center"
+                  style={{
+                    background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FFD180 0%, #FFB74D 100%)'
+                  }}
+                >
+                  <Users className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-2xl" style={{ color: '#535353' }}>{platformStats.patients}</span>
+              </div>
+              <p className="text-sm" style={{ color: '#848484' }}>Patients</p>
             </div>
           </div>
         </div>

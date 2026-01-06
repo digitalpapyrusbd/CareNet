@@ -30,7 +30,7 @@ export async function runSessionCleanup(): Promise<{
     
     const deletedNotifications = await prisma.notifications.deleteMany({
       where: {
-        created_at: {
+        createdAt: {
           lt: thirtyDaysAgo
         },
         status: 'READ'

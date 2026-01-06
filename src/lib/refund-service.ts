@@ -39,7 +39,7 @@ export interface RefundResponse {
   failureReason?: string;
   evidence?: string[];
   metadata?: Record<string, any>;
-  createdAt: Date;
+        created_at: Date;
   updatedAt: Date;
 }
 
@@ -56,7 +56,7 @@ export interface RefundPolicy {
     requiresEvidence?: boolean;
   };
   isActive: boolean;
-  createdAt: Date;
+        created_at: Date;
 }
 
 export class RefundService {
@@ -69,12 +69,16 @@ export class RefundService {
       const payment = await prisma.payments.findUnique({
         where: { id: request.paymentId },
         include: {
-          escrowTransaction: true,
-          job: {
+          escrows: true,
+          jobs: {
             include: {
-              guardian: true,
-              caregiver: true,
-              company: true,
+              users: true,
+              assignments: {
+                include: {
+                  caregivers_assignments_caregiver_idTocaregivers: true,
+                },
+              },
+              companies: true,
             },
           },
         },
@@ -183,13 +187,12 @@ export class RefundService {
         });
 
         // Update escrow if exists
-        if (refund.payment.escrowTransactionId) {
-          await prisma.escrow_transactions.update({
-            where: { id: refund.payment.escrowTransactionId },
+        if (refund.payment.escrows) {
+          await prisma.escrows.update({
+            where: { id: refund.payment.escrows.id },
             data: {
               status: 'REFUNDED',
-              refundDate: new Date(),
-              refundReason: refund.reason,
+              released_at: new Date(),
             },
           });
         }
@@ -337,7 +340,7 @@ export class RefundService {
           },
         },
         orderBy: {
-          created_at: 'desc',
+          createdAt: 'desc',
         },
       });
     } catch (error) {

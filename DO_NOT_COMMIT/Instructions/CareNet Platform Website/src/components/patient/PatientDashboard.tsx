@@ -1,22 +1,36 @@
-import { Heart, Phone, Calendar, Pill, User, AlertCircle, MessageSquare, Activity } from "lucide-react";
+import {
+  Calendar,
+  Heart,
+  Activity,
+  Pill,
+  User,
+  AlertTriangle,
+  Clock,
+  Phone,
+  MessageSquare,
+  Bell,
+  ArrowLeft,
+} from "lucide-react";
 import { Button } from "../ui/button";
 
 interface PatientDashboardProps {
-  patientName: string;
-  onChatCaregiver: () => void;
-  onEmergency: () => void;
-  onCallGuardian: () => void;
-  onViewMedications: () => void;
-  onViewCaregiver: () => void;
+  patientName?: string;
+  onChatCaregiver?: () => void;
+  onEmergency?: () => void;
+  onCallGuardian?: () => void;
+  onViewMedications?: () => void;
+  onViewCaregiver?: () => void;
+  onNavigate?: (page: string) => void;
 }
 
 export function PatientDashboard({
-  patientName,
+  patientName = "Patient",
   onChatCaregiver,
   onEmergency,
   onCallGuardian,
   onViewMedications,
-  onViewCaregiver
+  onViewCaregiver,
+  onNavigate
 }: PatientDashboardProps) {
   const todayCaregiver = {
     name: "Rashida Begum",
@@ -36,6 +50,15 @@ export function PatientDashboard({
     <div className="min-h-screen pb-20">
       {/* Header */}
       <div className="p-6">
+        {/* Back Button */}
+        <button
+          onClick={() => onNavigate?.('toc')}
+          className="w-10 h-10 rounded-full flex items-center justify-center mb-4"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+        >
+          <ArrowLeft className="w-5 h-5" style={{ color: '#535353' }} />
+        </button>
+
         <div className="mb-6">
           <h1 style={{ color: '#535353' }}>Hello, {patientName}</h1>
           <p style={{ color: '#848484' }}>How are you feeling today?</p>
@@ -54,7 +77,7 @@ export function PatientDashboard({
                 background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FF6B7A 0%, #FF8FA3 100%)'
               }}
             >
-              <AlertCircle className="w-8 h-8 text-white" />
+              <AlertTriangle className="w-8 h-8 text-white" />
             </div>
             <div className="flex-1 text-left">
               <h2 style={{ color: '#535353' }}>Emergency SOS</h2>

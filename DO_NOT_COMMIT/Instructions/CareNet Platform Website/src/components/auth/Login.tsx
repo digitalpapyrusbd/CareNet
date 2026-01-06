@@ -37,15 +37,8 @@ export function Login({ onLogin, onNavigateToRegister }: LoginProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const phoneError = validatePhone(phone);
-    const passwordError = password.length < 6 ? "Password must be at least 6 characters" : "";
-
-    if (phoneError || passwordError) {
-      setErrors({ phone: phoneError, password: passwordError });
-      return;
-    }
-
-    onLogin(phone, password);
+    // Auto-login without validation - accept any input
+    onLogin(phone || "auto", password || "auto");
   };
 
   return (

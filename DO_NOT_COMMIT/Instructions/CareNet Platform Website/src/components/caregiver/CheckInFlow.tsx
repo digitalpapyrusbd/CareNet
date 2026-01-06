@@ -1,19 +1,27 @@
-import { MapPin, Camera, Check, AlertTriangle, Navigation } from "lucide-react";
+import { MapPin, Camera, Check, AlertTriangle, Navigation, ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import { useState } from "react";
 
 interface CheckInFlowProps {
-  jobId: string;
-  patientName: string;
-  expectedLocation: { lat: number; lng: number; address: string };
-  onComplete: () => void;
-  onCancel: () => void;
+  jobId?: string;
+  patientName?: string;
+  expectedLocation?: { lat: number; lng: number; address: string };
+  onComplete?: () => void;
+  onCancel?: () => void;
+  onNavigate?: (page: string) => void;
 }
 
 type Step = 'location' | 'location-mismatch' | 'photo' | 'confirmation';
 
-export function CheckInFlow({ jobId, patientName, expectedLocation, onComplete, onCancel }: CheckInFlowProps) {
+export function CheckInFlow({ 
+  jobId = "1", 
+  patientName = "Patient", 
+  expectedLocation = { lat: 23.7, lng: 90.4, address: "Dhaka" }, 
+  onComplete, 
+  onCancel, 
+  onNavigate 
+}: CheckInFlowProps) {
   const [currentStep, setCurrentStep] = useState<Step>('location');
   const [isVerifying, setIsVerifying] = useState(false);
   const [locationMatch, setLocationMatch] = useState<boolean | null>(null);
@@ -58,6 +66,17 @@ export function CheckInFlow({ jobId, patientName, expectedLocation, onComplete, 
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6">
+      {/* Back Button */}
+      <div className="w-full max-w-md mb-4">
+        <button
+          onClick={() => onCancel?.() || onNavigate?.('toc')}
+          className="w-10 h-10 rounded-full flex items-center justify-center"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+        >
+          <ArrowLeft className="w-5 h-5" style={{ color: '#535353' }} />
+        </button>
+      </div>
+
       {/* Step 1: Location Verification */}
       {currentStep === 'location' && (
         <div className="w-full max-w-md">

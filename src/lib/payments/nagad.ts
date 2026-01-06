@@ -87,7 +87,7 @@ export async function getTransaction(transactionId: string) {
 }
 
 export async function listTransactions() {
-  return prisma.provider_transactions.findMany({ orderBy: { created_at: 'desc' } })
+  return prisma.provider_transactions.findMany({ orderBy: { createdAt: 'desc' } })
 }
 
 export default { createCheckout, verifyPayment, getTransaction, listTransactions }

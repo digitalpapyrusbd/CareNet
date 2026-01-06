@@ -11,11 +11,10 @@ import { PackageCategory } from '@prisma/client';
 export class PackagesService {
   constructor(private prisma: PrismaService) {}
 
-  async create(companyId: string, createPackageDto: CreatePackageDto) {
+  async create(agencyId: string, createPackageDto: CreatePackageDto) {
     const pkg = await this.prisma.packages.create({
       data: {
-        company_id: companyId,
-        agency_id: companyId, // Use the same ID for both fields
+        agency_id: agencyId,
         name: createPackageDto.name,
         description: createPackageDto.description,
         category: createPackageDto.category,
@@ -49,24 +48,16 @@ export class PackagesService {
         where,
         skip,
         take: limit,
-        include: {
-          companies: {
-            select: {
-              company_name: true,
-              logo_url: true,
-              rating_avg: true,
-              is_verified: true,
-            },
-          },
-          agencies: {
-            select: {
-              agency_name: true,
-              logo_url: true,
-              rating_avg: true,
-              is_verified: true,
-            },
+include: {
+        agencies: {
+          select: {
+            agency_name: true,
+            logo_url: true,
+            rating_avg: true,
+            is_verified: true,
           },
         },
+      },
         orderBy: { created_at: 'desc' },
       }),
       this.prisma.packages.count({ where }),
@@ -82,17 +73,6 @@ export class PackagesService {
     const pkg = await this.prisma.packages.findUnique({
       where: { id },
       include: {
-        companies: {
-          select: {
-            id: true,
-            company_name: true,
-            logo_url: true,
-            description: true,
-            rating_avg: true,
-            rating_count: true,
-            is_verified: true,
-          },
-        },
         agencies: {
           select: {
             id: true,
@@ -116,14 +96,14 @@ export class PackagesService {
 
   async update(
     id: string,
-    companyId: string,
+    agencyId: string,
     updatePackageDto: UpdatePackageDto,
   ) {
     const pkg = await this.prisma.packages.findUnique({
       where: { id },
     });
 
-    if (!pkg || (pkg.company_id !== companyId && pkg.agency_id !== companyId)) {
+    if (!pkg || pkg.agency_id !== agencyId) {
       throw new NotFoundException('Package not found');
     }
 
@@ -133,12 +113,12 @@ export class PackagesService {
     });
   }
 
-  async remove(id: string, companyId: string) {
+  async remove(id: string, agencyId: string) {
     const pkg = await this.prisma.packages.findUnique({
       where: { id },
     });
 
-    if (!pkg || (pkg.company_id !== companyId && pkg.agency_id !== companyId)) {
+    if (!pkg || pkg.agency_id !== agencyId) {
       throw new NotFoundException('Package not found');
     }
 

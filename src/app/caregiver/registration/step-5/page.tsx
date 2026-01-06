@@ -1,113 +1,293 @@
-﻿'use client';
+"use client";
 
-import { UniversalNav } from '@/components/layout/UniversalNav';
+import { useState } from "react";
+import { ArrowLeft, Award, Upload, DollarSign } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { UniversalNav } from "@/components/layout/UniversalNav";
 
-import React, { useState } from 'react';
-import Layout from '@/components/layout/Layout';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { useRouter } from 'next/navigation';
+const SKILLS = [
+  "Elderly Care",
+  "Child Care",
+  "Post-Surgery Care",
+  "Dementia Care",
+  "Mobility Assistance",
+  "Medication Management",
+  "Wound Care",
+  "Vital Monitoring",
+  "Feeding Assistance",
+  "Personal Hygiene",
+  "Companionship",
+  "Physical Therapy Support",
+];
 
-const skillOptions = ['Elderly Care', 'Post-Surgery', 'Pediatric', 'Physio Support', 'Medication Management'];
+const LANGUAGES = ["Bengali", "English", "Hindi", "Urdu"];
 
 export default function CaregiverRegistrationStepFivePage() {
-  const router = useRouter();
-  const [selectedSkills, setSelectedSkills] = useState<string[]>(['Elderly Care']);
-  const [experience, setExperience] = useState('3');
-  const [languages, setLanguages] = useState('Bangla, English');
-  const [rate, setRate] = useState('350');
-  const [certsUploaded, setCertsUploaded] = useState(false);
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [certifications, setCertifications] = useState<string[]>([]);
+  const [experience, setExperience] = useState("");
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
+  const [hourlyRate, setHourlyRate] = useState("");
 
   const toggleSkill = (skill: string) => {
-    setSelectedSkills((prev) => prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill]);
+    setSelectedSkills((prev) =>
+      prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill],
+    );
   };
 
-  const canContinue = selectedSkills.length > 0 && experience.trim().length > 0 && certsUploaded;
+  const toggleLanguage = (lang: string) => {
+    setSelectedLanguages((prev) =>
+      prev.includes(lang) ? prev.filter((l) => l !== lang) : [...prev, lang],
+    );
+  };
+
+  const handleCertUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const newCerts = Array.from(files).map((f) => f.name);
+      setCertifications((prev) => [...prev, ...newCerts]);
+    }
+  };
+
+  const handleContinue = () => {
+    window.location.href = "/caregiver/registration/step-6";
+  };
 
   return (
     <>
       <UniversalNav userRole="caregiver" showBack={true} />
-      <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 dark:from-gray-900 dark:to-emerald-950 px-4 py-10 pb-24 md:pt-14">
-        <div className="max-w-3xl mx-auto finance-card p-8">
-          <p className="text-sm mb-2" style={{ color: '#848484' }}>Step 5 of 6</p>
-          <h1 className="text-2xl font-semibold mb-4" style={{ color: '#535353' }}>Skills & Experience</h1>
+      <div
+        className="min-h-screen flex flex-col p-6 pb-24"
+        style={{ backgroundColor: "#F5F7FA" }}
+      >
+        {/* Header */}
+        <div className="mb-8">
+          <Button
+            variant="ghost"
+            onClick={() => window.history.back()}
+            className="mb-6 hover:bg-white/30"
+            style={{ color: "#535353" }}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
 
-          <div className="space-y-6">
-            <div>
-              <p className="text-sm font-medium mb-2" style={{ color: '#535353' }}>Select at least one skill *</p>
-              <div className="flex flex-wrap gap-2">
-                {skillOptions.map((skill) => (
-                  <button
-                    key={skill}
-                    onClick={() => toggleSkill(skill)}
-                    className="px-4 py-2 rounded-full text-sm"
-                    style={{
-                      background: selectedSkills.includes(skill)
-                        ? 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #A8E063 0%, #7CE577 100%)'
-                        : 'rgba(255,255,255,0.6)',
-                      color: selectedSkills.includes(skill) ? 'white' : '#535353',
-                    }}
-                  >
-                    {skill}
-                  </button>
-                ))}
-              </div>
+          <div className="text-center mb-6">
+            <div
+              className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4"
+              style={{
+                background:
+                  "radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FEB4C5 0%, #DB869A 100%)",
+                boxShadow: "0px 4px 18px rgba(240, 161, 180, 0.4)",
+              }}
+            >
+              <Award className="w-10 h-10 text-white" />
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium" style={{ color: '#535353' }}>Years of Experience *</label>
-                <input
-                  type="number"
-                  className="mt-2 w-full rounded-2xl border bg-white/60 px-4 py-3"
-                  value={experience}
-                  onChange={(e) => setExperience(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium" style={{ color: '#535353' }}>Expected Hourly Rate (optional)</label>
-                <input
-                  type="number"
-                  className="mt-2 w-full rounded-2xl border bg-white/60 px-4 py-3"
-                  value={rate}
-                  onChange={(e) => setRate(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium" style={{ color: '#535353' }}>Languages</label>
-              <input
-                className="mt-2 w-full rounded-2xl border bg-white/60 px-4 py-3"
-                value={languages}
-                onChange={(e) => setLanguages(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <p className="text-sm font-medium mb-2" style={{ color: '#535353' }}>Upload Certifications *</p>
-              <label className="flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-4 py-8 text-sm cursor-pointer"
-                style={{ borderColor: certsUploaded ? '#7CE577' : 'rgba(255,255,255,0.6)', background: 'rgba(255,255,255,0.4)' }}>
-                <span>{certsUploaded ? 'Certificates uploaded ' : 'Tap to upload certificates'}</span>
-                <input type="file" multiple accept="application/pdf,image/*" className="hidden" onChange={() => setCertsUploaded(true)} />
-              </label>
-              <Textarea className="mt-3 bg-white/60 border-white/60" placeholder="Notes about certifications (optional)" />
-            </div>
+            <h1 className="mb-2" style={{ color: "#535353" }}>
+              Skills & Experience
+            </h1>
+            <p style={{ color: "#848484" }}>
+              Step 5 of 6: Professional Qualifications
+            </p>
           </div>
 
-          <div className="mt-8 flex flex-col sm:flex-row gap-3">
-            <Button variant="outline" className="flex-1 bg-white/60 border-white/60" onClick={() => history.back()} style={{ color: '#535353' }}>
-              Back
-            </Button>
-            <Button className="flex-1" disabled={!canContinue} onClick={() => router.push('/caregiver/registration/step-6')} style={{ background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #A8E063 0%, #7CE577 100%)', color: 'white', opacity: canContinue ? 1 : 0.5 }}>
-              Save & Continue
-            </Button>
+          {/* Progress Bar */}
+          <div
+            className="w-full h-2 rounded-full mb-6"
+            style={{ backgroundColor: "rgba(132, 132, 132, 0.1)" }}
+          >
+            <div
+              className="h-2 rounded-full transition-all"
+              style={{
+                width: "83.33%",
+                background:
+                  "radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FEB4C5 0%, #DB869A 100%)",
+              }}
+            />
           </div>
         </div>
-      </div>
-    </Layout>
-    </>
 
+        {/* Form */}
+        <div className="flex-1 space-y-6">
+          {/* Skills */}
+          <div>
+            <label className="block mb-3 text-sm" style={{ color: "#535353" }}>
+              Select Your Skills * (Select at least 1)
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {SKILLS.map((skill) => (
+                <button
+                  key={skill}
+                  onClick={() => toggleSkill(skill)}
+                  className={`finance-card px-3 py-2 text-sm transition-all ${
+                    selectedSkills.includes(skill) ? "ring-2" : ""
+                  }`}
+                  style={{
+                    color: selectedSkills.includes(skill)
+                      ? "#FEB4C5"
+                      : "#535353",
+                    borderColor: selectedSkills.includes(skill)
+                      ? "#FEB4C5"
+                      : "transparent",
+                  }}
+                >
+                  {skill}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs mt-2" style={{ color: "#848484" }}>
+              Selected: {selectedSkills.length} skills
+            </p>
+          </div>
+
+          {/* Certifications Upload */}
+          <div>
+            <label className="block mb-2 text-sm" style={{ color: "#535353" }}>
+              Upload Certifications (Optional)
+            </label>
+            <div className="relative">
+              <div
+                className="finance-card p-6 text-center cursor-pointer"
+                style={{ background: "rgba(254, 180, 197, 0.1)" }}
+              >
+                <Upload
+                  className="w-8 h-8 mx-auto mb-2"
+                  style={{ color: "#FEB4C5" }}
+                />
+                <p className="text-sm" style={{ color: "#848484" }}>
+                  Click to upload certificates (PDF, JPG, PNG)
+                </p>
+              </div>
+              <input
+                type="file"
+                multiple
+                accept=".pdf,.jpg,.jpeg,.png"
+                onChange={handleCertUpload}
+                className="absolute inset-0 opacity-0 cursor-pointer"
+              />
+            </div>
+            {certifications.length > 0 && (
+              <div className="mt-2 space-y-1">
+                {certifications.map((cert, idx) => (
+                  <div
+                    key={idx}
+                    className="finance-card px-3 py-2 flex items-center justify-between"
+                  >
+                    <p className="text-sm" style={{ color: "#535353" }}>
+                      {cert}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Years of Experience */}
+          <div>
+            <label className="block mb-2 text-sm" style={{ color: "#535353" }}>
+              Years of Experience *
+            </label>
+            <select
+              value={experience}
+              onChange={(e) => setExperience(e.target.value)}
+              className="w-full finance-card px-4 py-3"
+              style={{ color: "#535353", outline: "none" }}
+            >
+              <option value="">Select experience</option>
+              <option value="0-1">Less than 1 year</option>
+              <option value="1-3">1-3 years</option>
+              <option value="3-5">3-5 years</option>
+              <option value="5+">5+ years</option>
+            </select>
+          </div>
+
+          {/* Languages */}
+          <div>
+            <label className="block mb-3 text-sm" style={{ color: "#535353" }}>
+              Languages Spoken *
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {LANGUAGES.map((lang) => (
+                <button
+                  key={lang}
+                  onClick={() => toggleLanguage(lang)}
+                  className={`finance-card px-4 py-3 transition-all ${
+                    selectedLanguages.includes(lang) ? "ring-2" : ""
+                  }`}
+                  style={{
+                    color: selectedLanguages.includes(lang)
+                      ? "#FEB4C5"
+                      : "#535353",
+                    borderColor: selectedLanguages.includes(lang)
+                      ? "#FEB4C5"
+                      : "transparent",
+                  }}
+                >
+                  {lang}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Hourly Rate */}
+          <div>
+            <label className="block mb-2 text-sm" style={{ color: "#535353" }}>
+              Expected Hourly Rate (Optional)
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                value={hourlyRate}
+                onChange={(e) => setHourlyRate(e.target.value)}
+                placeholder="Enter amount in BDT"
+                className="w-full finance-card px-4 py-3 pl-12"
+                style={{ color: "#535353", outline: "none" }}
+              />
+              <DollarSign
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5"
+                style={{ color: "#848484" }}
+              />
+            </div>
+            <p className="text-xs mt-1" style={{ color: "#848484" }}>
+              This helps agencies find suitable matches
+            </p>
+          </div>
+        </div>
+
+        {/* Continue Button */}
+        <Button
+          onClick={handleContinue}
+          disabled={
+            selectedSkills.length === 0 ||
+            !experience ||
+            selectedLanguages.length === 0
+          }
+          className="w-full py-6 mt-6"
+          style={{
+            background:
+              selectedSkills.length === 0 ||
+              !experience ||
+              selectedLanguages.length === 0
+                ? "rgba(132, 132, 132, 0.3)"
+                : "radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FEB4C5 0%, #DB869A 100%)",
+            color: "white",
+            boxShadow:
+              selectedSkills.length === 0 ||
+              !experience ||
+              selectedLanguages.length === 0
+                ? "none"
+                : "0px 4px 18px rgba(240, 161, 180, 0.4)",
+            cursor:
+              selectedSkills.length === 0 ||
+              !experience ||
+              selectedLanguages.length === 0
+                ? "not-allowed"
+                : "pointer",
+          }}
+        >
+          Continue to Availability
+        </Button>
+      </div>
+    </>
   );
 }

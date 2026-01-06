@@ -3,7 +3,7 @@ import { Button } from "../ui/button";
 
 interface AgencyProfileProps {
   profile: {
-    companyName: string;
+    agencyName: string;
     logo?: string;
     rating: number;
     totalJobs: number;
@@ -37,12 +37,12 @@ export function AgencyProfile({ profile, onEdit }: AgencyProfileProps) {
           <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4"
             style={{ background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FFB3C1 0%, #FF8FA3 100%)' }}>
             {profile.logo ? (
-              <img src={profile.logo} alt={profile.companyName} className="w-full h-full object-cover rounded-full" />
+              <img src={profile.logo} alt={profile.agencyName} className="w-full h-full object-cover rounded-full" />
             ) : (
               <Building className="w-12 h-12 text-white" />
             )}
           </div>
-          <h2 className="mb-2" style={{ color: '#535353' }}>{profile.companyName}</h2>
+          <h2 className="mb-2" style={{ color: '#535353' }}>{profile.agencyName}</h2>
           <div className="flex items-center justify-center gap-2 mb-4">
             {[...Array(5)].map((_, i) => (
               <Star key={i} className="w-4 h-4 fill-current"

@@ -1,4 +1,4 @@
-import { Bell, CheckCircle, AlertCircle, Info, Clock, Trash2 } from "lucide-react";
+import { Bell, CheckCircle, AlertCircle, Info, Clock, Trash2, ArrowLeft } from "lucide-react";
 import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
 
@@ -12,7 +12,7 @@ interface Notification {
 }
 
 interface NotificationsProps {
-  onNavigate: (page: string) => void;
+  onNavigate?: (page: string) => void;
 }
 
 export function Notifications({ onNavigate }: NotificationsProps) {
@@ -89,8 +89,19 @@ export function Notifications({ onNavigate }: NotificationsProps) {
 
   return (
     <div className="min-h-screen bg-background pb-24">
+      {/* Back Button */}
+      <div className="px-6 pt-6">
+        <button
+          onClick={() => onNavigate?.('toc')}
+          className="w-10 h-10 rounded-full flex items-center justify-center mb-4"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+        >
+          <ArrowLeft className="w-5 h-5" style={{ color: '#535353' }} />
+        </button>
+      </div>
+
       {/* Header */}
-      <div className="px-6 pt-6 pb-4">
+      <div className="px-6 pb-4">
         <div className="flex items-center justify-between mb-2">
           <div>
             <h1 className="mb-1">Notifications</h1>

@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareNet Platform - Appearance Order Index</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #7f8c8d;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --bg-color: #f5f7fa;
+            --card-bg: #ffffff;
+            --border-color: #e1e8ed;
+            --hover-color: #ecf0f1;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--primary-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2rem;
+        }
+
+        .header p {
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px 12px 40px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--secondary-color);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid var(--border-color);
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--accent-color);
+            background: var(--hover-color);
+        }
+
+        .filter-btn.active {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--secondary-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .page-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .page-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px 25px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .page-item:hover {
+            background: var(--hover-color);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .page-number {
+            width: 50px;
+            height: 50px;
+            background: var(--accent-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+
+        .page-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .page-title-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .page-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .page-category {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .page-path {
+            font-size: 0.85rem;
+            color: var(--secondary-color);
+            font-family: 'Courier New', monospace;
+        }
+
+        .page-date {
+            font-size: 0.8rem;
+            color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .page-actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+        }
+
+        .nav-link {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: background 0.3s;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .search-box {
+                min-width: 100%;
+            }
+
+            .page-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .page-number {
+                width: 40px;
+                height: 40px;
+                font-size: 0.9rem;
+            }
+
+            .page-actions {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>CareNet Platform - Appearance Order Index</h1>
+            <p>All pages and routes listed in order of appearance (user journey/navigation flow)</p>
+            <div style="margin-top: 15px; font-size: 0.9rem; opacity: 0.95;">
+                <strong>Quick Links:</strong> 
+                <span style="margin-left: 10px;">👁️ View</span> - Opens page in browser | 
+                <span style="margin-left: 10px;">📄 Source</span> - Opens source file (tries VS Code if available) | 
+                <span style="margin-left: 10px;">🛠️ API</span> - Opens API route file |
+                <span style="margin-left: 10px;">📋</span> - Copy file path to clipboard
+            </div>
+            <div style="margin-top: 10px; font-size: 0.85rem; opacity: 0.9;">
+                <label style="display: inline-flex; align-items: center; gap: 8px;">
+                    Base URL: 
+                    <input type="text" id="baseUrlInput" value="http://localhost:3000" 
+                           style="padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.3); 
+                                  background: rgba(255,255,255,0.1); color: white; width: 200px;"
+                           placeholder="http://localhost:3000">
+                </label>
+            </div>
+            <a href="index.html" class="nav-link">← Back to Category Index</a>
+        </div>
+
+        <div class="controls">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="Search pages by title, path, or category...">
+            </div>
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="admin">Admin</button>
+                <button class="filter-btn" data-filter="agency">Agency</button>
+                <button class="filter-btn" data-filter="agency-manager">Agency Manager</button>
+                <button class="filter-btn" data-filter="caregiver">Caregiver</button>
+                <button class="filter-btn" data-filter="guardian">Guardian</button>
+                <button class="filter-btn" data-filter="moderator">Moderator</button>
+                <button class="filter-btn" data-filter="patient">Patient</button>
+                <button class="filter-btn" data-filter="shop">Shop</button>
+                <button class="filter-btn" data-filter="shop-manager">Shop Manager</button>
+                <button class="filter-btn" data-filter="marketplace">Marketplace</button>
+                <button class="filter-btn" data-filter="api">API</button>
+                <button class="filter-btn" data-filter="auth">Auth</button>
+                <button class="filter-btn" data-filter="others">Others</button>
+            </div>
+        </div>
+
+        <div class="summary-stats">
+            <div class="stat-card">
+                <div class="stat-number" id="total-pages">0</div>
+                <div class="stat-label">Total Files</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="pages-count">0</div>
+                <div class="stat-label">Pages</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="api-count">0</div>
+                <div class="stat-label">API Routes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="journey-stages">-</div>
+                <div class="stat-label">Journey Stages</div>
+            </div>
+        </div>
+
+        <div id="pages-container"></div>
+    </div>
+
+    <div class="footer">
+        <p>CareNet Platform Appearance Order Index • Last Updated: <span id="last-updated"></span></p>
+    </div>
+
+    <script src="appearance-data-embedded.js"></script>
+    <script>
+        // Load chronological data - use embedded data if available, otherwise fetch
+        let chronologicalData = [];
+        
+        // Check if embedded data is available
+        if (typeof APPEARANCE_DATA !== 'undefined') {
+            chronologicalData = APPEARANCE_DATA;
+            console.log('Using embedded appearance data:', chronologicalData.length, 'items');
+        }
+        
+        // Function to get base URL
+        function getBaseUrl() {
+            const input = document.getElementById('baseUrlInput');
+            return input ? input.value || 'http://localhost:3000' : 'http://localhost:3000';
+        }
+
+        // Function to update all view button URLs
+        function updateAllViewUrls() {
+            const baseUrl = getBaseUrl();
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                const path = btn.getAttribute('data-path');
+                if (path) {
+                    btn.href = `${baseUrl}${path}`;
+                }
+            });
+        }
+
+        // Function to render page item
+        function renderPageItem(page) {
+            const item = document.createElement('li');
+            item.className = 'page-item';
+            item.dataset.category = page.category;
+            item.dataset.title = page.title.toLowerCase();
+            item.dataset.path = page.path.toLowerCase();
+            item.dataset.date = page.date;
+
+            const number = document.createElement('div');
+            number.className = 'page-number';
+            number.textContent = page.index;
+
+            const info = document.createElement('div');
+            info.className = 'page-info';
+
+            const titleRow = document.createElement('div');
+            titleRow.className = 'page-title-row';
+
+            const title = document.createElement('div');
+            title.className = 'page-title';
+            title.textContent = page.title;
+
+            const category = document.createElement('span');
+            category.className = 'page-category';
+            category.textContent = page.category;
+
+            titleRow.appendChild(title);
+            titleRow.appendChild(category);
+
+            const path = document.createElement('div');
+            path.className = 'page-path';
+            path.textContent = page.path;
+
+            const order = document.createElement('div');
+            order.className = 'page-date';
+            order.innerHTML = `#${page.index} in user journey`;
+
+            info.appendChild(titleRow);
+            info.appendChild(path);
+            info.appendChild(order);
+
+            const actions = document.createElement('div');
+            actions.className = 'page-actions';
+
+            // View button (only for pages, not API routes)
+            if (!page.isApi) {
+                const viewBtn = document.createElement('a');
+                viewBtn.className = 'btn btn-primary view-btn';
+                viewBtn.setAttribute('data-path', page.path);
+                viewBtn.href = `${getBaseUrl()}${page.path}`;
+                viewBtn.textContent = '👁️ View';
+                viewBtn.target = '_blank';
+                viewBtn.title = `View page at ${page.path}`;
+                actions.appendChild(viewBtn);
+            }
+
+            // Source button
+            const sourceBtn = document.createElement('a');
+            sourceBtn.className = 'btn btn-secondary';
+            const fileExtension = page.isApi ? '/route.ts' : '/page.tsx';
+            const cleanPath = page.path === '/' ? '' : page.path;
+            const filePath = `src/app${cleanPath}${fileExtension}`;
+            
+            sourceBtn.href = filePath;
+            sourceBtn.textContent = page.isApi ? '🛠️ API' : '📄 Source';
+            sourceBtn.target = '_blank';
+            sourceBtn.title = `Open source file: ${filePath}`;
+            sourceBtn.setAttribute('data-file-path', filePath);
+            
+            // Add click handler for VS Code
+            sourceBtn.addEventListener('click', function(e) {
+                const filePath = this.getAttribute('data-file-path');
+                const currentUrl = window.location.href;
+                
+                if (currentUrl.startsWith('file://')) {
+                    const basePath = currentUrl.substring(0, currentUrl.lastIndexOf('/'));
+                    const fullPath = `${basePath}/${filePath}`;
+                    try {
+                        window.location.href = `vscode://file${fullPath.replace('file://', '')}`;
+                        e.preventDefault();
+                        return false;
+                    } catch(err) {}
+                } else {
+                    try {
+                        const absolutePath = window.location.pathname.replace(/\/[^/]*$/, '') + '/' + filePath;
+                        window.location.href = `vscode://file${absolutePath}`;
+                        e.preventDefault();
+                        return false;
+                    } catch(err) {}
+                }
+            });
+
+            actions.appendChild(sourceBtn);
+
+            // Copy button
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'btn btn-secondary';
+            copyBtn.textContent = '📋';
+            copyBtn.title = `Copy file path: ${filePath}`;
+            copyBtn.onclick = function(e) {
+                e.preventDefault();
+                navigator.clipboard.writeText(filePath).then(() => {
+                    const originalText = copyBtn.textContent;
+                    copyBtn.textContent = '✓';
+                    copyBtn.style.background = 'var(--success-color)';
+                    setTimeout(() => {
+                        copyBtn.textContent = originalText;
+                        copyBtn.style.background = '';
+                    }, 2000);
+                }).catch(err => {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = filePath;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        copyBtn.textContent = '✓';
+                        setTimeout(() => {
+                            copyBtn.textContent = '📋';
+                        }, 2000);
+                    } catch(err) {
+                        alert('Failed to copy. File path: ' + filePath);
+                    }
+                    document.body.removeChild(textArea);
+                });
+                return false;
+            };
+            actions.appendChild(copyBtn);
+
+            item.appendChild(number);
+            item.appendChild(info);
+            item.appendChild(actions);
+
+            return item;
+        }
+
+        // Function to render all pages
+        function renderPages(pages) {
+            const container = document.getElementById('pages-container');
+            const list = document.createElement('ul');
+            list.className = 'page-list';
+
+            pages.forEach(page => {
+                const item = renderPageItem(page);
+                list.appendChild(item);
+            });
+
+            container.innerHTML = '';
+            container.appendChild(list);
+        }
+
+        // Search functionality
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const allItems = document.querySelectorAll('.page-item');
+                allItems.forEach(item => {
+                    const title = item.dataset.title;
+                    const path = item.dataset.path;
+                    const category = item.dataset.category;
+                    if (title.includes(searchTerm) || path.includes(searchTerm) || category.includes(searchTerm)) {
+                        item.style.display = 'flex';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        // Filter functionality
+        function setupFilters() {
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            filterButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    const filter = btn.dataset.filter;
+                    const allItems = document.querySelectorAll('.page-item');
+                    allItems.forEach(item => {
+                        if (filter === 'all' || item.dataset.category === filter) {
+                            item.style.display = 'flex';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            });
+        }
+
+        // Update summary statistics
+        function updateSummary() {
+            const total = chronologicalData.length;
+            const pages = chronologicalData.filter(p => !p.isApi).length;
+            const apis = chronologicalData.filter(p => p.isApi).length;
+            
+            document.getElementById('total-pages').textContent = total;
+            document.getElementById('pages-count').textContent = pages;
+            document.getElementById('api-count').textContent = apis;
+            
+            if (chronologicalData.length > 0) {
+                // Count unique journey stages (by priority ranges)
+                const stages = new Set();
+                chronologicalData.forEach(page => {
+                    const stage = Math.floor(page.priority / 100) * 100;
+                    stages.add(stage);
+                });
+                document.getElementById('journey-stages').textContent = stages.size;
+            }
+        }
+
+        // Initialize
+        async function init() {
+            try {
+                // If embedded data is not available, try to fetch it
+                if (chronologicalData.length === 0) {
+                    console.log('Embedded data not found, fetching appearance-data.json...');
+                    // Try multiple paths to find the JSON file
+                    let response;
+                    const possiblePaths = [
+                        'appearance-data.json',
+                        './appearance-data.json',
+                        '/appearance-data.json',
+                        window.location.pathname.replace(/\/[^/]*$/, '') + '/appearance-data.json'
+                    ];
+                    
+                    let lastError;
+                    for (const path of possiblePaths) {
+                        try {
+                            console.log('Trying path:', path);
+                            response = await fetch(path, {
+                                cache: 'no-cache',
+                                method: 'GET',
+                                headers: {
+                                    'Accept': 'application/json'
+                                }
+                            });
+                            if (response.ok) {
+                                console.log('Success with path:', path);
+                                break;
+                            }
+                        } catch (error) {
+                            console.log('Failed with path:', path, error.message);
+                            lastError = error;
+                            continue;
+                        }
+                    }
+                    
+                    if (!response || !response.ok) {
+                        throw new Error(`Failed to fetch appearance-data.json. Tried paths: ${possiblePaths.join(', ')}. Last error: ${lastError?.message || 'Unknown'}`);
+                    }
+                    console.log('Response status:', response.status, response.statusText);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status} ${response.statusText}`);
+                    }
+                    const data = await response.json();
+                    console.log('Data loaded:', data.length, 'items');
+                    if (!Array.isArray(data)) {
+                        throw new Error('Data is not an array');
+                    }
+                    chronologicalData = data;
+                }
+                
+                console.log('Rendering pages...');
+                renderPages(chronologicalData);
+                updateSummary();
+                setupSearch();
+                setupFilters();
+                
+                // Set up base URL input listener
+                const baseUrlInput = document.getElementById('baseUrlInput');
+                if (baseUrlInput) {
+                    baseUrlInput.addEventListener('input', updateAllViewUrls);
+                    baseUrlInput.addEventListener('change', updateAllViewUrls);
+                }
+
+                // Set last updated date
+                const now = new Date();
+                document.getElementById('last-updated').textContent = now.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (error) {
+                console.error('Error loading appearance data:', error);
+                console.error('Error details:', error.message, error.stack);
+                const errorMsg = document.createElement('div');
+                errorMsg.style.cssText = 'text-align: center; padding: 40px; color: var(--danger-color);';
+                errorMsg.innerHTML = `
+                    <h3>Error loading data</h3>
+                    <p>${error.message}</p>
+                    <p>Please ensure appearance-data.json exists in the same directory.</p>
+                    <p>Run: <code>node generate-appearance-index.js</code></p>
+                    <p style="margin-top: 20px; font-size: 0.9rem; color: var(--secondary-color);">
+                        Attempted to fetch: appearance-data.json from ${window.location.href}
+                    </p>
+                `;
+                document.getElementById('pages-container').appendChild(errorMsg);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>
+

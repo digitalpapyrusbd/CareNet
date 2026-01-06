@@ -75,8 +75,8 @@ export class AgenciesService {
 
     if (search) {
       where.OR = [
-        { agency_name: { contains: search, mode: 'insensitive' } },
-        { contact_person: { contains: search, mode: 'insensitive' } },
+        { agency_name: { contains: search } },
+        { contact_person: { contains: search } },
       ];
     }
 

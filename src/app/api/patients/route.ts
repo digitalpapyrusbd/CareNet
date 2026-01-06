@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     
     // Guardians can only see their own patients
     if (user.role === UserRole.GUARDIAN) {
-      where.guardianId = user.id;
+      where.guardian_id = user.id;
     }
     
     if (search) {
@@ -71,20 +71,12 @@ export async function GET(request: NextRequest) {
         skip,
         take: limit,
         include: {
-          guardian: {
+          users: {
             select: {
               id: true,
               name: true,
               phone: true,
               email: true,
-            },
-          },
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              phone: true,
             },
           },
           _count: {
@@ -94,7 +86,7 @@ export async function GET(request: NextRequest) {
             },
           },
         },
-        orderBy: { created_at: 'desc' },
+        orderBy: { createdAt: 'desc' },
       }),
       prisma.patients.count({ where }),
     ]);
@@ -201,7 +193,7 @@ export async function POST(request: NextRequest) {
             email: true,
           },
         },
-        user: {
+        users: {
           select: {
             id: true,
             name: true,

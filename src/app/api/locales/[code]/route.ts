@@ -10,7 +10,8 @@ export async function GET(
   { params }: { params: Promise<{ code: string }> }
 ) {
   try {
-    const code = params.code.toLowerCase();
+    const { code: codeParam } = await params;
+    const code = codeParam.toLowerCase();
     const filePath = join(LOCALES_DIR, `${code}.json`);
 
     if (!existsSync(filePath)) {

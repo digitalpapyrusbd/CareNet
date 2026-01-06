@@ -1,26 +1,69 @@
-// Service Worker for Caregiver Platform PWA
-const CACHE_NAME = 'caregiver-v1';
-const API_CACHE_NAME = 'caregiver-api-v1';
-const OFFLINE_URL = '/offline';
+// Service Worker for CareNet PWA
 
-// Static assets to cache on install
-const STATIC_ASSETS = [
+const CACHE_NAME = 'carenet-v1';
+const urlsToCache = [
   '/',
-  '/offline',
-  '/icon-192.png',
-  '/icon-512.png',
   '/manifest.json',
+  '/icons/icon-72.png',
+  '/icons/icon-96.png',
+  '/icons/icon-128.png',
+  '/icons/icon-144.png',
+  '/icons/icon-152.png',
+  '/icons/icon-192.png',
+  '/icons/icon-384.png',
+  '/icons/icon-512.png',
+  '/icons/icon-maskable.png',
+  '/icons/check-in.png',
+  '/icons/jobs.png',
+  '/screenshots/mobile-home.png',
+  '/screenshots/desktop-home.png'
 ];
 
-// Install event - cache static assets
+// Install event - cache resources
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW] Caching static assets');
-      return cache.addAll(STATIC_ASSETS);
-    })
+    caches.open(CACHE_NAME)
+      .then((cache) => {
+        return cache.addAll(urlsToCache);
+      })
   );
-  self.skipWaiting();
+});
+
+// Fetch event - serve cached content when offline
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request)
+      .then((response) => {
+        // Return cached version or fetch from network
+        if (response) {
+          return response;
+        }
+        return fetch(event.request).then(
+          (response) => {
+            // Check if we received a valid response
+            if (!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
+
+            // Clone the response
+            const responseToCache = response.clone();
+
+            caches.open(CACHE_NAME)
+              .then((cache) => {
+                cache.put(event.request, responseToCache);
+              });
+
+            return response;
+          }
+        );
+      }
+      ).catch(() => {
+        // Return offline fallback for navigation requests
+        if (event.request.mode === 'navigate') {
+          return caches.match('/');
+        }
+      })
+  );
 });
 
 // Activate event - clean up old caches
@@ -29,203 +72,100 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME && cacheName !== API_CACHE_NAME) {
-            console.log('[SW] Deleting old cache:', cacheName);
+          if (cacheName !== CACHE_NAME) {
             return caches.delete(cacheName);
           }
         })
       );
     })
   );
-  self.clients.claim();
 });
 
-// Fetch event - network first, then cache, with offline fallback
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
-
-  // Skip non-GET requests
-  if (request.method !== 'GET') {
-    return;
-  }
-
-  // API requests - network first with 5-minute cache
-  if (url.pathname.startsWith('/api/')) {
-    event.respondWith(
-      caches.open(API_CACHE_NAME).then((cache) => {
-        return fetch(request)
-          .then((response) => {
-            // Cache successful responses for 5 minutes
-            if (response.ok) {
-              const clonedResponse = response.clone();
-              cache.put(request, clonedResponse);
-            }
-            return response;
-          })
-          .catch(() => {
-            // Network failed, try cache
-            return cache.match(request).then((cached) => {
-              if (cached) {
-                console.log('[SW] Serving cached API response:', url.pathname);
-                return cached;
-              }
-              // No cache, return offline response
-              return new Response(
-                JSON.stringify({ error: 'Offline', offline: true }),
-                {
-                  status: 503,
-                  headers: { 'Content-Type': 'application/json' },
-                }
-              );
-            });
-          });
-      })
-    );
-    return;
-  }
-
-  // Static assets - cache first
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) {
-        return cached;
-      }
-
-      return fetch(request)
-        .then((response) => {
-          // Cache successful responses
-          if (response.ok && url.origin === location.origin) {
-            const clonedResponse = response.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, clonedResponse);
-            });
-          }
-          return response;
-        })
-        .catch(() => {
-          // Show offline page for navigation requests
-          if (request.mode === 'navigate') {
-            return caches.match(OFFLINE_URL);
-          }
-          return new Response('Offline', { status: 503 });
-        });
-    })
-  );
-});
-
-// Background sync for care logs
+// Background sync for offline actions
 self.addEventListener('sync', (event) => {
-  if (event.tag === 'sync-care-logs') {
-    event.waitUntil(syncCareLogs());
+  if (event.tag === 'background-sync') {
+    event.waitUntil(syncOfflineActions());
   }
 });
 
-async function syncCareLogs() {
+async function syncOfflineActions() {
   try {
-    // Get pending care logs from IndexedDB
-    const db = await openDB();
-    const pendingLogs = await getPendingLogs(db);
-
-    for (const log of pendingLogs) {
+    // Get queued actions from IndexedDB or localStorage
+    const queuedActions = await getQueuedActions();
+    
+    for (const action of queuedActions) {
       try {
-        const response = await fetch('/api/care-logs', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(log.data),
+        // Attempt to sync each action
+        await fetch(action.url, {
+          method: action.method,
+          headers: action.headers,
+          body: action.body
         });
-
-        if (response.ok) {
-          // Remove from pending queue
-          await removePendingLog(db, log.id);
-          console.log('[SW] Synced care log:', log.id);
-        }
+        
+        // Remove from queue on success
+        await removeQueuedAction(action.id);
       } catch (error) {
-        console.error('[SW] Failed to sync care log:', error);
+        console.error('Failed to sync action:', error);
       }
     }
   } catch (error) {
-    console.error('[SW] Background sync failed:', error);
+    console.error('Background sync failed:', error);
   }
 }
 
 // Push notification handler
 self.addEventListener('push', (event) => {
-  const data = event.data ? event.data.json() : {};
-  const title = data.title || 'Caregiver Platform';
   const options = {
-    body: data.body || 'New notification',
-    icon: '/icon-192.png',
-    badge: '/icon-72.png',
-    data: data.data || {},
-    vibrate: [200, 100, 200],
-    requireInteraction: data.requireInteraction || false,
+    body: event.data ? event.data.text() : 'You have a new notification',
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-72.png',
+    vibrate: [100, 50, 100],
+    data: {
+      dateOfArrival: Date.now(),
+      primaryKey: 1
+    },
+    actions: [
+      {
+        action: 'explore',
+        title: 'View',
+        icon: '/icons/check-in.png'
+      },
+      {
+        action: 'close',
+        title: 'Close',
+        icon: '/icons/close.png'
+      }
+    ]
   };
 
-  event.waitUntil(self.registration.showNotification(title, options));
+  event.waitUntil(
+    self.registration.showNotification('CareNet', options)
+  );
 });
 
 // Notification click handler
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
-  const urlToOpen = event.notification.data?.url || '/dashboard';
-
-  event.waitUntil(
-    clients
-      .matchAll({ type: 'window', includeUncontrolled: true })
-      .then((windowClients) => {
-        // Check if there's already a window open
-        for (const client of windowClients) {
-          if (client.url === urlToOpen && 'focus' in client) {
-            return client.focus();
-          }
-        }
-        // Open new window
-        if (clients.openWindow) {
-          return clients.openWindow(urlToOpen);
-        }
-      })
-  );
+  if (event.action === 'explore') {
+    event.waitUntil(
+      clients.openWindow('/')
+    );
+  } else {
+    event.waitUntil(
+      clients.openWindow('/')
+    );
+  }
 });
 
-// Helper functions for IndexedDB
-function openDB() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open('CaregiverDB', 1);
-
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-
-    request.onupgradeneeded = (event) => {
-      const db = event.target.result;
-      if (!db.objectStoreNames.contains('pendingLogs')) {
-        db.createObjectStore('pendingLogs', { keyPath: 'id', autoIncrement: true });
-      }
-    };
-  });
+// Helper functions for offline queue management
+async function getQueuedActions() {
+  // Implementation would use IndexedDB or localStorage
+  // This is a placeholder for the actual implementation
+  return [];
 }
 
-function getPendingLogs(db) {
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(['pendingLogs'], 'readonly');
-    const store = transaction.objectStore('pendingLogs');
-    const request = store.getAll();
-
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-  });
-}
-
-function removePendingLog(db, id) {
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(['pendingLogs'], 'readwrite');
-    const store = transaction.objectStore('pendingLogs');
-    const request = store.delete(id);
-
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve();
-  });
+async function removeQueuedAction(id) {
+  // Implementation would remove from IndexedDB or localStorage
+  // This is a placeholder for the actual implementation
 }

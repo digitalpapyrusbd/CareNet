@@ -37,10 +37,12 @@ export async function POST(request: NextRequest) {
 
     // Initialize bKash gateway
     const bkashGateway = new BkashPaymentGateway({
-      apiKey: process.env.BKASH_API_KEY || '',
+      appKey: process.env.BKASH_API_KEY || '',
+      appSecret: process.env.BKASH_API_SECRET || '',
       username: process.env.BKASH_USERNAME || '',
       password: process.env.BKASH_PASSWORD || '',
-      isProduction: process.env.NODE_ENV === 'production',
+      sandbox: process.env.NODE_ENV !== 'production',
+      baseUrl: process.env.BKASH_BASE_URL || (process.env.NODE_ENV === 'production' ? 'https://tokenized.pay.bka.sh/v1.2.0-beta' : 'https://tokenized.sandbox.bka.sh/v1.2.0-beta'),
     });
 
     // Check if gateway is properly configured
@@ -58,10 +60,10 @@ export async function POST(request: NextRequest) {
         currency: validatedData.currency,
         method: 'BKASH',
         status: 'PENDING',
-        user_id: user.id,
+        userId: user.id,
         job_id: validatedData.jobId,
         transaction_id: '', // Will be filled after bKash response
-        gatewayResponse: null,
+        gatewayResponse: undefined,
         created_at: new Date(),
         updated_at: new Date(),
       },
@@ -93,7 +95,7 @@ export async function POST(request: NextRequest) {
       payment: {
         id: payment.id,
         amount: payment.amount,
-        currency: payment.currency,
+        currency: validatedData.currency,
         status: payment.status,
         transactionId: bkashPayment.paymentID,
         paymentURL,
@@ -141,10 +143,12 @@ export async function GET(request: NextRequest) {
 
     // Initialize bKash gateway
     const bkashGateway = new BkashPaymentGateway({
-      apiKey: process.env.BKASH_API_KEY || '',
+      appKey: process.env.BKASH_API_KEY || '',
+      appSecret: process.env.BKASH_API_SECRET || '',
       username: process.env.BKASH_USERNAME || '',
       password: process.env.BKASH_PASSWORD || '',
-      isProduction: process.env.NODE_ENV === 'production',
+      sandbox: process.env.NODE_ENV !== 'production',
+      baseUrl: process.env.BKASH_BASE_URL || (process.env.NODE_ENV === 'production' ? 'https://tokenized.pay.bka.sh/v1.2.0-beta' : 'https://tokenized.sandbox.bka.sh/v1.2.0-beta'),
     });
 
     // Query payment status from bKash
@@ -160,10 +164,9 @@ export async function GET(request: NextRequest) {
             email: true,
           },
         },
-        job: {
+        jobs: {
           select: {
             id: true,
-            title: true,
           },
         },
       },

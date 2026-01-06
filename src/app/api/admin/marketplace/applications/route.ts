@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
               title: true,
               location: true,
               offered_rate: true,
-              agencies: { select: { id: true, agency_name: true } },
+              companies: { select: { id: true, company_name: true } },
             },
           },
         },

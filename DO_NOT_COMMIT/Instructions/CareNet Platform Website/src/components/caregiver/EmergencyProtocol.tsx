@@ -1,24 +1,26 @@
-import { AlertTriangle, Phone, MapPin, FileText, Camera } from "lucide-react";
+import { AlertTriangle, Phone, MapPin, FileText, Camera, ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import { useState } from "react";
 
 interface EmergencyProtocolProps {
-  patientName: string;
-  guardianPhone: string;
-  location: string;
-  onCallEmergency: () => void;
-  onCallGuardian: () => void;
-  onSubmitReport: (data: any) => void;
+  patientName?: string;
+  guardianPhone?: string;
+  location?: string;
+  onCallEmergency?: () => void;
+  onCallGuardian?: () => void;
+  onSubmitReport?: (data: any) => void;
+  onNavigate?: (page: string) => void;
 }
 
 export function EmergencyProtocol({
-  patientName,
-  guardianPhone,
-  location,
+  patientName = "Patient",
+  guardianPhone = "+880 1712-345678",
+  location = "Dhaka",
   onCallEmergency,
   onCallGuardian,
-  onSubmitReport
+  onSubmitReport,
+  onNavigate
 }: EmergencyProtocolProps) {
   const [emergencyType, setEmergencyType] = useState("");
   const [description, setDescription] = useState("");
@@ -48,6 +50,15 @@ export function EmergencyProtocol({
   return (
     <div className="min-h-screen pb-6" style={{ background: 'linear-gradient(180deg, #FFE5E5 0%, #FFD5D5 100%)' }}>
       <div className="p-6">
+        {/* Back Button */}
+        <button
+          onClick={() => onNavigate?.('toc')}
+          className="w-10 h-10 rounded-full flex items-center justify-center mb-4"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+        >
+          <ArrowLeft className="w-5 h-5" style={{ color: '#535353' }} />
+        </button>
+
         {/* Emergency Header */}
         <div 
           className="p-6 rounded-2xl mb-6 text-center"

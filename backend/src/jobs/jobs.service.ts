@@ -34,7 +34,7 @@ export class JobsService {
         package_id: createJobDto.package_id,
         guardian_id: guardianId,
         patient_id: createJobDto.patient_id,
-        company_id: pkg.company_id,
+        agency_id: pkg.agency_id,
         start_date: new Date(createJobDto.start_date),
         end_date: createJobDto.end_date
           ? new Date(createJobDto.end_date)
@@ -65,10 +65,10 @@ export class JobsService {
       userRole === UserRole.AGENCY_ADMIN ||
       userRole === UserRole.AGENCY_MANAGER
     ) {
-      const company = await this.prisma.companies.findUnique({
+      const agency = await this.prisma.agencies.findUnique({
         where: { userId },
       });
-      if (company) where.company_id = company.id;
+      if (agency) where.agency_id = agency.id;
     } else if (userRole === UserRole.CAREGIVER) {
       const caregiver = await this.prisma.caregivers.findUnique({
         where: { userId },
@@ -115,12 +115,12 @@ export class JobsService {
       include: {
         packages: true,
         patients: true,
-        companies: true,
+        agencies: true,
         assignments: {
           include: {
             caregivers_assignments_caregiver_idTocaregivers: {
               include: {
-                users: { select: { name: true, phone: true } },
+                users: { select: { name: true, phone: true, id: true } },
               },
             },
           },
@@ -137,14 +137,14 @@ export class JobsService {
       userRole !== UserRole.SUPER_ADMIN &&
       userRole !== UserRole.PLATFORM_ADMIN
     ) {
-      const company = await this.prisma.companies.findUnique({
+      const agency = await this.prisma.agencies.findUnique({
         where: { userId },
       });
-      if (!company || company.id !== job.company_id) {
+      if (!agency || agency.id !== job.agency_id) {
         // Also allow caregiver assigned to this job
-        const isAssigned = job.assignments.some(
+        const isAssigned = job.assignments?.some(
           (a) =>
-            a.caregivers_assignments_caregiver_idTocaregivers?.userId ===
+            a.caregivers_assignments_caregiver_idTocaregivers?.users?.id ===
             userId,
         );
         if (!isAssigned) {
@@ -198,10 +198,10 @@ export class JobsService {
       throw new NotFoundException('Job not found');
     }
 
-    const company = await this.prisma.companies.findUnique({
+    const agency = await this.prisma.agencies.findUnique({
       where: { userId },
     });
-    if (!company || company.id !== job.company_id) {
+    if (!agency || agency.id !== job.agency_id) {
       throw new ForbiddenException('Only the agency can assign caregivers');
     }
 

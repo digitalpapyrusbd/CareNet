@@ -49,7 +49,7 @@ export async function GET(
       case UserRole.COMPANY:
         // Companies can see disputes for their jobs
         const company = await prisma.companies.findUnique({
-          where: { user_id: user.id },
+          where: { userId: user.id },
         });
         
         if (company) {
@@ -64,7 +64,7 @@ export async function GET(
     const dispute = await prisma.disputes.findFirst({
       where,
       include: {
-        raisedByUser: {
+        users_disputes_raised_byTousers: {
           select: {
             id: true,
             name: true,
@@ -72,7 +72,7 @@ export async function GET(
             role: true,
           },
         },
-        againstUser: {
+        users_disputes_againstTousers: {
           select: {
             id: true,
             name: true,
@@ -80,36 +80,29 @@ export async function GET(
             role: true,
           },
         },
-        assignedModerator: {
+        jobs: {
           select: {
             id: true,
-            name: true,
-            phone: true,
-          },
-        },
-        job: {
-          select: {
-            id: true,
-            patient: {
+            patients: {
               select: {
                 id: true,
                 name: true,
               },
             },
-            company: {
+            companies: {
               select: {
                 id: true,
                 company_name: true,
               },
             },
-            package: {
+            packages: {
               select: {
                 id: true,
                 name: true,
               },
             },
-            startDate: true,
-            endDate: true,
+            start_date: true,
+            end_date: true,
           },
         },
       },
@@ -189,7 +182,7 @@ export async function POST(
           status: 'UNDER_REVIEW',
         },
         include: {
-          raisedByUser: {
+          users_disputes_raised_byTousers: {
             select: {
               id: true,
               name: true,
@@ -197,7 +190,7 @@ export async function POST(
               role: true,
             },
           },
-          againstUser: {
+          users_disputes_againstTousers: {
             select: {
               id: true,
               name: true,
@@ -205,36 +198,29 @@ export async function POST(
               role: true,
             },
           },
-          assignedModerator: {
+          jobs: {
             select: {
               id: true,
-              name: true,
-              phone: true,
-            },
-          },
-          job: {
-            select: {
-              id: true,
-              patient: {
+              patients: {
                 select: {
                   id: true,
                   name: true,
                 },
               },
-              company: {
+              companies: {
                 select: {
                   id: true,
                   company_name: true,
                 },
               },
-              package: {
+              packages: {
                 select: {
                   id: true,
                   name: true,
                 },
               },
-              startDate: true,
-              endDate: true,
+              start_date: true,
+              end_date: true,
             },
           },
         },
@@ -251,8 +237,8 @@ export async function POST(
           changes: {
             assigned_moderator: validatedData.moderatorId,
           },
-          ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
-          userAgent: request.headers.get('user-agent') || 'unknown',
+          ip_address: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
+          user_agent: request.headers.get('user-agent') || 'unknown',
           timestamp: new Date(),
         },
       });
@@ -287,10 +273,10 @@ export async function POST(
           status: 'RESOLVED',
           resolution: validatedData.resolution,
           resolution_action: validatedData.resolutionAction,
-          resolvedAt: new Date(),
+          resolved_at: new Date(),
         },
         include: {
-          raisedByUser: {
+          users_disputes_raised_byTousers: {
             select: {
               id: true,
               name: true,
@@ -298,7 +284,7 @@ export async function POST(
               role: true,
             },
           },
-          againstUser: {
+          users_disputes_againstTousers: {
             select: {
               id: true,
               name: true,
@@ -306,36 +292,29 @@ export async function POST(
               role: true,
             },
           },
-          assignedModerator: {
+          jobs: {
             select: {
               id: true,
-              name: true,
-              phone: true,
-            },
-          },
-          job: {
-            select: {
-              id: true,
-              patient: {
+              patients: {
                 select: {
                   id: true,
                   name: true,
                 },
               },
-              company: {
+              companies: {
                 select: {
                   id: true,
                   company_name: true,
                 },
               },
-              package: {
+              packages: {
                 select: {
                   id: true,
                   name: true,
                 },
               },
-              startDate: true,
-              endDate: true,
+              start_date: true,
+              end_date: true,
             },
           },
         },
@@ -353,8 +332,8 @@ export async function POST(
             resolution: validatedData.resolution,
             resolution_action: validatedData.resolutionAction,
           },
-          ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
-          userAgent: request.headers.get('user-agent') || 'unknown',
+          ip_address: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
+          user_agent: request.headers.get('user-agent') || 'unknown',
           timestamp: new Date(),
         },
       });

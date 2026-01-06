@@ -17,10 +17,10 @@ export interface User {
   updatedAt: Date;
 }
 
-export interface Company {
+export interface Agency {
   id: string;
   userId: string;
-  companyName: string;
+  agencyName: string;
   tradeLicense: string;
   tradeLicenseUrl?: string;
   tin?: string;
@@ -48,7 +48,7 @@ export interface Company {
 export interface Caregiver {
   id: string;
   userId: string;
-  companyId?: string;
+  agencyId?: string;
   nid: string;
   nidUrl: string;
   photoUrl: string;
@@ -101,7 +101,7 @@ export interface Patient {
 // Job-related types
 export interface Package {
   id: string;
-  companyId: string;
+  agencyId: string;
   name: string;
   description: string;
   category: string;
@@ -121,7 +121,7 @@ export interface Job {
   id: string;
   packageId: string;
   patientId: string;
-  companyId: string;
+  agencyId: string;
   guardianId: string;
   startDate: Date;
   endDate: Date;
@@ -155,7 +155,7 @@ export interface Assignment {
 
 export interface MarketplaceJob {
   id: string;
-  companyId: string;
+  agencyId: string;
   title: string;
   description: string;
   location: string;
@@ -249,7 +249,7 @@ export interface Feedback {
   tags?: any;
   comments?: string;
   isPublic: boolean;
-  companyResponse?: string;
+  agencyResponse?: string;
   respondedAt?: Date;
   flaggedInappropriate: boolean;
   createdAt: Date;
@@ -305,7 +305,7 @@ export interface Dispute {
 
 export interface ServiceZone {
   id: string;
-  companyId: string;
+  agencyId: string;
   zoneName: string;
   regionCode: string;
   boundaryGeojson?: any;

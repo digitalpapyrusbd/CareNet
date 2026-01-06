@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     switch (user.role) {
       case UserRole.GUARDIAN:
         // Guardians can only see their own jobs
-        where.guardianId = user.id;
+        where.guardian_id = user.id;
         break;
         
       case UserRole.CAREGIVER:
@@ -46,13 +46,13 @@ export async function GET(request: NextRequest) {
         
       case UserRole.COMPANY:
         // Companies can see their own jobs
-        const company = await prisma.companies.findUnique({
-          where: { user_id: user.id },
-        });
-        
-        if (company) {
-          where.companyId = company.id;
-        }
+const agency = await prisma.agencies.findUnique({
+      where: { userId: user.id },
+    });
+    
+    if (agency) {
+      where.agencyId = agency.id;
+    }
         break;
     }
     
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
     if (search) {
       where.OR = [
         { patient: { name: { contains: search, mode: 'insensitive' } } },
-        { specialInstructions: { contains: search, mode: 'insensitive' } },
+        { special_instructions: { contains: search, mode: 'insensitive' } },
       ];
     }
 
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
               primaryConditions: true,
             },
           },
-          guardian: {
+          users: {
             select: {
               id: true,
               name: true,
@@ -90,14 +90,14 @@ export async function GET(request: NextRequest) {
               email: true,
             },
           },
-          company: {
+          companies: {
             select: {
               id: true,
-              company_name: true,
+              agency_name: true,
               is_verified: true,
             },
           },
-          package: {
+          packages: {
             select: {
               id: true,
               name: true,
@@ -108,18 +108,18 @@ export async function GET(request: NextRequest) {
             },
           },
           assignments: {
-            include: { caregivers: {
+            include: { caregivers_assignments_caregiver_idTocaregivers: {
                 select: {
                   id: true,
-                  user: {
+                  users: {
                     select: {
                       id: true,
                       name: true,
                       phone: true,
                     },
                   },
-                  photoUrl: true,
-                  ratingAvg: true,
+                  photo_url: true,
+                  rating_avg: true,
                 },
               },
             },
@@ -178,14 +178,14 @@ export async function POST(request: NextRequest) {
     const {
       packageId,
       patientId,
-      companyId,
+      agencyId,
       startDate,
-      endDate,
+        end_date: endDate,
       specialInstructions,
     } = body;
 
     // Validate required fields
-    if (!packageId || !patientId || !companyId || !startDate || !endDate) {
+    if (!packageId || !patientId || !agencyId || !startDate || !endDate) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -217,43 +217,44 @@ export async function POST(request: NextRequest) {
     }
 
     // Guardians can only create jobs for their own patients
-    if (user.role === UserRole.GUARDIAN && patient.guardianId !== user.id) {
+    if (user.role === UserRole.GUARDIAN && patient.guardian_id !== user.id) {
       return NextResponse.json(
         { error: 'Access denied' },
         { status: 403 }
       );
     }
 
-    // Verify company exists
-    const company = await prisma.companies.findUnique({
-      where: { id: companyId },
+    // Verify agency exists
+    const agency = await prisma.agencies.findUnique({
+      where: { id: agencyId },
     });
 
-    if (!company) {
+    if (!agency) {
       return NextResponse.json(
-        { error: 'Invalid company ID' },
+        { error: 'Invalid agency ID' },
         { status: 400 }
       );
     }
 
     // Calculate pricing
-    const totalPrice = packageData.price;
-    const commissionAmount = (totalPrice * company.commissionRate) / 100;
+    const totalPrice = parseFloat(packageData.price.toString());
+    const commissionRate = parseFloat(agency.commission_rate.toString());
+    const commissionAmount = (totalPrice * commissionRate) / 100;
     const payoutAmount = totalPrice - commissionAmount;
 
     // Create job
     const job = await prisma.jobs.create({
       data: {
-        packageId,
-        patientId,
-        companyId,
+        package_id: packageId,
+        patient_id: patientId,
+        agency_id: agencyId,
         guardian_id: user.id,
         start_date: new Date(startDate),
-        endDate: new Date(endDate),
-        totalPrice,
-        commissionAmount,
-        payoutAmount,
-        specialInstructions,
+        end_date: new Date(endDate),
+        total_price: totalPrice,
+        commission_amount: commissionAmount,
+        payout_amount: payoutAmount,
+        special_instructions: specialInstructions,
         status: 'PENDING_ASSIGNMENT',
       },
       include: { patients: {
@@ -264,7 +265,7 @@ export async function POST(request: NextRequest) {
             gender: true,
           },
         },
-        guardian: {
+        users: {
           select: {
             id: true,
             name: true,
@@ -272,14 +273,14 @@ export async function POST(request: NextRequest) {
             email: true,
           },
         },
-        company: {
+        companies: {
           select: {
             id: true,
-            company_name: true,
+            agency_name: true,
             is_verified: true,
           },
         },
-        package: {
+        packages: {
           select: {
             id: true,
             name: true,

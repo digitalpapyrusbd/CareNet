@@ -75,11 +75,8 @@ export async function GET(request: NextRequest) {
   try {
     // Verify admin authentication
     const authResult = await authenticate(request);
-    if (!authResult.success) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+    if (authResult) {
+      return authResult;
     }
 
     const { searchParams } = new URL(request.url);

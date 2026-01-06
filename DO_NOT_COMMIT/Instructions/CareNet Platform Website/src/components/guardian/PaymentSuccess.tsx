@@ -1,30 +1,41 @@
-import { CheckCircle, Download, Home, Receipt } from "lucide-react";
+import { CheckCircle, Download, Home, Receipt, ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 
 interface PaymentSuccessProps {
-  transactionId: string;
-  amount: number;
-  invoiceNumber: string;
-  paymentMethod: string;
-  packageName: string;
-  onDownloadReceipt: () => void;
-  onGoHome: () => void;
-  onViewInvoice: () => void;
+  transactionId?: string;
+  amount?: number;
+  invoiceNumber?: string;
+  paymentMethod?: string;
+  packageName?: string;
+  onDownloadReceipt?: () => void;
+  onGoHome?: () => void;
+  onViewInvoice?: () => void;
+  onNavigate?: (page: string) => void;
 }
 
 export function PaymentSuccess({
-  transactionId,
-  amount,
-  invoiceNumber,
-  paymentMethod,
-  packageName,
+  transactionId = "TXN123456789",
+  amount = 45000,
+  invoiceNumber = "INV-001",
+  paymentMethod = "bKash",
+  packageName = "Post-Surgery Care",
   onDownloadReceipt,
   onGoHome,
-  onViewInvoice
+  onViewInvoice,
+  onNavigate
 }: PaymentSuccessProps) {
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
       <div className="w-full max-w-md">
+        {/* Back Button */}
+        <button
+          onClick={() => onGoHome?.() || onNavigate?.('toc')}
+          className="w-10 h-10 rounded-full flex items-center justify-center mb-4"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+        >
+          <ArrowLeft className="w-5 h-5" style={{ color: '#535353' }} />
+        </button>
+
         {/* Success Animation */}
         <div className="text-center mb-8">
           <div 

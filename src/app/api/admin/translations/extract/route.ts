@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     }
 
     // #region agent log
-    await fetch('http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api/admin/translations/extract/route.ts:32',message:'User authenticated',data:{user_id:user.id,userRole:user.role},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'M'})}).catch(()=>{});
+    await fetch('http://127.0.0.1:7242/ingest/b1fa42f1-6cf1-4fba-89a5-28a421cba99c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api/admin/translations/extract/route.ts:32',message:'User authenticated',data:{userId:user.id,userRole:user.role},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'M'})}).catch(()=>{});
     // #endregion
 
     // STRICT ROLE CHECK: Only SUPER_ADMIN can extract translations

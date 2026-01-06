@@ -10,8 +10,8 @@ let databaseUrl: string;
 try {
   databaseUrl = env('DATABASE_URL');
 } catch (error) {
-  // During build, DATABASE_URL is not required for prisma generate
-  databaseUrl = 'postgresql://placeholder@localhost:5432/placeholder';
+  // Default to SQLite for development if DATABASE_URL is not set
+  databaseUrl = 'file:./prisma/dev.db';
 }
 
 export default defineConfig({

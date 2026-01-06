@@ -11,7 +11,6 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 
 // Phase 2: Business Entities
-import { CompaniesModule } from './companies/companies.module';
 import { CaregiversModule } from './caregivers/caregivers.module';
 import { PatientsModule } from './patients/patients.module';
 import { PackagesModule } from './packages/packages.module';
@@ -66,8 +65,7 @@ import { ServiceZonesModule } from './service-zones/service-zones.module';
     AuthModule,
     UsersModule,
 
-    // Phase 2: Business Entities (4 modules)
-    CompaniesModule,
+    // Phase 2: Business Entities (3 modules)
     CaregiversModule,
     PatientsModule,
     PackagesModule,

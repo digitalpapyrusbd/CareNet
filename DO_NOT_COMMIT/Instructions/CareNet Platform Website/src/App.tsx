@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Home, Sparkles, MessageSquare, User } from "lucide-react";
+import { Home, Sparkles, MessageSquare, User, Menu } from "lucide-react";
 import { Login } from "./components/auth/Login";
 import { RoleSelection } from "./components/auth/RoleSelection";
 import { GuardianDashboard } from "./components/guardian/GuardianDashboard";
@@ -12,6 +12,8 @@ import { ChatBox } from "./components/global/ChatBox";
 import { ProfileMenu } from "./components/global/ProfileMenu";
 import { Toaster } from "./components/ui/sonner";
 import { Theme } from "./components/global/ThemeSelector";
+import TableOfContents from "./components/navigation/TableOfContents";
+import PageRouter from "./components/navigation/PageRouter";
 
 // New page imports
 import { MyPatients } from "./components/guardian/MyPatients";
@@ -43,13 +45,14 @@ const themeClasses: Record<Theme, string> = {
 
 export default function App() {
   const [userRole, setUserRole] = useState<UserRole>(null);
-  const [currentPage, setCurrentPage] = useState<Page>("login");
+  const [currentPage, setCurrentPage] = useState<Page>("toc"); // Start with TOC
   const [userName, setUserName] = useState("");
   const [selectedPatientId, setSelectedPatientId] = useState<number | null>(null);
   const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
   const [showAISearch, setShowAISearch] = useState(false);
   const [showChatBox, setShowChatBox] = useState(false);
   const [currentTheme, setCurrentTheme] = useState<Theme>("light-default");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Check for saved session on mount
   useEffect(() => {
@@ -60,7 +63,8 @@ export default function App() {
     if (savedRole && savedName) {
       setUserRole(savedRole);
       setUserName(savedName);
-      setCurrentPage(savedRole === "guardian" ? "guardian-home" : "caregiver-home");
+      // Always load TOC as default page
+      setCurrentPage("toc");
     }
     
     if (savedTheme) {
@@ -81,33 +85,33 @@ export default function App() {
   }, [currentTheme]);
 
   const handleLogin = (phone: string, password: string) => {
-    if (phone && password.length >= 6) {
-      let role: UserRole;
-      let name: string;
-      
-      if (phone.includes("17")) {
-        role = "guardian";
-        name = "Mr. Karim";
-      } else if (phone.includes("18")) {
-        role = "caregiver";
-        name = "Fatima Khan";
-      } else {
-        role = "guardian";
-        name = "Demo User";
-      }
-      
-      setUserRole(role);
-      setUserName(name);
-      
-      localStorage.setItem("userRole", role);
-      localStorage.setItem("userName", name);
-      
-      setCurrentPage(role === "guardian" ? "guardian-home" : "caregiver-home");
-    }
+    // Auto-login without validation - accept any credentials
+    setIsAuthenticated(true);
+    setCurrentPage("role-selection");
   };
 
   const handleRegister = (role: string) => {
-    setCurrentPage("register");
+    // Auto-set the role and proceed directly
+    const roleMap: { [key: string]: UserRole } = {
+      'guardian': 'guardian',
+      'caregiver': 'caregiver',
+      'agency': 'agency',
+      'patient': 'patient'
+    };
+    
+    const selectedRole = roleMap[role] || 'guardian';
+    const defaultNames = {
+      'guardian': 'Guardian User',
+      'caregiver': 'Caregiver User',
+      'agency': 'Agency Admin',
+      'patient': 'Patient User'
+    };
+    
+    setUserRole(selectedRole);
+    setUserName(defaultNames[role] || 'User');
+    setCurrentPage('toc');
+    localStorage.setItem('userRole', selectedRole);
+    localStorage.setItem('userName', defaultNames[role] || 'User');
   };
 
   const handleLogout = () => {
@@ -122,9 +126,18 @@ export default function App() {
     setCurrentPage(page);
   };
 
+  const handleCreatePage = (page: Page) => {
+    setCurrentPage(page);
+  };
+
   // Navigation items - simplified to 4 items
   const getNavItems = () => {
     return [
+      { 
+        icon: Menu, 
+        label: "TOC", 
+        page: "toc" as Page
+      },
       { 
         icon: Home, 
         label: "Home", 
@@ -152,80 +165,18 @@ export default function App() {
   };
 
   const renderPage = () => {
-    // Check for detail pages (patient-detail-1, job-detail-2, etc.)
-    if (currentPage.startsWith("patient-detail-")) {
-      const patientId = parseInt(currentPage.replace("patient-detail-", ""));
-      return <PatientDetail patientId={patientId} onNavigate={handleNavigate} />;
-    }
-    
-    if (currentPage.startsWith("job-detail-")) {
-      const jobId = parseInt(currentPage.replace("job-detail-", ""));
-      return <JobDetail jobId={jobId} onNavigate={handleNavigate} />;
+    // Show Table of Contents if page is "toc"
+    if (currentPage === "toc") {
+      return <TableOfContents onNavigate={handleNavigate} />;
     }
 
-    switch (currentPage) {
-      case "login":
-        return <Login onLogin={handleLogin} onNavigateToRegister={() => setCurrentPage("register")} />;
-      
-      case "register":
-        return <RoleSelection onSelectRole={handleRegister} onBack={() => setCurrentPage("login")} />;
-      
-      case "guardian-home":
-        return <GuardianDashboard userName={userName} onNavigate={handleNavigate} />;
-      
-      case "caregiver-home":
-        return <CaregiverDashboard userName={userName} onNavigate={handleNavigate} />;
-      
-      case "packages":
-      case "guardian-shop":
-        return <BrowsePackages onNavigate={handleNavigate} />;
-      
-      case "guardian-profile":
-      case "caregiver-profile":
-        return (
-          <ProfileMenu
-            userName={userName}
-            userRole={userRole || "guardian"}
-            onNavigate={handleNavigate}
-            onLogout={handleLogout}
-          />
-        );
-      
-      case "guardian-patients":
-        return <MyPatients onNavigate={handleNavigate} />;
-      
-      case "guardian-jobs":
-        return <ActiveJobs onNavigate={handleNavigate} />;
-      
-      case "guardian-payments":
-      case "caregiver-jobs":
-        return <MyJobs onNavigate={handleNavigate} />;
-      
-      case "caregiver-checkin":
-        return <CheckIn onNavigate={handleNavigate} />;
-      
-      case "caregiver-earnings":
-        return <Earnings onNavigate={handleNavigate} />;
-      
-      case "caregiver-documents":
-      case "caregiver-reviews":
-      case "settings":
-        return (
-          <div className="flex items-center justify-center min-h-screen p-4">
-            <div className="text-center">
-              <h2 className="mb-4">
-                {currentPage.replace("-", " ").replace(/\b\w/g, l => l.toUpperCase())}
-              </h2>
-              <p className="text-muted-foreground mb-4">
-                This section is coming soon
-              </p>
-            </div>
-          </div>
-        );
-      
-      default:
-        return <Login onLogin={handleLogin} onNavigateToRegister={() => setCurrentPage("register")} />;
-    }
+    // Use PageRouter for all other pages
+    return <PageRouter 
+      currentPage={currentPage} 
+      onNavigate={handleNavigate} 
+      userRole={userRole || undefined}
+      userName={userName}
+    />;
   };
 
   if (!userRole) {

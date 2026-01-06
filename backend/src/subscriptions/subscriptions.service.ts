@@ -19,11 +19,11 @@ export class SubscriptionsService {
     return pricing[tier] || pricing[SubscriptionTier.STARTER];
   }
 
-  async create(companyId: string, createDto: CreateSubscriptionDto) {
-    const company = await this.prisma.companies.findUnique({
-      where: { id: companyId },
+  async create(agencyId: string, createDto: CreateSubscriptionDto) {
+    const agency = await this.prisma.agencies.findUnique({
+      where: { id: agencyId },
     });
-    if (!company) throw new NotFoundException('Company not found');
+    if (!agency) throw new NotFoundException('Agency not found');
 
     const pricing = this.getTierPricing(createDto.tier);
     const nextBillingDate = new Date();
@@ -31,7 +31,7 @@ export class SubscriptionsService {
 
     const subscription = await this.prisma.subscriptions.create({
       data: {
-        user_id: company.userId,
+        user_id: agency.userId,
         plan_type: 'MONTHLY',
         tier: createDto.tier,
         price: pricing.monthly,
@@ -45,15 +45,15 @@ export class SubscriptionsService {
     return subscription;
   }
 
-  async findByCompany(companyId: string) {
-    const company = await this.prisma.companies.findUnique({
-      where: { id: companyId },
+  async findByAgency(agencyId: string) {
+    const agency = await this.prisma.agencies.findUnique({
+      where: { id: agencyId },
     });
-    if (!company) throw new NotFoundException('Company not found');
+    if (!agency) throw new NotFoundException('Agency not found');
 
     // We search by user_id
     const subscription = await this.prisma.subscriptions.findFirst({
-      where: { user_id: company.userId, is_active: true },
+      where: { user_id: agency.userId, is_active: true },
     });
 
     if (!subscription) {
@@ -63,8 +63,8 @@ export class SubscriptionsService {
     return subscription;
   }
 
-  async upgrade(companyId: string, updateDto: UpdateSubscriptionDto) {
-    const subscription = await this.findByCompany(companyId);
+  async upgrade(agencyId: string, updateDto: UpdateSubscriptionDto) {
+    const subscription = await this.findByAgency(agencyId);
     const pricing = this.getTierPricing(updateDto.tier);
 
     const updated = await this.prisma.subscriptions.update({
@@ -78,8 +78,8 @@ export class SubscriptionsService {
     return updated;
   }
 
-  async cancel(companyId: string) {
-    const subscription = await this.findByCompany(companyId);
+  async cancel(agencyId: string) {
+    const subscription = await this.findByAgency(agencyId);
 
     await this.prisma.subscriptions.update({
       where: { id: subscription.id },

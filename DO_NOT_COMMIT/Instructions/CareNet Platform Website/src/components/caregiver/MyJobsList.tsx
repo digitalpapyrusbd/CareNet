@@ -1,13 +1,14 @@
-import { Search, Calendar, User, MapPin, Clock, CheckCircle } from "lucide-react";
+import { Search, Calendar, User, MapPin, Clock, CheckCircle, ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { useState } from "react";
 
 interface MyJobsListProps {
-  onSelectJob: (jobId: string) => void;
+  onSelectJob?: (jobId: string) => void;
+  onNavigate?: (page: string) => void;
 }
 
-export function MyJobsList({ onSelectJob }: MyJobsListProps) {
+export function MyJobsList({ onSelectJob, onNavigate }: MyJobsListProps) {
   const [activeTab, setActiveTab] = useState<'upcoming' | 'active' | 'completed'>('upcoming');
 
   const jobs = {
@@ -57,6 +58,15 @@ export function MyJobsList({ onSelectJob }: MyJobsListProps) {
   return (
     <div className="min-h-screen pb-6">
       <div className="p-6">
+        {/* Back Button */}
+        <button
+          onClick={() => onNavigate?.('toc')}
+          className="w-10 h-10 rounded-full flex items-center justify-center mb-4"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+        >
+          <ArrowLeft className="w-5 h-5" style={{ color: '#535353' }} />
+        </button>
+
         <h1 className="mb-6" style={{ color: '#535353' }}>My Jobs</h1>
 
         {/* Search */}

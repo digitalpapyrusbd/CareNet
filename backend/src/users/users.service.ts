@@ -118,7 +118,6 @@ export class UsersService {
         last_login_at: true,
         created_at: true,
         updated_at: true,
-        company_id: true,
       },
     });
 

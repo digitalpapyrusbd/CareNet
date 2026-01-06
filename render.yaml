@@ -1,0 +1,172 @@
+# Render Blueprint for Caregiver Platform
+# This file defines all services needed for production deployment
+
+services:
+  # Next.js Frontend Application
+  - type: web
+    name: caregiver-platform-frontend
+    env: node
+    region: singapore
+    plan: starter
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: caregiver-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: caregiver-redis
+          property: connectionString
+      - key: UPSTASH_REDIS_REST_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_TOKEN
+        sync: false
+      - key: NEXTAUTH_URL
+        sync: false # Set to your production URL
+      - key: NEXTAUTH_SECRET
+        generateValue: true
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 15m
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 7d
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: FROM_EMAIL
+        sync: false
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_PHONE_NUMBER
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: FIREBASE_SERVICE_ACCOUNT_JSON
+        sync: false
+      - key: BKASH_API_KEY
+        sync: false
+      - key: BKASH_APP_SECRET
+        sync: false
+      - key: BKASH_USERNAME
+        sync: false
+      - key: BKASH_PASSWORD
+        sync: false
+      - key: BKASH_BASE_URL
+        value: https://checkout.pay.bka.sh/v1.2.0-beta
+      - key: NAGAD_API_KEY
+        sync: false
+      - key: NAGAD_MERCHANT_ID
+        sync: false
+      - key: NAGAD_BASE_URL
+        value: https://api.mynagad.com
+      - key: NEXT_PUBLIC_APP_NAME
+        value: CaregiverBD
+      - key: NEXT_PUBLIC_APP_VERSION
+        value: 1.0.0
+      - key: NEXT_PUBLIC_API_URL
+        sync: false # Set to your API URL
+    healthCheckPath: /
+    autoDeploy: true
+
+  # Backend API Service (if separate)
+  - type: web
+    name: caregiver-backend
+    env: node
+    region: singapore
+    plan: starter
+    buildCommand: cd backend && npm install && npm run build
+    startCommand: cd backend && npm run start:prod
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: caregiver-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: caregiver-redis
+          property: connectionString
+      - key: UPSTASH_REDIS_URL
+        sync: false
+      - key: UPSTASH_REDIS_TOKEN
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 15m
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 7d
+      - key: FRONTEND_URL
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_PHONE_NUMBER
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: FIREBASE_SERVICE_ACCOUNT_JSON
+        sync: false
+    healthCheckPath: /health
+    autoDeploy: true
+
+databases:
+  # PostgreSQL Database
+  - name: caregiver-db
+    databaseName: caregiver_production
+    user: caregiver_user
+    region: singapore
+    plan: starter
+    ipAllowList: []
+
+  # Redis Cache (alternative to Upstash)
+  - name: caregiver-redis
+    plan: starter
+    region: singapore
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
+
+# Cron Jobs for scheduled tasks
+# - type: cron
+#   name: caregiver-daily-tasks
+#   env: node
+#   schedule: "0 0 * * *" # Daily at midnight
+#   buildCommand: npm install
+#   startCommand: npm run cron:daily
+#   envVars:
+#     - key: DATABASE_URL
+#       fromDatabase:
+#         name: caregiver-db
+#         property: connectionString
+
+# Notes:
+# 1. Replace 'sync: false' environment variables with actual values in Render Dashboard
+# 2. NEXTAUTH_URL should be set to your production domain (e.g., https://caregiver.com)
+# 3. NEXT_PUBLIC_API_URL should point to your backend service or API routes
+# 4. For security, generate strong secrets for JWT_SECRET and NEXTAUTH_SECRET
+# 5. Configure IP allowlist for databases if needed for additional security
+# 6. Upgrade plans (starter → standard → pro) based on traffic needs
+# 7. Consider adding a CDN service for static assets if needed
+# 8. Enable auto-scaling in production for high-traffic scenarios

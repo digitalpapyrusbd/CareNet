@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     // Companies can only see their own packages
     if (user.role === UserRole.COMPANY) {
       const company = await prisma.companies.findUnique({
-        where: { user_id: user.id },
+        where: { userId: user.id },
       });
       
       if (company) {
@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
     
     if (user.role === UserRole.COMPANY) {
       const company = await prisma.companies.findUnique({
-        where: { user_id: user.id },
+        where: { userId: user.id },
       });
       
       if (!company) {

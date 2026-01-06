@@ -43,6 +43,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Create payment record
+    if (!validatedData.jobId) {
+      return NextResponse.json(
+        { error: 'jobId is required' },
+        { status: 400 }
+      );
+    }
     const payment = await prisma.payments.create({
       data: {
         payer_id: user.id,
@@ -51,7 +57,7 @@ export async function POST(request: NextRequest) {
         method: validatedData.method,
         status: 'PENDING' as const,
         transaction_id: `TEMP_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        invoiceNumber: `INV_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        invoice_number: `INV_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       },
     });
 

@@ -1,15 +1,16 @@
-import { Star, Send, Heart } from "lucide-react";
+import { Star, MessageSquare, X, ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import { useState } from "react";
 
 interface RateCaregiverPatientProps {
-  caregiverName: string;
-  onSubmit: (data: any) => void;
-  onSkip: () => void;
+  caregiverName?: string;
+  onSubmit?: (rating: number, review: string) => void;
+  onSkip?: () => void;
+  onNavigate?: (page: string) => void;
 }
 
-export function RateCaregiverPatient({ caregiverName, onSubmit, onSkip }: RateCaregiverPatientProps) {
+export function RateCaregiverPatient({ caregiverName = "Rashida Begum", onSubmit, onSkip, onNavigate }: RateCaregiverPatientProps) {
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [feedback, setFeedback] = useState("");
@@ -20,12 +21,21 @@ export function RateCaregiverPatient({ caregiverName, onSubmit, onSkip }: RateCa
   ];
 
   const handleSubmit = () => {
-    onSubmit({ rating, feedback, qualities: selectedQualities });
+    onSubmit?.(rating, feedback);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
       <div className="w-full max-w-md">
+        {/* Back Button */}
+        <button
+          onClick={() => onNavigate?.('toc')}
+          className="w-10 h-10 rounded-full flex items-center justify-center mb-4"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+        >
+          <ArrowLeft className="w-5 h-5" style={{ color: '#535353' }} />
+        </button>
+
         {/* Header */}
         <div className="text-center mb-8">
           <div 
@@ -34,7 +44,7 @@ export function RateCaregiverPatient({ caregiverName, onSubmit, onSkip }: RateCa
               background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FFB3C1 0%, #FF8FA3 100%)'
             }}
           >
-            <Heart className="w-10 h-10 text-white" />
+            <X className="w-10 h-10 text-white" />
           </div>
           <h1 className="mb-2" style={{ color: '#535353' }}>Rate Your Caregiver</h1>
           <p style={{ color: '#848484' }}>How was {caregiverName}?</p>
@@ -138,7 +148,7 @@ export function RateCaregiverPatient({ caregiverName, onSubmit, onSkip }: RateCa
                 opacity: rating === 0 ? 0.5 : 1
               }}
             >
-              <Send className="w-4 h-4 mr-2" />
+              <MessageSquare className="w-4 h-4 mr-2" />
               Submit
             </Button>
           </div>

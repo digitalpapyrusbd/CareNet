@@ -1,189 +1,92 @@
-import { MapPin, Clock, CheckCircle, Camera, FileText, AlertCircle } from "lucide-react";
-import { Card } from "../ui/card";
-import { Badge } from "../ui/badge";
-import { useState } from "react";
+import { useState, useEffect } from 'react';
+import { MapPin, Loader2, CheckCircle } from 'lucide-react';
+import { Button } from '../ui/button';
 
 interface CheckInProps {
-  onNavigate: (page: string) => void;
+  onNavigate?: (page: string) => void;
 }
 
 export function CheckIn({ onNavigate }: CheckInProps) {
-  const [checkInComplete, setCheckInComplete] = useState(false);
-  const [notes, setNotes] = useState("");
+  const [status, setStatus] = useState<'verifying' | 'success' | 'mismatch'>('verifying');
 
-  const jobDetails = {
-    patientName: "Mrs. Rahman",
-    packageName: "Post-Surgery Care",
-    date: "Today",
-    time: "9:00 AM - 5:00 PM",
-    location: "House 45, Road 12, Gulshan 2, Dhaka",
-    guardianName: "Mr. Kamal Rahman",
-    guardianPhone: "+880 1712-345678",
-  };
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setStatus(Math.random() > 0.3 ? 'success' : 'mismatch');
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
-  const handleCheckIn = () => {
-    setCheckInComplete(true);
-    // In real app, this would send location, timestamp, and notes to backend
-  };
-
-  if (checkInComplete) {
-    return (
-      <div className="min-h-screen bg-background pb-24 flex items-center justify-center px-6">
-        <Card className="modern-card p-8 border-0 text-center">
-          <div className="w-20 h-20 rounded-full btn-neumorphic-primary mx-auto mb-6 flex items-center justify-center">
-            <CheckCircle className="w-10 h-10" />
-          </div>
-          
-          <h2 className="mb-2">Check-In Successful!</h2>
-          <p className="text-muted-foreground mb-6">
-            You've successfully checked in for today's session
-          </p>
-
-          <div className="space-y-2 mb-6">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Check-in Time:</span>
-              <span className="font-medium">9:05 AM</span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Location:</span>
-              <span className="font-medium">Verified ✓</span>
-            </div>
-          </div>
-
-          <button 
-            className="btn-neumorphic-primary w-full py-3"
-            onClick={() => onNavigate("caregiver-home")}
-          >
-            Continue
-          </button>
-        </Card>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (status === 'success') {
+      const timer = setTimeout(() => {
+        onNavigate?.('caregiver-checkin-confirmation');
+      }, 2000);
+      return () => clearTimeout(timer);
+    } else if (status === 'mismatch') {
+      const timer = setTimeout(() => {
+        onNavigate?.('caregiver-checkin-location-mismatch');
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [status, onNavigate]);
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
-      <div className="px-6 pt-6 pb-4">
-        <h1 className="mb-1">Check-In</h1>
-        <p className="text-sm text-muted-foreground">Verify your arrival at the care location</p>
-      </div>
-
-      {/* Job Details */}
-      <div className="px-6 mb-6">
-        <Card className="modern-card p-5 border-0">
-          <h3 className="mb-4">Job Details</h3>
-          
-          <div className="space-y-3 mb-4">
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">Patient</p>
-              <p className="font-medium">{jobDetails.patientName}</p>
+    <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ backgroundColor: '#F5F7FA' }}>
+      <div className="text-center max-w-md">
+        {status === 'verifying' && (
+          <>
+            <div className="inline-flex items-center justify-center w-32 h-32 rounded-full mb-6 animate-pulse"
+              style={{ background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FEB4C5 0%, #DB869A 100%)', boxShadow: '0px 8px 32px rgba(240, 161, 180, 0.4)' }}>
+              <MapPin className="w-16 h-16 text-white" />
             </div>
-            
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">Service</p>
-              <p className="font-medium">{jobDetails.packageName}</p>
-            </div>
+            <h1 className="mb-4" style={{ color: '#535353' }}>Verifying Location...</h1>
+            <p className="mb-8" style={{ color: '#848484' }}>
+              Please wait while we verify your location at the patient's address
+            </p>
+            <Loader2 className="w-8 h-8 mx-auto animate-spin" style={{ color: '#FEB4C5' }} />
+          </>
+        )}
 
-            <div className="flex items-center gap-2 text-sm">
-              <Clock className="w-4 h-4 text-muted-foreground" />
-              <span>{jobDetails.time}</span>
+        {status === 'success' && (
+          <>
+            <div className="inline-flex items-center justify-center w-32 h-32 rounded-full mb-6 animate-bounce"
+              style={{ background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #7CE577 0%, #5FB865 100%)', boxShadow: '0px 8px 32px rgba(124, 229, 119, 0.4)' }}>
+              <CheckCircle className="w-16 h-16 text-white" />
             </div>
+            <h1 className="mb-4" style={{ color: '#535353' }}>Location Verified!</h1>
+            <p style={{ color: '#848484' }}>Proceeding to photo capture...</p>
+          </>
+        )}
 
-            <div className="flex items-start gap-2 text-sm">
-              <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
-              <span>{jobDetails.location}</span>
+        {status === 'mismatch' && (
+          <>
+            <div className="inline-flex items-center justify-center w-32 h-32 rounded-full mb-6"
+              style={{ background: 'rgba(255, 107, 107, 0.1)' }}>
+              <MapPin className="w-16 h-16" style={{ color: '#FF6B6B' }} />
             </div>
-          </div>
+            <h1 className="mb-4" style={{ color: '#535353' }}>Location Mismatch</h1>
+            <p style={{ color: '#848484' }}>You're not at the patient's registered address...</p>
+          </>
+        )}
 
-          <div className="pt-4 border-t border-border/50">
-            <p className="text-sm text-muted-foreground mb-1">Guardian Contact</p>
-            <p className="font-medium mb-0.5">{jobDetails.guardianName}</p>
-            <p className="text-sm text-primary">{jobDetails.guardianPhone}</p>
-          </div>
-        </Card>
-      </div>
-
-      {/* Location Verification */}
-      <div className="px-6 mb-6">
-        <Card className="modern-card p-5 border-0">
-          <div className="flex items-start gap-3 mb-4">
-            <div className="w-10 h-10 btn-neumorphic-primary rounded-full flex items-center justify-center flex-shrink-0">
-              <MapPin className="w-5 h-5" />
+        <div className="finance-card p-5 mt-8">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm" style={{ color: '#848484' }}>Current Location:</span>
+              <span className="text-sm" style={{ color: '#535353' }}>Dhanmondi, Dhaka</span>
             </div>
-            <div className="flex-1">
-              <h4 className="mb-1">Location Verification</h4>
-              <p className="text-sm text-muted-foreground">
-                We'll verify you're at the correct location
-              </p>
+            <div className="flex items-center justify-between">
+              <span className="text-sm" style={{ color: '#848484' }}>Patient Address:</span>
+              <span className="text-sm" style={{ color: '#535353' }}>House 45, Road 12</span>
             </div>
-          </div>
-
-          <button className="btn-neumorphic w-full py-3">
-            <MapPin className="w-4 h-4 mr-2" />
-            Verify Location
-          </button>
-        </Card>
-      </div>
-
-      {/* Optional Photo */}
-      <div className="px-6 mb-6">
-        <Card className="modern-card p-5 border-0">
-          <div className="flex items-start gap-3 mb-4">
-            <div className="w-10 h-10 btn-icon-neumorphic flex items-center justify-center flex-shrink-0">
-              <Camera className="w-5 h-5 text-muted-foreground" />
-            </div>
-            <div className="flex-1">
-              <h4 className="mb-1">Add Photo (Optional)</h4>
-              <p className="text-sm text-muted-foreground">
-                Document your arrival
-              </p>
+            <div className="flex items-center justify-between">
+              <span className="text-sm" style={{ color: '#848484' }}>Distance:</span>
+              <span className="text-sm" style={{ color: status === 'success' ? '#7CE577' : '#FF6B6B' }}>
+                {status === 'success' ? '5 meters' : '850 meters'}
+              </span>
             </div>
           </div>
-
-          <button className="btn-neumorphic w-full py-3">
-            <Camera className="w-4 h-4 mr-2" />
-            Take Photo
-          </button>
-        </Card>
-      </div>
-
-      {/* Notes */}
-      <div className="px-6 mb-6">
-        <Card className="modern-card p-5 border-0">
-          <h4 className="mb-3">Check-In Notes</h4>
-          <textarea
-            className="w-full h-24 px-4 py-3 rounded-2xl bg-muted/30 border border-border/50 focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
-            placeholder="Add any notes about your arrival..."
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
-        </Card>
-      </div>
-
-      {/* Important Notice */}
-      <div className="px-6 mb-6">
-        <Card className="modern-card p-4 border-0 border-l-4 border-l-primary">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm">
-                <span className="font-medium">Important:</span> Your check-in time and location will be recorded and shared with the guardian.
-              </p>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Check-In Button */}
-      <div className="fixed bottom-20 left-0 right-0 px-6 pb-6 bg-gradient-to-t from-background via-background to-transparent pt-6">
-        <button 
-          className="btn-neumorphic-primary w-full py-4"
-          onClick={handleCheckIn}
-        >
-          <CheckCircle className="w-5 h-5 mr-2" />
-          Complete Check-In
-        </button>
+        </div>
       </div>
     </div>
   );

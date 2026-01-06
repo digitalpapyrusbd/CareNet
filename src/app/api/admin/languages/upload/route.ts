@@ -7,7 +7,7 @@ import { existsSync } from 'fs';
 
 const LOCALES_DIR = join(process.cwd(), 'src/lib/locales');
 
-export const POST = withRoles([UserRole.SUPER_ADMIN, UserRole.SUPER_ADMIN])(async (request: NextRequest) => {
+export const POST = withRoles([UserRole.SUPER_ADMIN, UserRole.PLATFORM_ADMIN])(async (request: NextRequest) => {
   try {
 
     const formData = await request.formData();

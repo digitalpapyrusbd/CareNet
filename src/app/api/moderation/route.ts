@@ -7,7 +7,7 @@ import { z } from 'zod';
 // Validation schemas
 const moderateContentSchema = z.object({
   entityType: z.enum(['FEEDBACK', 'DISPUTE', 'USER', 'COMPANY', 'CAREGIVER', 'JOB']),
-  entityId: z.string(),
+          entity_id: z.string(),
   action: z.enum(['FLAG', 'UNFLAG', 'HIDE', 'DELETE']),
   reason: z.string().optional(),
   notes: z.string().optional(),
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
         take: limit,
         orderBy: { timestamp: 'desc' },
         include: {
-          actor: {
+          users: {
             select: {
               id: true,
               name: true,
@@ -81,37 +81,20 @@ export async function GET(request: NextRequest) {
         },
         skip,
         take: limit,
-        orderBy: { created_at: 'desc' },
+        orderBy: { createdAt: 'desc' },
         include: {
-          fromUser: {
+          users_feedbacks_from_user_idTousers: {
             select: {
               id: true,
               name: true,
               role: true,
             },
           },
-          toUser: {
+          users_feedbacks_to_user_idTousers: {
             select: {
               id: true,
               name: true,
               role: true,
-            },
-          },
-          job: {
-            select: {
-              id: true,
-              patient: {
-                select: {
-                  id: true,
-                  name: true,
-                },
-              },
-              company: {
-                select: {
-                  id: true,
-                  company_name: true,
-                },
-              },
             },
           },
         },
@@ -134,32 +117,32 @@ export async function GET(request: NextRequest) {
         },
         skip,
         take: limit,
-        orderBy: { created_at: 'desc' },
+        orderBy: { createdAt: 'desc' },
         include: {
-          raisedByUser: {
+          users_disputes_raised_byTousers: {
             select: {
               id: true,
               name: true,
               role: true,
             },
           },
-          againstUser: {
+          users_disputes_againstTousers: {
             select: {
               id: true,
               name: true,
               role: true,
             },
           },
-          job: {
+          jobs: {
             select: {
               id: true,
-              patient: {
+              patients: {
                 select: {
                   id: true,
                   name: true,
                 },
               },
-              company: {
+              companies: {
                 select: {
                   id: true,
                   company_name: true,
@@ -218,12 +201,15 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const validatedData = moderateContentSchema.parse(body);
-    const { entityType, entityId, action, reason, notes } = validatedData;
+    const { entityType, entity_id: entityId, action, reason, notes } = validatedData;
 
     let result;
 
     switch (action) {
       case 'FLAG':
+        if (!entityId) {
+          return NextResponse.json({ error: 'entity_id is required' }, { status: 400 });
+        }
         result = await handleFlag(user, entityType, entityId, reason, notes);
         break;
       case 'UNFLAG':
@@ -273,13 +259,13 @@ async function handleFlag(user: any, entityType: string, entityId: string, reaso
       actor_role: user.role,
       action_type: 'FLAG',
       entity_type: entityType.toUpperCase(),
-      entityId,
+            entity_id: entityId,
       changes: {
         reason,
         notes,
       },
-      ipAddress: 'unknown', // Would be set from request headers
-      userAgent: 'unknown', // Would be set from request headers
+      ip_address: 'unknown', // Would be set from request headers
+      user_agent: 'unknown', // Would be set from request headers
       timestamp: new Date(),
     },
   });
@@ -312,9 +298,9 @@ async function handleUnflag(user: any, entityType: string, entityId: string) {
       actor_role: user.role,
       action_type: 'UNFLAG',
       entity_type: entityType.toUpperCase(),
-      entityId,
+            entity_id: entityId,
       ip_address: 'unknown',
-      userAgent: 'unknown',
+      user_agent: 'unknown',
       timestamp: new Date(),
     },
   });
@@ -344,9 +330,9 @@ async function handleHide(user: any, entityType: string, entityId: string) {
       actor_role: user.role,
       action_type: 'HIDE',
       entity_type: entityType.toUpperCase(),
-      entityId,
+            entity_id: entityId,
       ip_address: 'unknown',
-      userAgent: 'unknown',
+      user_agent: 'unknown',
       timestamp: new Date(),
     },
   });
@@ -376,9 +362,9 @@ async function handleDelete(user: any, entityType: string, entityId: string) {
       actor_role: user.role,
       action_type: 'DELETE',
       entity_type: entityType.toUpperCase(),
-      entityId,
+            entity_id: entityId,
       ip_address: 'unknown',
-      userAgent: 'unknown',
+      user_agent: 'unknown',
       timestamp: new Date(),
     },
   });

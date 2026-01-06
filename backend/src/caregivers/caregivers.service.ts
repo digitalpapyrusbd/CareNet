@@ -84,9 +84,6 @@ export class CaregiversService {
         users: {
           select: { name: true, phone: true, email: true },
         },
-        companies: {
-          select: { company_name: true },
-        },
       },
     });
 

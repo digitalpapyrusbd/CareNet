@@ -1,67 +1,219 @@
-﻿'use client';
+"use client";
 
-import { UniversalNav } from '@/components/layout/UniversalNav';
-
-import React, { useState } from 'react';
-import Layout from '@/components/layout/Layout';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import { ArrowLeft, CreditCard, Upload } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { UniversalNav } from "@/components/layout/UniversalNav";
 
 export default function CaregiverRegistrationStepFourPage() {
-  const router = useRouter();
-  const [nid, setNid] = useState('');
-  const [frontUploaded, setFrontUploaded] = useState(false);
-  const [backUploaded, setBackUploaded] = useState(false);
+  const [nidNumber, setNidNumber] = useState("");
+  const [nidFront, setNidFront] = useState<string | null>(null);
+  const [nidBack, setNidBack] = useState<string | null>(null);
 
-  const canContinue = nid.length >= 10 && frontUploaded && backUploaded;
+  const handleImageUpload = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    side: "front" | "back",
+  ) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (side === "front") {
+          setNidFront(reader.result as string);
+        } else {
+          setNidBack(reader.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleContinue = () => {
+    window.location.href = "/caregiver/registration/step-5";
+  };
 
   return (
     <>
       <UniversalNav userRole="caregiver" showBack={true} />
-      <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-violet-100 dark:from-gray-900 dark:to-violet-950 px-4 py-10 pb-24 md:pt-14">
-        <div className="max-w-2xl mx-auto finance-card p-8">
-          <p className="text-sm mb-2" style={{ color: '#848484' }}>Step 4 of 6</p>
-            <h1 className="text-2xl font-semibold mb-4" style={{ color: '#535353' }}>National ID Verification</h1>
+      <div
+        className="min-h-screen flex flex-col p-6"
+        style={{ backgroundColor: "#F5F7FA" }}
+      >
+        <div className="mb-8">
+          <Button
+            variant="ghost"
+            onClick={() => window.history.back()}
+            className="mb-6 hover:bg-white/30"
+            style={{ color: "#535353" }}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
 
-          <div className="space-y-6">
-            <div>
-              <label className="text-sm font-medium" style={{ color: '#535353' }}>NID Number *</label>
-              <Input className="mt-2 bg-white/60 border-white/60" value={nid} onChange={(e) => setNid(e.target.value)} placeholder="Enter 10-17 digit NID" />
+          <div className="text-center mb-6">
+            <div
+              className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4"
+              style={{
+                background:
+                  "radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FEB4C5 0%, #DB869A 100%)",
+                boxShadow: "0px 4px 18px rgba(240, 161, 180, 0.4)",
+              }}
+            >
+              <CreditCard className="w-10 h-10 text-white" />
             </div>
-
-            <div>
-              <p className="text-sm font-medium mb-2" style={{ color: '#535353' }}>Upload NID Front *</p>
-              <label className="flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-4 py-8 text-sm cursor-pointer"
-                style={{ borderColor: frontUploaded ? '#7CE577' : 'rgba(255,255,255,0.6)', background: 'rgba(255,255,255,0.4)' }}>
-                <span>{frontUploaded ? 'Uploaded ' : 'Tap to upload front photo'}</span>
-                <input type="file" accept="image/*" className="hidden" onChange={() => setFrontUploaded(true)} />
-              </label>
-            </div>
-
-            <div>
-              <p className="text-sm font-medium mb-2" style={{ color: '#535353' }}>Upload NID Back *</p>
-              <label className="flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-4 py-8 text-sm cursor-pointer"
-                style={{ borderColor: backUploaded ? '#7CE577' : 'rgba(255,255,255,0.6)', background: 'rgba(255,255,255,0.4)' }}>
-                <span>{backUploaded ? 'Uploaded ' : 'Tap to upload back photo'}</span>
-                <input type="file" accept="image/*" className="hidden" onChange={() => setBackUploaded(true)} />
-              </label>
-            </div>
+            <h1 className="mb-2" style={{ color: "#535353" }}>
+              NID Verification
+            </h1>
+            <p style={{ color: "#848484" }}>Step 4 of 6: Identity Document</p>
           </div>
 
-          <div className="mt-8 flex flex-col sm:flex-row gap-3">
-            <Button variant="outline" className="flex-1 bg-white/60 border-white/60" onClick={() => router.back()} style={{ color: '#535353' }}>
-              Back
-            </Button>
-            <Button className="flex-1" disabled={!canContinue} onClick={() => router.push('/caregiver/registration/step-5')} style={{ background: 'radial-gradient(143.86% 887.35% at -10.97% -22.81%, #B8A7FF 0%, #8B7AE8 100%)', color: 'white', opacity: canContinue ? 1 : 0.5 }}>
-              Save & Continue
-            </Button>
+          <div
+            className="w-full h-2 rounded-full mb-6"
+            style={{ backgroundColor: "rgba(132, 132, 132, 0.1)" }}
+          >
+            <div
+              className="h-2 rounded-full transition-all"
+              style={{
+                width: "66.67%",
+                background:
+                  "radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FEB4C5 0%, #DB869A 100%)",
+              }}
+            />
           </div>
         </div>
-      </div>
-    </Layout>
-    </>
 
+        <div className="flex-1 space-y-4">
+          {/* NID Number */}
+          <div>
+            <label className="block mb-2 text-sm" style={{ color: "#535353" }}>
+              NID Number *
+            </label>
+            <input
+              type="text"
+              value={nidNumber}
+              onChange={(e) => setNidNumber(e.target.value)}
+              placeholder="Enter your 10 or 13 digit NID number"
+              maxLength={13}
+              className="w-full finance-card px-4 py-3"
+              style={{ color: "#535353", outline: "none" }}
+            />
+          </div>
+
+          {/* NID Front */}
+          <div>
+            <label className="block mb-2 text-sm" style={{ color: "#535353" }}>
+              NID Front Photo *
+            </label>
+            <div className="relative">
+              <div
+                className="w-full h-48 rounded-xl flex items-center justify-center finance-card overflow-hidden cursor-pointer"
+                style={{
+                  background: nidFront
+                    ? "transparent"
+                    : "rgba(254, 180, 197, 0.1)",
+                }}
+              >
+                {nidFront ? (
+                  <img
+                    src={nidFront}
+                    alt="NID Front"
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <div className="text-center">
+                    <Upload
+                      className="w-10 h-10 mx-auto mb-2"
+                      style={{ color: "#FEB4C5" }}
+                    />
+                    <p className="text-sm" style={{ color: "#848484" }}>
+                      Upload NID Front
+                    </p>
+                  </div>
+                )}
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleImageUpload(e, "front")}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+            </div>
+          </div>
+
+          {/* NID Back */}
+          <div>
+            <label className="block mb-2 text-sm" style={{ color: "#535353" }}>
+              NID Back Photo *
+            </label>
+            <div className="relative">
+              <div
+                className="w-full h-48 rounded-xl flex items-center justify-center finance-card overflow-hidden cursor-pointer"
+                style={{
+                  background: nidBack
+                    ? "transparent"
+                    : "rgba(254, 180, 197, 0.1)",
+                }}
+              >
+                {nidBack ? (
+                  <img
+                    src={nidBack}
+                    alt="NID Back"
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <div className="text-center">
+                    <Upload
+                      className="w-10 h-10 mx-auto mb-2"
+                      style={{ color: "#FEB4C5" }}
+                    />
+                    <p className="text-sm" style={{ color: "#848484" }}>
+                      Upload NID Back
+                    </p>
+                  </div>
+                )}
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleImageUpload(e, "back")}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+            </div>
+          </div>
+
+          {/* Security Notice */}
+          <div
+            className="finance-card p-4"
+            style={{ background: "rgba(254, 180, 197, 0.1)" }}
+          >
+            <p className="text-sm" style={{ color: "#848484" }}>
+              🔒 Your NID information is encrypted and used only for
+              verification purposes
+            </p>
+          </div>
+        </div>
+
+        <Button
+          onClick={handleContinue}
+          disabled={!nidNumber || !nidFront || !nidBack}
+          className="w-full py-6 mt-6"
+          style={{
+            background:
+              !nidNumber || !nidFront || !nidBack
+                ? "rgba(132, 132, 132, 0.3)"
+                : "radial-gradient(143.86% 887.35% at -10.97% -22.81%, #FEB4C5 0%, #DB869A 100%)",
+            color: "white",
+            boxShadow:
+              !nidNumber || !nidFront || !nidBack
+                ? "none"
+                : "0px 4px 18px rgba(240, 161, 180, 0.4)",
+            cursor:
+              !nidNumber || !nidFront || !nidBack ? "not-allowed" : "pointer",
+          }}
+        >
+          Continue to Skills & Experience
+        </Button>
+      </div>
+    </>
   );
 }

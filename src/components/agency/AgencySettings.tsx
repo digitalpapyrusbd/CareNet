@@ -7,7 +7,7 @@ import { useState } from "react";
 
 interface AgencySettingsProps {
   currentSettings: {
-    companyName: string;
+    agencyName: string;
     contactPerson: string;
     phone: string;
     email: string;
@@ -49,8 +49,8 @@ export function AgencySettings({ currentSettings, onSave, onCancel }: AgencySett
             <div>
               <Label>Company Name *</Label>
               <Input
-                value={settings.companyName}
-                onChange={(e) => setSettings(prev => ({ ...prev, companyName: e.target.value }))}
+                value={settings.agencyName}
+                onChange={(e) => setSettings(prev => ({ ...prev, agencyName: e.target.value }))}
                 className="mt-2 bg-white/50 border-white/50"
               />
             </div>

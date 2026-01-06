@@ -25,7 +25,7 @@ export default function UserDetailPage() {
   const { t } = useTranslationContext();
   const router = useRouter();
   const params = useParams();
-  const userId = params.id as string;
+  const userId = (params?.id || '') as string;
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

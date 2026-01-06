@@ -347,17 +347,20 @@ async function checkRefundPermission(userId: string, userRole: string, refund: a
   }
 
   // Guardian can view refunds for their payments
-  if (userRole === 'GUARDIAN' && refund.payment?.job?.guardianId === userId) {
+  if (userRole === 'GUARDIAN' && refund.payment?.job?.guardian_id === userId) {
     return true;
   }
 
   // Caregiver can view refunds for their job payments
-  if (userRole === 'CAREGIVER' && refund.payment?.job?.caregiverId === userId) {
-    return true;
+  if (userRole === 'CAREGIVER') {
+    const isAssigned = refund.payment?.jobs?.assignments?.some(
+      (assignment: any) => assignment.caregiver_id === userId
+    );
+    if (isAssigned) return true;
   }
 
   // Company can view refunds for their job payments
-  if (userRole === 'COMPANY' && refund.payment?.job?.companyId === userId) {
+  if (userRole === 'COMPANY' && refund.payment?.jobs?.company_id === userId) {
     return true;
   }
 
@@ -387,9 +390,13 @@ async function checkCreateRefundPermission(userId: string, userRole: string, pay
       where: { id: paymentId },
       include: { jobs: {
           include: {
-            guardian: true,
-            caregiver: true,
-            company: true,
+            users: true,
+            assignments: {
+              include: {
+                caregivers_assignments_caregiver_idTocaregivers: true,
+              },
+            },
+            companies: true,
           },
         },
       },
@@ -400,17 +407,20 @@ async function checkCreateRefundPermission(userId: string, userRole: string, pay
     }
 
     // Guardian can create refunds for their payments
-    if (userRole === 'GUARDIAN' && payment.job?.guardianId === userId) {
+    if (userRole === 'GUARDIAN' && payment.jobs?.guardian_id === userId) {
       return true;
     }
 
     // Caregiver can create refunds for their job payments
-    if (userRole === 'CAREGIVER' && payment.job?.caregiverId === userId) {
-      return true;
+    if (userRole === 'CAREGIVER') {
+      const isAssigned = payment.jobs?.assignments?.some(
+        (assignment: any) => assignment.caregiver_id === userId
+      );
+      if (isAssigned) return true;
     }
 
     // Company can create refunds for their job payments
-    if (userRole === 'COMPANY' && payment.job?.companyId === userId) {
+    if (userRole === 'COMPANY' && payment.jobs?.company_id === userId) {
       return true;
     }
 

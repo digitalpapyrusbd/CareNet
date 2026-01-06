@@ -24,8 +24,8 @@ export async function POST(req: Request) {
     if ((authRes as any).status) return authRes as any
     const { user } = authRes as any
 
-    // allow guardians or users with make:payments permission
-    if (user.role !== 'GUARDIAN' && !auth.hasPermission?.(user.role, 'make:payments')) {
+    // allow guardians only
+    if (user.role !== 'GUARDIAN') {
       return auth.errorResponse('Forbidden', 'FORBIDDEN', 403)
     }
 

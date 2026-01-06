@@ -12,7 +12,7 @@ export function AgencyRegistrationStep4({ onContinue, onBack }: AgencyRegistrati
   const [files, setFiles] = useState({
     tradeLicense: null as File | null,
     tinCertificate: null as File | null,
-    companyLogo: null as File | null
+    agencyLogo: null as File | null
   });
 
   return (
@@ -100,17 +100,17 @@ export function AgencyRegistrationStep4({ onContinue, onBack }: AgencyRegistrati
 
           {/* Company Logo */}
           <div>
-            <Label style={{ color: '#535353' }}>Company Logo (Optional)</Label>
+            <Label style={{ color: '#535353' }}>Agency Logo (Optional)</Label>
             <label className="mt-2 flex flex-col items-center justify-center p-6 rounded-lg border-2 border-dashed cursor-pointer hover:bg-white/30 transition-all"
-              style={{ borderColor: files.companyLogo ? '#7CE577' : 'rgba(255, 255, 255, 0.5)' }}>
-              {files.companyLogo ? (
+              style={{ borderColor: files.agencyLogo ? '#7CE577' : 'rgba(255, 255, 255, 0.5)' }}>
+              {files.agencyLogo ? (
                 <div className="text-center">
                   <Image className="w-8 h-8 mx-auto mb-2" style={{ color: '#7CE577' }} />
-                  <p className="text-sm mb-1" style={{ color: '#535353' }}>{files.companyLogo.name}</p>
+                  <p className="text-sm mb-1" style={{ color: '#535353' }}>{files.agencyLogo.name}</p>
                   <button
                     onClick={(e) => {
                       e.preventDefault();
-                      setFiles({ ...files, companyLogo: null });
+                      setFiles({ ...files, agencyLogo: null });
                     }}
                     className="text-xs" style={{ color: '#FF6B7A' }}
                   >
@@ -127,7 +127,7 @@ export function AgencyRegistrationStep4({ onContinue, onBack }: AgencyRegistrati
               <input
                 type="file"
                 accept=".jpg,.jpeg,.png"
-                onChange={(e) => setFiles({ ...files, companyLogo: e.target.files?.[0] || null })}
+                onChange={(e) => setFiles({ ...files, agencyLogo: e.target.files?.[0] || null })}
                 className="hidden"
               />
             </label>

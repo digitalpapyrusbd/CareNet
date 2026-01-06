@@ -13,7 +13,8 @@ export const GET = withRoles([UserRole.SUPER_ADMIN, UserRole.SUPER_ADMIN])(async
 ) => {
   try {
 
-    const code = params.code.toLowerCase();
+    const { code: codeParam } = await params;
+    const code = codeParam.toLowerCase();
     const filePath = join(LOCALES_DIR, `${code}.json`);
 
     if (!existsSync(filePath)) {

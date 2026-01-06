@@ -54,7 +54,7 @@ export default function AgencyDetailPage() {
   const params = useParams();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const agencyId = params.id as string;
+  const agencyId = (params?.id || '') as string;
 
   const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);

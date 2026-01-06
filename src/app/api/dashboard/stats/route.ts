@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
       case UserRole.COMPANY:
         // Company stats
         const company = await prisma.companies.findUnique({
-          where: { user_id: user.id },
+          where: { userId: user.id },
         });
 
         if (company) {
@@ -75,9 +75,9 @@ export async function GET(request: NextRequest) {
             }),
             prisma.payments.aggregate({
               where: {
-                job: { company_id: company.id },
+                jobs: { company_id: company.id },
                 status: 'COMPLETED',
-                paidAt: {
+                paid_at: {
                   gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
                 },
               },
@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
       case UserRole.CAREGIVER:
         // Caregiver stats
         const caregiver = await prisma.caregivers.findUnique({
-          where: { user_id: user.id },
+          where: { userId: user.id },
         });
 
         if (caregiver) {
@@ -125,7 +125,7 @@ export async function GET(request: NextRequest) {
             }),
             prisma.payments.aggregate({
               where: {
-                job: {
+                jobs: {
                   assignments: {
                     some: {
                       caregiver_id: caregiver.id,
@@ -133,7 +133,7 @@ export async function GET(request: NextRequest) {
                   },
                 },
                 status: 'COMPLETED',
-                paidAt: {
+                paid_at: {
                   gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
                 },
               },
@@ -229,7 +229,7 @@ async function getRecentActivity(role: string, entityId: string) {
             id: true,
             name: true,
             role: true,
-            created_at: true,
+              created_at: true,
           },
         }),
         prisma.jobs.findMany({
@@ -237,18 +237,18 @@ async function getRecentActivity(role: string, entityId: string) {
           orderBy: { created_at: 'desc' },
           select: {
             id: true,
-            patient: { select: { name: true } },
-            createdAt: true,
+            patients: { select: { name: true } },
+            created_at: true,
           },
         }),
         prisma.disputes.findMany({
           take: 5,
-          orderBy: { created_at: 'desc' },
+          orderBy: { createdAt: 'desc' },
           select: {
             id: true,
             description: true,
             status: true,
-            created_at: true,
+            createdAt: true,
           },
         }),
       ]);
@@ -264,8 +264,8 @@ async function getRecentActivity(role: string, entityId: string) {
       recentJobsData.forEach((job: any) => {
         activities.push({
           type: 'JOB_CREATED',
-          description: `New job created for ${job.patient?.name}`,
-          timestamp: job.createdAt,
+          description: `New job created for ${job.patients?.name}`,
+          timestamp: job.created_at,
         });
       });
 
@@ -290,14 +290,14 @@ async function getRecentActivity(role: string, entityId: string) {
           orderBy: { created_at: 'desc' },
           select: {
             id: true,
-            patient: { select: { name: true } },
+            patients: { select: { name: true } },
             status: true,
-            createdAt: true,
+            created_at: true,
           },
         }),
         prisma.payments.findMany({
           where: {
-            job: { company_id: entityId },
+            jobs: { company_id: entityId },
             status: 'COMPLETED',
           },
           take: 5,
@@ -313,8 +313,8 @@ async function getRecentActivity(role: string, entityId: string) {
       recentJobs.forEach(job => {
         activities.push({
           type: 'JOB_CREATED',
-          description: `New job created for ${job.patient?.name}`,
-          timestamp: job.createdAt,
+          description: `New job created for ${job.patients?.name}`,
+          timestamp: job.created_at,
         });
       });
 
@@ -322,7 +322,7 @@ async function getRecentActivity(role: string, entityId: string) {
         activities.push({
           type: 'PAYMENT_RECEIVED',
           description: `Payment of ৳${payment.amount} received`,
-          timestamp: payment.paidAt,
+          timestamp: payment.paid_at,
         });
       });
       break;
@@ -340,7 +340,7 @@ async function getRecentActivity(role: string, entityId: string) {
           include: { jobs: {
               select: {
                 id: true,
-                patient: { select: { name: true } },
+                patients: { select: { name: true } },
               },
             },
           },
@@ -386,9 +386,9 @@ async function getRecentActivity(role: string, entityId: string) {
           orderBy: { created_at: 'desc' },
           select: {
             id: true,
-            patient: { select: { name: true } },
+            patients: { select: { name: true } },
             status: true,
-            createdAt: true,
+            created_at: true,
           },
         }),
         prisma.payments.findMany({
@@ -399,7 +399,7 @@ async function getRecentActivity(role: string, entityId: string) {
             id: true,
             amount: true,
             status: true,
-            created_at: true,
+              created_at: true,
           },
         }),
       ]);
@@ -407,8 +407,8 @@ async function getRecentActivity(role: string, entityId: string) {
       guardianJobsData.forEach((job: any) => {
         activities.push({
           type: 'JOB_CREATED',
-          description: `New job created for ${job.patient?.name}`,
-          timestamp: job.createdAt,
+          description: `New job created for ${job.patients?.name}`,
+          timestamp: job.created_at,
         });
       });
 
