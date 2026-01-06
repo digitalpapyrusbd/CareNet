@@ -37,6 +37,14 @@ const nextConfig = {
   experimental: {
     optimizeCss: true,
     scrollRestoration: true,
+    // Fix for middleware.js.nft.json error on Vercel
+    outputFileTracingExcludes: {
+      '*': [
+        'node_modules/@swc/core-linux-x64-gnu',
+        'node_modules/@swc/core-linux-x64-musl',
+        'node_modules/@esbuild/linux-x64',
+      ],
+    },
   },
 
   // Compiler optimizations
@@ -135,6 +143,16 @@ const nextConfig = {
       ...config.experiments,
       topLevelAwait: true,
     };
+
+    // Fix for middleware.js.nft.json error
+    if (isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      };
+    }
 
     return config;
   },
